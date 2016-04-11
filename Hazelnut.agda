@@ -42,5 +42,19 @@ module Hazelnut where
   ·ctx = List (Nat × ·τ)
 
   mutual
+    -- synthesis
     data _⊢_=>_ : ·ctx → ·e → ·τ → Set where
+      SAsc : {Γ : ·ctx} {e : ·e} {t : ·τ} →
+                (Γ ⊢ e <= t) →
+                Γ ⊢ (e ·: t) => t
+      SVar : {Γ : ·ctx} {e : ·e} {t : ·τ} {n : Nat} →
+                ((n , t) ∈ Γ) →
+                Γ ⊢ X n => t
+
+    -- analysis
     data _⊢_<=_ : ·ctx → ·e → ·τ → Set where
+      ASubsume : {Γ : ·ctx} {e : ·e} {t t' : ·τ} →
+                    (Γ ⊢ e => t') →
+                    (t == t') →
+                    (Γ ⊢ e <= t)
+      ALam     :
