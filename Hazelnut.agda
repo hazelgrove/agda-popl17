@@ -57,7 +57,10 @@ module Hazelnut where
       SVar : {Γ : ·ctx} {e : ·e} {t : ·τ} {n : Nat} →
                 ((n , t) ∈ Γ) →
                 Γ ⊢ X n => t
-
+      SAp  : {Γ : ·ctx} {e1 e2 : ·e} {t t2 : ·τ} →
+                Γ ⊢ e1 => (t2 ==> t) →
+                Γ ⊢ e2 <= t2 →
+                Γ ⊢ (e1 ∘ e2) => t
 
     -- analysis
     data _⊢_<=_ : ·ctx → ·e → ·τ → Set where
