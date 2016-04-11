@@ -7,13 +7,13 @@ module Hazelnut where
   data ·τ : Set where
     num  : ·τ
     <||> : ·τ
-    _to_ : ·τ → ·τ → ·τ
+    _==>_ : ·τ → ·τ → ·τ
 
   -- those types without holes anywhere, the so-called complete types
   τ : ·τ → Set
   τ num = ⊤
   τ <||> = ⊥
-  τ (t1 to t2) = τ t1 × τ t2
+  τ (t1 ==> t2) = τ t1 × τ t2
 
   -- expressions, prefixed with a · to distinguish name clashes with agda
   -- built-ins
@@ -25,6 +25,7 @@ module Hazelnut where
     _·+_  : ·e → ·e → ·e
     <||>  : ·e
     <|_|> : ·e → ·e
+    _∘_   : ·e → ·e → ·e
 
   -- similarly to the complete types, the complete expressions
   e : ·e → Set
@@ -35,11 +36,17 @@ module Hazelnut where
   e (e1 ·+ e2) = e e1 × e e2
   e <||> = ⊥
   e <| e1 |> = e e1
+  e (e1 ∘ e2) = e e1 × e e2
 
   -- variables are named with naturals in ·e, so we represent contexts
   -- simply as lists of pairs of variable names and types
   ·ctx : Set
   ·ctx = List (Nat × ·τ)
+
+  -- this is just to be cute
+  _,,_ : {A : Set} → List A → A → List A
+  L ,, x = x :: L
+
 
   mutual
     -- synthesis
@@ -51,10 +58,13 @@ module Hazelnut where
                 ((n , t) ∈ Γ) →
                 Γ ⊢ X n => t
 
+
     -- analysis
     data _⊢_<=_ : ·ctx → ·e → ·τ → Set where
       ASubsume : {Γ : ·ctx} {e : ·e} {t t' : ·τ} →
                     (Γ ⊢ e => t') →
-                    (t == t') →
+                    (t == t') → -- TODO: no clue if this is right
                     (Γ ⊢ e <= t)
-      ALam     :
+      ALam : {Γ : ·ctx} {e : ·e} {t1 t2 : ·τ} {n : Nat} →
+                    (Γ ,, (n , t1)) ⊢ e <= t2 →
+                    Γ ⊢ (·λ n e) <= (t1 ==> t2)
