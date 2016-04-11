@@ -20,3 +20,8 @@ Assumptions and Represenatation Decisions
   context or try to keep them in sorted order.  premises that involve
   something being present in a context are expressed using the inductive
   type that encodes membership.
+
+- type compatability is a judgement all its own, rather than trying to use
+  an agda internal notion of equality. this is irritating, but given (1ja)
+  i'm not sure how to avoid it without HITs or something similarly elephant
+  gun like.

@@ -47,6 +47,15 @@ module Hazelnut where
   _,,_ : {A : Set} → List A → A → List A
   L ,, x = x :: L
 
+  -- type compatability.
+  data _~_ : ·τ → ·τ → Set where
+    TCNum : num ~ num
+    TCHole : {t : ·τ} → t ~ <||>
+    TCTo : {t1 t2 t1' t2' : ·τ} →
+               t1 ~ t1' →
+               t2 ~ t2' →
+               (t1 ==> t2) ~ (t1' ==> t2')
+    TCSym : {t1 t2 : ·τ} → t1 ~ t2 → t2 ~ t1
 
   mutual
     -- synthesis
@@ -61,12 +70,26 @@ module Hazelnut where
                 Γ ⊢ e1 => (t2 ==> t) →
                 Γ ⊢ e2 <= t2 →
                 Γ ⊢ (e1 ∘ e2) => t
+      SNum :  {Γ : ·ctx} {n : Nat} →
+                Γ ⊢ N n => num
+      SPlus : {Γ : ·ctx} {e1 e2 : ·e}  →
+                Γ ⊢ e1 <= num →
+                Γ ⊢ e2 <= num →
+                Γ ⊢ (e1 ·+ e2) => num
+      SEHole : {Γ : ·ctx} → Γ ⊢ <||> => <||>
+      SFHole : {Γ : ·ctx} {e : ·e} {t : ·τ} →
+                  Γ ⊢ e => t →
+                  Γ ⊢ <| e |> => <||>
+      SApHole : {Γ : ·ctx} {e1 e2 : ·e} →
+                Γ ⊢ e1 => <||> →
+                Γ ⊢ e2 <= <||> →
+                Γ ⊢ (e1 ∘ e2) => <||>
 
     -- analysis
     data _⊢_<=_ : ·ctx → ·e → ·τ → Set where
       ASubsume : {Γ : ·ctx} {e : ·e} {t t' : ·τ} →
                     (Γ ⊢ e => t') →
-                    (t == t') → -- TODO: no clue if this is right
+                    (t ~ t') → -- TODO: no clue if this is right
                     (Γ ⊢ e <= t)
       ALam : {Γ : ·ctx} {e : ·e} {t1 t2 : ·τ} {n : Nat} →
                     (Γ ,, (n , t1)) ⊢ e <= t2 →
