@@ -50,9 +50,9 @@ module Prelude where
   ! refl = refl
 
   -- β: (ap f (refl m)) == refl (f m)
-  ap : {l1 l2 : Level} {α : Set l1} {β : Set l2} {x y : α} (F : α → β)
+  ap1 : {l1 l2 : Level} {α : Set l1} {β : Set l2} {x y : α} (F : α → β)
           → x == y → F x == F y
-  ap F refl = refl
+  ap1 F refl = refl
 
   -- β? : tr β (refl x) y == y
   tr : {l1 l2 : Level} {α : Set l1} {x y : α}
