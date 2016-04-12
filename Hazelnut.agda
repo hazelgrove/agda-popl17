@@ -128,3 +128,46 @@ module Hazelnut where
     (e1 ·+₁ e2) ◆e = (e1 ◆e) ·+ e2
     (e1 ·+₂ e2) ◆e = e1 ·+ (e2 ◆e)
     <| e |> ◆e     = <| e ◆e |>
+
+    data action : Set where
+      move : direction → action
+      del : action
+      construct : form → action
+      finish : action
+
+    data direction : Set where
+      firstChild : direction
+      parent : direction
+      nextSib : direction
+      prevSib : direction
+
+    data form : Set where
+      arr : form
+      num : form
+      asc : form
+      var : Nat → form -- no idea if correct
+      lam : Nat → form -- no idea if correct
+      ap  : form
+      arg : form
+      numlit : Nat → form
+      plus : form
+
+    data _~_~>_ : hatτ → action → hatτ → Set where
+    data _⊢_=>_~_~>_=>_ : ·ctx → hate → ·τ → action → hate → ·τ → Set where
+    data _⊢_~_~>_⇐_ : ·ctx → hate → action → hate → ·τ → Set where
+
+    -- theorem 1
+    actsense1 : (Γ : ·ctx) (e e' : hate) (t t' : ·τ) (α : action) →
+                (Γ ⊢ e => t ~ α ~> e' => t') →
+                (Γ ⊢ (e  ◆e) => t) →
+                (Γ ⊢ (e' ◆e) => t')
+    actsense1 Γ e e1 t t' α D1 D2 = {!!}
+
+    actsense2  : (Γ : ·ctx) (e e' : hate) (t : ·τ) (α : action) →
+                  (Γ ⊢ e ~ α ~> e' ⇐ t) → ⊤
+    actsense2 = {!!}
+
+    -- theorem 2
+    -- actdet1 : (Γ : ·ctx) (e e' : hate) (t t' : ·τ) (α : action) →
+    -- actdet2
+    -- actdet3
