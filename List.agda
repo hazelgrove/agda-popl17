@@ -3,7 +3,7 @@ module List where
     [] : List A
     _::_ : A → List A → List A
 
-  -- list membership
+  -- list  membership
   data _∈_ {A : Set} : A → List A → Set where
     ∈h : {x : A} {l : List A} → x ∈ (x :: l)
     ∈t : {x y : A} {l : List A} → x ∈ l → x ∈ y :: l
