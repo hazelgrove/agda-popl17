@@ -43,6 +43,13 @@ module Hazelnut where
   ·ctx : Set
   ·ctx = List (Nat × ·τ)
 
+  -- apartness for contexts, so that we can follow barendregt's convention
+  _#_ : Nat → ·ctx → Set
+  x # [] = ⊤
+  x # (v , _) :: Γ with nateq x v
+  ... | Inl <> = ⊥
+  ... | Inr <> = x # Γ
+
   -- this is just to be cute
   _,,_ : {A : Set} → List A → A → List A
   L ,, x = x :: L
@@ -92,6 +99,7 @@ module Hazelnut where
                     (Γ ⊢ e => t') →
                     (Γ ⊢ e <= t)
       ALam : {Γ : ·ctx} {e : ·e} {t1 t2 : ·τ} {n : Nat} →
+                    (n # Γ) → -- todo: check that this implements barendregt's convention
                     (Γ ,, (n , t1)) ⊢ e <= t2 →
                     Γ ⊢ (·λ n e) <= (t1 ==> t2)
 
@@ -177,8 +185,6 @@ module Hazelnut where
               (e' == e'' × t' == t'') -- todo: maybe 1a and 1b?
     actdet1 Γ e e' e'' t t' t'' α D1 D2 D3 = {!!}
 
-    -- todo: double check with Cyrus if this is how this how this
-    -- parenthesizes. why do we really need both if t ~ t'?
     actdet2a : (Γ : ·ctx) (e e' e'' : hate) (t t' : ·τ) (α : action) →
                (Γ ⊢ (e ◆e) => t) →
                (Γ ⊢ e => t ~ α ~> e' => t') →
