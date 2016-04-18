@@ -25,3 +25,15 @@ Assumptions and Represenatation Decisions
   an agda internal notion of equality. this is irritating, but given (1ja)
   i'm not sure how to avoid it without HITs or something similarly elephant
   gun like.
+
+- type incompatability is not its own judgement, but rather represented as
+  {t1 t2 : ·τ} → t1 ~ t2 → ⊥, which is the standard way to represent
+  negation. this means the same thing as the judgement in the text, but
+  saves us proving some unimportant lemmas describing the coherence between
+  two types that would result from the direct translation into Agda
+
+- each of the clauses of the theorems in the text are broken off into
+  separate functions in the formalization.
+
+- the sequence of conjunctions inte the antecedents of the theorems have
+  been curried into a sequence of implications instead
