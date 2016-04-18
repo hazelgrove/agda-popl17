@@ -11,5 +11,5 @@ from talking to ed:
 - reflection?
 - am i using the barendregt variable convention
 
-- todo: double check with Cyrus if this is how this how action determinism
+- double check with Cyrus if this is how this how action determinism
   parenthesizes. why do we really need both if t ~ t'?
