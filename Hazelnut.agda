@@ -148,8 +148,8 @@ module Hazelnut where
     arr : shape
     num : shape
     asc : shape
-    var : Nat → shape -- no idea if correct
-    lam : Nat → shape -- no idea if correct
+    var : Nat → shape
+    lam : Nat → shape
     ap  : shape
     arg : shape
     numlit : Nat → shape
@@ -162,9 +162,18 @@ module Hazelnut where
     finish : action
 
   -- type movement
-  data _~_~>_ : hatτ → action → hatτ → Set where
+  data _+_+>_ : hatτ → action → hatτ → Set where
+    TMFirstChild : {t1 t2 : ·τ} →
+               ▹ t1 ==> t2 ◃ + move firstChild +> (▹ t1 ◃ ==>₁ t2)
+    TMParent1 : {t1 t2 : ·τ} →
+               (▹ t1 ◃ ==>₁ t2) + move parent +> ▹ t1 ==> t2 ◃
+    TMParent2 : {t1 t2 : ·τ} →
+               (t1 ==>₂ ▹ t2 ◃) + move parent +> ▹ t1 ==> t2 ◃
+    TMNextSib : {t1 t2 : ·τ} →
+               (▹ t1 ◃ ==>₁ t2) + move nextSib +> (t1 ==>₂ ▹ t2 ◃)
+    TMPrevSib : {t1 t2 : ·τ} →
+               (t1 ==>₂ ▹ t2 ◃) + move prevSib +> (▹ t1 ◃ ==>₁ t2)
 
-  --
   data _⊢_=>_~_~>_=>_ : ·ctx → hate → ·τ → action → hate → ·τ → Set where
   data _⊢_~_~>_⇐_ : ·ctx → hate → action → hate → ·τ → Set where
 

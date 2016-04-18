@@ -13,3 +13,6 @@ from talking to ed:
 
 - double check with Cyrus if this is how this how action determinism
   parenthesizes. why do we really need both if t ~ t'?
+
+- none of the theorems say anything about type movement. slightly odd,
+  that.
