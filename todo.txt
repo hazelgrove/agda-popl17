@@ -1,0 +1,12 @@
+after meeting with cyrus on 14 april
+- get rid of post-fix diamonds
+- adding condition for n in the lambda analysis rule
+- rename form to shape
+- move ap up
+- think about whether second clause of thm 2 is a thm 3
+
+http://www.personal.psu.edu/ejp10/blogs/gotunicode/2008/11/glyph-du-jour-thermodynamic-q-.html
+
+from talking to ed:
+- reflection?
+- am i using the barendregt variable convention

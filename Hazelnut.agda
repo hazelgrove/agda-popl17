@@ -85,8 +85,6 @@ module Hazelnut where
                 Γ ⊢ e2 <= <||> →
                 Γ ⊢ (e1 ∘ e2) => <||>
 
-    -- barendregt variable convention
-
     -- analysis
     data _⊢_<=_ : ·ctx → ·e → ·τ → Set where
       ASubsume : {Γ : ·ctx} {e : ·e} {t t' : ·τ} →
@@ -177,17 +175,17 @@ module Hazelnut where
               (Γ ⊢ e => t ~ α ~> e'  => t') →
               (Γ ⊢ e => t ~ α ~> e'' => t'') →
               (e' == e'' × t' == t'') -- todo: maybe 1a and 1b?
-    actdet1 = {!!}
+    actdet1 Γ e e' e'' t t' t'' α D1 D2 D3 = {!!}
 
     -- todo: double check with Cyrus if this is how this how this
     -- parenthesizes. why do we really need both if t ~ t'?
-    actdet2a : (Γ : ·ctx) (e e' e'' : hate) (t t' t'' : ·τ) (α : action) →
+    actdet2a : (Γ : ·ctx) (e e' e'' : hate) (t t' : ·τ) (α : action) →
                (Γ ⊢ (e ◆e) => t) →
                (Γ ⊢ e => t ~ α ~> e' => t') →
                (t ~ t') ->
                (Γ ⊢ e ~ α ~> e'' ⇐ t) →
                (e' == e'')
-    actdet2a = {!!}
+    actdet2a Γ e e' e'' t t' α D1 D2 D3 D4 = {!!}
 
     actdet2b : (Γ : ·ctx) (e e' e'' : hate) (t t' t'' : ·τ) (α : action) →
                (Γ ⊢ (e ◆e) => t) →
@@ -195,11 +193,11 @@ module Hazelnut where
                (t ~ t') ->
                (Γ ⊢ e ~ α ~> e'' ⇐ t') →
                (e' == e'')
-    actdet2b = {!!}
+    actdet2b Γ e e' e'' t t' t'' α D1 D2 D3 D4 = {!!}
 
     actdet3 : (Γ : ·ctx) (e e' e'' : hate) (t : ·τ) (α : action) →
               (Γ ⊢ (e ◆e) <= t) →
               (Γ ⊢ e ~ α ~> e' ⇐ t) →
               (Γ ⊢ e ~ α ~> e'' ⇐ t) →
               (e' == e'')
-    actdet3 = {!!}
+    actdet3 Γ e e' e'' t α D1 D2 D3 = {!!}
