@@ -175,6 +175,7 @@ module Hazelnut where
                (t1 ==>₂ ▹ t2 ◃) + move prevSib +> (▹ t1 ◃ ==>₁ t2)
 
   data _⊢_=>_~_~>_=>_ : ·ctx → hate → ·τ → action → hate → ·τ → Set where
+
   data _⊢_~_~>_⇐_ : ·ctx → hate → action → hate → ·τ → Set where
 
   -- theorem 1
@@ -204,7 +205,7 @@ module Hazelnut where
              (t ~ t') →
              ((Γ ⊢ e ~ α ~> e'' ⇐ t) + (Γ ⊢ e ~ α ~> e'' ⇐ t')) →
              (e' == e'')
-  actdet2 Γ e e' e'' t t' α D1 D2 D3 D45 = {!D45!}
+  actdet2 Γ e e' e'' t t' α D1 D2 D3 D45 = {!D3!}
 
   actdet3 : (Γ : ·ctx) (e e' e'' : hate) (t : ·τ) (α : action) →
             (Γ ⊢ (e ◆e) <= t) →
