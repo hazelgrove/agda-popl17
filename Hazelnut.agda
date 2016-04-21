@@ -9,11 +9,11 @@ module Hazelnut where
     <||> : ·τ
     _==>_ : ·τ → ·τ → ·τ
 
-  -- those types without holes anywhere, the so-called complete types
-  τ : ·τ → Set
-  τ num = ⊤
-  τ <||> = ⊥
-  τ (t1 ==> t2) = τ t1 × τ t2
+  -- those types without holes anywhere
+  tcomplete : ·τ → Set
+  tcomplete num = ⊤
+  tcomplete <||> = ⊥
+  tcomplete (t1 ==> t2) = (tcomplete t1) × (tcomplete t2)
 
   -- expressions, prefixed with a · to distinguish name clashes with agda
   -- built-ins
@@ -28,15 +28,15 @@ module Hazelnut where
     _∘_   : ·e → ·e → ·e
 
   -- similarly to the complete types, the complete expressions
-  e : ·e → Set
-  e (e1 ·: _) = e e1
-  e (X _) = ⊤
-  e (·λ _ e1) = e e1
-  e (N x) = ⊤
-  e (e1 ·+ e2) = e e1 × e e2
-  e <||> = ⊥
-  e <| e1 |> = e e1
-  e (e1 ∘ e2) = e e1 × e e2
+  ecomplete : ·e → Set
+  ecomplete (e1 ·: _) = ecomplete e1
+  ecomplete (X _) = ⊤
+  ecomplete (·λ _ e1) = ecomplete e1
+  ecomplete (N x) = ⊤
+  ecomplete (e1 ·+ e2) = ecomplete e1 × ecomplete e2
+  ecomplete <||> = ⊥
+  ecomplete <| e1 |> = ecomplete e1
+  ecomplete (e1 ∘ e2) = ecomplete e1 × ecomplete e2
 
   -- variables are named with naturals in ·e, so we represent contexts
   -- simply as lists of pairs of variable names and types
@@ -50,7 +50,7 @@ module Hazelnut where
   ... | Inl <> = ⊥
   ... | Inr <> = x # Γ
 
-  -- this is just to be cute
+  -- this is syntax for cons to make the rules look nicer below
   _,,_ : {A : Set} → List A → A → List A
   L ,, x = x :: L
 
@@ -63,6 +63,11 @@ module Hazelnut where
                t2 ~ t2' →
                (t1 ==> t2) ~ (t1' ==> t2')
     TCSym : {t1 t2 : ·τ} → t1 ~ t2 → t2 ~ t1
+
+  -- type incompatability; using this encoding rather than explicit
+  -- constructors is equivalent to the one in the text but more convenient
+  _~̸_ : ·τ → ·τ → Set
+  t1 ~̸ t2 = (t1 ~ t2) → ⊥
 
   mutual
     -- synthesis
@@ -104,30 +109,30 @@ module Hazelnut where
                     (Γ ,, (n , t1)) ⊢ e <= t2 →
                     Γ ⊢ (·λ n e) <= (t1 ==> t2)
 
-  -- todo: how to make hats
-  data hatτ : Set where
-    ▹_◃  : ·τ → hatτ -- slash t 2 and 6
-    _==>₁_ : hatτ → ·τ → hatτ
-    _==>₂_ : ·τ → hatτ → hatτ
+  data τ̂ : Set where
+    ▹_◃  : ·τ → τ̂ -- slash t 2 and 6
+    _==>₁_ : τ̂ → ·τ → τ̂
+    _==>₂_ : ·τ → τ̂ → τ̂
 
-  data hate : Set where
-    ▹_◃   : ·e → hate -- slash t 2 and 6
-    _·:₁_ : hate → ·τ → hate
-    _·:₂_ : ·e → hatτ → hate
-    ·λ    : Nat → hate → hate
-    _∘₁_  : hate → ·e → hate
-    _∘₂_  : ·e → hate → hate
-    _·+₁_ : hate → ·e → hate
-    _·+₂_ : ·e → hate → hate
-    <|_|> : hate → hate
+  data ê : Set where
+    ▹_◃   : ·e → ê -- slash t 2 and 6
+    _·:₁_ : ê → ·τ → ê
+    _·:₂_ : ·e → τ̂ → ê
+    ·λ    : Nat → ê → ê
+    _∘₁_  : ê → ·e → ê
+    _∘₂_  : ·e → ê → ê
+    _·+₁_ : ê → ·e → ê
+    _·+₂_ : ·e → ê → ê
+    <|_|> : ê → ê
 
-  --focus erasure
-  _◆t : hatτ → ·τ
+  --focus erasure for types
+  _◆t : τ̂ → ·τ
   ▹ t ◃ ◆t = t
   (t1 ==>₁ t2) ◆t = (t1 ◆t) ==> t2
   (t1 ==>₂ t2) ◆t = t1 ==> (t2 ◆t)
 
-  _◆e : hate → ·e
+  --focus erasure for expressions
+  _◆e : ê → ·e
   ▹ x ◃ ◆e       = x
   (e ·:₁ t) ◆e   = (e ◆e) ·: t
   (e ·:₂ t) ◆e   = e ·: (t ◆t)
@@ -162,7 +167,7 @@ module Hazelnut where
     finish : action
 
   -- type movement
-  data _+_+>_ : hatτ → action → hatτ → Set where
+  data _+_+>_ : τ̂ → action → τ̂ → Set where
     TMFirstChild : {t1 t2 : ·τ} →
                ▹ t1 ==> t2 ◃ + move firstChild +> (▹ t1 ◃ ==>₁ t2)
     TMParent1 : {t1 t2 : ·τ} →
@@ -174,32 +179,32 @@ module Hazelnut where
     TMPrevSib : {t1 t2 : ·τ} →
                (t1 ==>₂ ▹ t2 ◃) + move prevSib +> (▹ t1 ◃ ==>₁ t2)
 
-  data _⊢_=>_~_~>_=>_ : ·ctx → hate → ·τ → action → hate → ·τ → Set where
+  data _⊢_=>_~_~>_=>_ : ·ctx → ê → ·τ → action → ê → ·τ → Set where
 
-  data _⊢_~_~>_⇐_ : ·ctx → hate → action → hate → ·τ → Set where
+  data _⊢_~_~>_⇐_ : ·ctx → ê → action → ê → ·τ → Set where
 
   -- theorem 1
-  actsense1 : (Γ : ·ctx) (e e' : hate) (t t' : ·τ) (α : action) →
+  actsense1 : (Γ : ·ctx) (e e' : ê) (t t' : ·τ) (α : action) →
               (Γ ⊢ e => t ~ α ~> e' => t') →
               (Γ ⊢ (e  ◆e) => t) →
               (Γ ⊢ (e' ◆e) => t')
   actsense1 Γ e e1 t t' α D1 D2 = {!!}
 
-  actsense2  : (Γ : ·ctx) (e e' : hate) (t : ·τ) (α : action) →
+  actsense2  : (Γ : ·ctx) (e e' : ê) (t : ·τ) (α : action) →
                 (Γ ⊢ e ~ α ~> e' ⇐ t) →
                 (Γ ⊢ (e ◆e) <= t) →
                 (Γ ⊢ (e' ◆e) <= t)
   actsense2 Γ e e' t α D1 D2 = {!!}
 
   -- theorem 2
-  actdet1 : (Γ : ·ctx) (e e' e'' : hate) (t t' t'' : ·τ) (α : action) →
+  actdet1 : (Γ : ·ctx) (e e' e'' : ê) (t t' t'' : ·τ) (α : action) →
             (Γ ⊢ (e ◆e) => t) →
             (Γ ⊢ e => t ~ α ~> e'  => t') →
             (Γ ⊢ e => t ~ α ~> e'' => t'') →
             (e' == e'' × t' == t'') -- todo: maybe 1a and 1b?
   actdet1 Γ e e' e'' t t' t'' α D1 D2 D3 = {!!}
 
-  actdet2 : (Γ : ·ctx) (e e' e'' : hate) (t t' : ·τ) (α : action) →
+  actdet2 : (Γ : ·ctx) (e e' e'' : ê) (t t' : ·τ) (α : action) →
              (Γ ⊢ (e ◆e) => t) →
              (Γ ⊢ e => t ~ α ~> e' => t') →
              (t ~ t') →
@@ -207,7 +212,7 @@ module Hazelnut where
              (e' == e'')
   actdet2 Γ e e' e'' t t' α D1 D2 D3 D45 = {!D3!}
 
-  actdet3 : (Γ : ·ctx) (e e' e'' : hate) (t : ·τ) (α : action) →
+  actdet3 : (Γ : ·ctx) (e e' e'' : ê) (t : ·τ) (α : action) →
             (Γ ⊢ (e ◆e) <= t) →
             (Γ ⊢ e ~ α ~> e' ⇐ t) →
             (Γ ⊢ e ~ α ~> e'' ⇐ t) →
