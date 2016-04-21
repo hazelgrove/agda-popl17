@@ -17,18 +17,18 @@ module Hazelnut where
 
   -- expressions, prefixed with a · to distinguish name clashes with agda
   -- built-ins
-  data ·e : Set where
-    _·:_  : ·e → τ̇ → ·e
-    X     : Nat → ·e
-    ·λ    : Nat → ·e → ·e
-    N     : Nat → ·e
-    _·+_  : ·e → ·e → ·e
-    <||>  : ·e
-    <|_|> : ·e → ·e
-    _∘_   : ·e → ·e → ·e
+  data ė : Set where
+    _·:_  : ė → τ̇ → ė
+    X     : Nat → ė
+    ·λ    : Nat → ė → ė
+    N     : Nat → ė
+    _·+_  : ė → ė → ė
+    <||>  : ė
+    <|_|> : ė → ė
+    _∘_   : ė → ė → ė
 
   -- similarly to the complete types, the complete expressions
-  ecomplete : ·e → Set
+  ecomplete : ė → Set
   ecomplete (e1 ·: _) = ecomplete e1
   ecomplete (X _) = ⊤
   ecomplete (·λ _ e1) = ecomplete e1
@@ -38,7 +38,7 @@ module Hazelnut where
   ecomplete <| e1 |> = ecomplete e1
   ecomplete (e1 ∘ e2) = ecomplete e1 × ecomplete e2
 
-  -- variables are named with naturals in ·e, so we represent contexts
+  -- variables are named with naturals in ė, so we represent contexts
   -- simply as lists of pairs of variable names and types
   ·ctx : Set
   ·ctx = List (Nat × τ̇)
@@ -71,39 +71,39 @@ module Hazelnut where
 
   mutual
     -- synthesis
-    data _⊢_=>_ : ·ctx → ·e → τ̇ → Set where
-      SAsc : {Γ : ·ctx} {e : ·e} {t : τ̇} →
+    data _⊢_=>_ : ·ctx → ė → τ̇ → Set where
+      SAsc : {Γ : ·ctx} {e : ė} {t : τ̇} →
                 (Γ ⊢ e <= t) →
                 Γ ⊢ (e ·: t) => t
-      SVar : {Γ : ·ctx} {e : ·e} {t : τ̇} {n : Nat} →
+      SVar : {Γ : ·ctx} {e : ė} {t : τ̇} {n : Nat} →
                 ((n , t) ∈ Γ) →
                 Γ ⊢ X n => t
-      SAp  : {Γ : ·ctx} {e1 e2 : ·e} {t t2 : τ̇} →
+      SAp  : {Γ : ·ctx} {e1 e2 : ė} {t t2 : τ̇} →
                 Γ ⊢ e1 => (t2 ==> t) →
                 Γ ⊢ e2 <= t2 →
                 Γ ⊢ (e1 ∘ e2) => t
       SNum :  {Γ : ·ctx} {n : Nat} →
                 Γ ⊢ N n => num
-      SPlus : {Γ : ·ctx} {e1 e2 : ·e}  →
+      SPlus : {Γ : ·ctx} {e1 e2 : ė}  →
                 Γ ⊢ e1 <= num →
                 Γ ⊢ e2 <= num →
                 Γ ⊢ (e1 ·+ e2) => num
       SEHole : {Γ : ·ctx} → Γ ⊢ <||> => <||>
-      SFHole : {Γ : ·ctx} {e : ·e} {t : τ̇} →
+      SFHole : {Γ : ·ctx} {e : ė} {t : τ̇} →
                   Γ ⊢ e => t →
                   Γ ⊢ <| e |> => <||>
-      SApHole : {Γ : ·ctx} {e1 e2 : ·e} →
+      SApHole : {Γ : ·ctx} {e1 e2 : ė} →
                 Γ ⊢ e1 => <||> →
                 Γ ⊢ e2 <= <||> →
                 Γ ⊢ (e1 ∘ e2) => <||>
 
     -- analysis
-    data _⊢_<=_ : ·ctx → ·e → τ̇ → Set where
-      ASubsume : {Γ : ·ctx} {e : ·e} {t t' : τ̇} →
+    data _⊢_<=_ : ·ctx → ė → τ̇ → Set where
+      ASubsume : {Γ : ·ctx} {e : ė} {t t' : τ̇} →
                     (t ~ t') →
                     (Γ ⊢ e => t') →
                     (Γ ⊢ e <= t)
-      ALam : {Γ : ·ctx} {e : ·e} {t1 t2 : τ̇} {n : Nat} →
+      ALam : {Γ : ·ctx} {e : ė} {t1 t2 : τ̇} {n : Nat} →
                 -- todo: check that this implements barendregt's convention
                     (n # Γ) →
                     (Γ ,, (n , t1)) ⊢ e <= t2 →
@@ -115,14 +115,14 @@ module Hazelnut where
     _==>₂_ : τ̇ → τ̂ → τ̂
 
   data ê : Set where
-    ▹_◃   : ·e → ê -- slash t 2 and 6
+    ▹_◃   : ė → ê -- slash t 2 and 6
     _·:₁_ : ê → τ̇ → ê
-    _·:₂_ : ·e → τ̂ → ê
+    _·:₂_ : ė → τ̂ → ê
     ·λ    : Nat → ê → ê
-    _∘₁_  : ê → ·e → ê
-    _∘₂_  : ·e → ê → ê
-    _·+₁_ : ê → ·e → ê
-    _·+₂_ : ·e → ê → ê
+    _∘₁_  : ê → ė → ê
+    _∘₂_  : ė → ê → ê
+    _·+₁_ : ê → ė → ê
+    _·+₂_ : ė → ê → ê
     <|_|> : ê → ê
 
   --focus erasure for types
@@ -132,7 +132,7 @@ module Hazelnut where
   (t1 ==>₂ t2) ◆t = t1 ==> (t2 ◆t)
 
   --focus erasure for expressions
-  _◆e : ê → ·e
+  _◆e : ê → ė
   ▹ x ◃ ◆e       = x
   (e ·:₁ t) ◆e   = (e ◆e) ·: t
   (e ·:₂ t) ◆e   = e ·: (t ◆t)
