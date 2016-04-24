@@ -29,7 +29,7 @@ module Hazelnut where
 
   -- similarly to the complete types, the complete expressions
   ecomplete : ė → Set
-  ecomplete (e1 ·: _) = ecomplete e1
+  ecomplete (e1 ·: t) = ecomplete e1 × tcomplete t
   ecomplete (X _) = ⊤
   ecomplete (·λ _ e1) = ecomplete e1
   ecomplete (N x) = ⊤
@@ -178,6 +178,13 @@ module Hazelnut where
                (▹ t1 ◃ ==>₁ t2) + move nextSib +> (t1 ==>₂ ▹ t2 ◃)
     TMPrevSib : {t1 t2 : τ̇} →
                (t1 ==>₂ ▹ t2 ◃) + move prevSib +> (▹ t1 ◃ ==>₁ t2)
+    Test : {t2 tl tr : τ̇}
+           {_Cl_ : τ̂ → τ̇ → τ̂}
+           {_Cr_ : τ̇ → τ̂ → τ̂} →
+           (▹ tl ◃ Cl tr ) + move nextSib +> (tl Cr ▹ tr ◃ )
+
+
+
 
   data _⊢_=>_~_~>_=>_ : ·ctx → ê → τ̇ → action → ê → τ̇ → Set where
 
@@ -188,7 +195,7 @@ module Hazelnut where
               (Γ ⊢ e => t ~ α ~> e' => t') →
               (Γ ⊢ (e  ◆e) => t) →
               (Γ ⊢ (e' ◆e) => t')
-  actsense1 Γ e e1 t t' α D1 D2 = {!!}
+  actsense1 Γ e e1 t t' α D1 D2 = {!_==>₁_!}
 
   actsense2  : (Γ : ·ctx) (e e' : ê) (t : τ̇) (α : action) →
                 (Γ ⊢ e ~ α ~> e' ⇐ t) →

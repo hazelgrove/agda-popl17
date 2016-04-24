@@ -16,3 +16,6 @@ from talking to ed:
 
 - none of the theorems say anything about type movement. slightly odd,
   that.
+
+- abstract over constructor pairs in the expression movement stuff and
+  write it up
