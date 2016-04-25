@@ -121,7 +121,7 @@ module Hazelnut where
     ▹_◃   : ė → ê
     _·:₁_ : ê → τ̇ → ê
     _·:₂_ : ė → τ̂ → ê
-    ·λ    : Nat → ê → ê-
+    ·λ    : Nat → ê → ê
     _∘₁_  : ê → ė → ê
     _∘₂_  : ė → ê → ê
     _·+₁_ : ê → ė → ê
@@ -196,16 +196,67 @@ module Hazelnut where
 
 
   -- expression movement
+
+  -- this describes when two 2-ary constructors in zexps describe halves of
+  -- the same hexp
+  cohere : (e1 e2 : ė) (_Cl_ : ê → ė → ê) (_Cr_ : ė → ê → ê) (_C_  : ė → ė → ė) → Set
+  cohere e1 e2 _Cl_ _Cr_ _C_ = (▹ e1 ◃ Cl e2) ◆e == (e1 Cr ▹ e2 ◃) ◆e
+
+
   -- todo: want this action to be direction, since they're all move?
   data _+_+>e_ : ê → action → ê → Set where
+    -- rules for ascriptions
     EMAscFirstChild : {e : ė} {t : τ̇} →
               (▹ e ·: t ◃) + move firstChild +>e (▹ e ◃ ·:₁ t)
     EMAscParent1 : {e : ė} {t : τ̇} →
               (▹ e ◃ ·:₁ t) + move parent +>e (▹ e ·: t ◃)
     EMAscParent2 : {e : ė} {t : τ̇} →
               (e ·:₂ ▹ t ◃) + move parent +>e (▹ e ·: t ◃)
-    EMAscNextSib : {e : ė} {t : τ̇} → (▹ ◃) + move +>e (▹ ◃)
-    EMAscPrevSib : {e : ė} {t : τ̇} → (▹ ◃) + move +>e (▹ ◃)
+    EMAscNextSib : {e : ė} {t : τ̇} →
+              (▹ e ◃ ·:₁ t) + move nextSib +>e (e ·:₂ ▹ t ◃)
+    EMAscPrevSib : {e : ė} {t : τ̇} →
+              (e ·:₂ ▹ t ◃) + move prevSib +>e (▹ e ◃ ·:₁ t)
+    -- rules for lambdas
+    EMLamFirstChild : {e : ė} {x : Nat} →
+              ▹ (·λ x e) ◃ + move firstChild +>e ·λ x (▹ e ◃)
+    EMLamParent : {e : ė} {x : Nat} →
+               ·λ x (▹ e ◃) + move parent +>e ▹ (·λ x e) ◃
+    -- rules for 2-ary constructors (covers both ap and plus)
+    EM2aryFirstChild : {e1 e2 : ė}
+                    (_Cl_ : ê → ė → ê) →
+                    (_Cr_ : ė → ê → ê) →
+                    (_C_  : ė → ė → ė) →
+                    (c : cohere e1 e2 _Cl_ _Cr_ _C_) →
+               (▹ e1 C e2 ◃) + move firstChild +>e (▹ e1 ◃ Cl e2)
+    EM2aryParent1 : {e1 e2 : ė}
+                    (_Cl_ : ê → ė → ê) →
+                    (_Cr_ : ė → ê → ê) →
+                    (_C_  : ė → ė → ė) →
+                    (c : cohere e1 e2 _Cl_ _Cr_  _C_) →
+               (▹ e1 ◃ Cl e2) + move parent +>e (▹ e1 C e2 ◃)
+    EM2aryParent2 : {e1 e2 : ė}
+                    (_Cl_ : ê → ė → ê) →
+                    (_Cr_ : ė → ê → ê) →
+                    (_C_  : ė → ė → ė) →
+                    (c : cohere e1 e2 _Cl_ _Cr_  _C_) →
+               (e1 Cr ▹ e2 ◃) + move parent +>e (▹ e1 C e2 ◃)
+    EM2aryNextSib : {e1 e2 : ė}
+                    (_Cl_ : ê → ė → ê) →
+                    (_Cr_ : ė → ê → ê) →
+                    (_C_  : ė → ė → ė) →
+                    (c : cohere e1 e2 _Cl_ _Cr_  _C_) →
+               (▹ e1 ◃ Cl e2) + move nextSib +>e (e1 Cr ▹ e2 ◃)
+    EM2aryPrevSib : {e1 e2 : ė}
+                    (_Cl_ : ê → ė → ê) →
+                    (_Cr_ : ė → ê → ê) →
+                    (_C_  : ė → ė → ė) →
+                    (c : cohere e1 e2 _Cl_ _Cr_ _C_) →
+               (e1 Cr ▹ e2 ◃) + move prevSib +>e (▹ e1 ◃ Cl e2)
+    -- rules for non-empty holes
+    EMNEHoleFirstChild : {e : ė} →
+               (▹ <| e |> ◃) + move firstChild +>e <| ▹ e ◃ |>
+    EMNEHoleParent : {e : ė} →
+                <| ▹ e ◃ |> + move parent +>e (▹ <| e |> ◃)
 
   data _⊢_=>_~_~>_=>_ : ·ctx → ê → τ̇ → action → ê → τ̇ → Set where
 

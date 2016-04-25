@@ -62,3 +62,13 @@ from talking to ed:
 
    cohere : (Cl == zap1 and Cr == zap2) or (Cl == zplus1 and Cr == zplus2)
    	  (just list out the pairs)
+
+
+  -- not listed in pdf
+  iter : List action → ê → ê
+  iter [] e = e
+  iter (α :: l) e = iter l e
+
+  reachable : (e1 e2 : ê) (same : (e1 ◆e) == (e2 ◆e)) →
+               Σ[ αs ∈ List action ] (iter αs e1 == e2)
+  reachable = {!!}
