@@ -130,7 +130,7 @@ module Hazelnut where
 
   --focus erasure for types
   _◆t : τ̂ → τ̇
-  ▹ t ◃ ◆t = t
+  ▹ t ◃ ◆t =  t
   (t1 ==>₁ t2) ◆t = (t1 ◆t) ==> t2
   (t1 ==>₂ t2) ◆t = t1 ==> (t2 ◆t)
 
@@ -203,11 +203,13 @@ module Hazelnut where
   cohere e1 e2 _Cl_ _Cr_ _C_ =
          ((▹ e1 ◃ Cl e2) ◆e == (e1 C e2)) ×
          ((e1 Cr ▹ e2 ◃) ◆e == (e1 C e2))
-
            -- todo: this is kind of wrong; that e1 and e2 is kind of a red
-           -- herring.
+           -- herring. maybe Matched, below, is better?
 
 
+  data Matched : (ê → ė → ê) →  (ė → ê → ê) → (ė → ė → ė) → Set where
+    Match+ : Matched _·+₁_ _·+₂_ _·+_
+    Match∘ : Matched _∘₁_  _∘₂_  _∘_
 
   -- todo: want this action to be direction, since they're all move?
   data _+_+>e_ : ê → action → ê → Set where
@@ -232,7 +234,8 @@ module Hazelnut where
                     (_Cl_ : ê → ė → ê) →
                     (_Cr_ : ė → ê → ê) →
                     (_C_  : ė → ė → ė) →
-                    (c : cohere e1 e2 _Cl_ _Cr_ _C_) →
+                    (m : Matched _Cl_ _Cr_ _C_) → -- todo: which one of these?
+                    -- (c : cohere e1 e2 _Cl_ _Cr_ _C_) →
                (▹ e1 C e2 ◃) + move firstChild +>e (▹ e1 ◃ Cl e2)
     EM2aryParent1 : {e1 e2 : ė}
                     (_Cl_ : ê → ė → ê) →
@@ -264,28 +267,51 @@ module Hazelnut where
     EMNEHoleParent : {e : ė} →
                 <| ▹ e ◃ |> + move parent +>e (▹ <| e |> ◃)
 
+  mutual
   -- synthetic action expressions
-  data _⊢_=>_~_~>_=>_ : ·ctx → ê → τ̇ → action → ê → τ̇ → Set where
-    SAExpMove : {δ : direction} {e e' : ê} {Γ : ·ctx} {t : τ̇} →
-              (e + move δ +>e e') →
-              Γ ⊢ e => t ~ move δ ~> e' => t
-    SAExpDel : {Γ : ·ctx} {e : ė} {t : τ̇} →
-              Γ ⊢ ▹ e ◃ => t ~ del ~> ▹ <||> ◃ => <||>
-    SAConAsc : {Γ : ·ctx} {e : ė} {t : τ̇} →
-              Γ ⊢ ▹ e ◃ => t ~ construct asc ~> (e ·:₂ ▹ t ◃ ) => t
-    SAConVar : {Γ : ·ctx} {x : Nat} {t : τ̇} →
-              (p : (x , t) ∈ Γ) → -- todo: is this right?
-              Γ ⊢ ▹ <||> ◃ => <||> ~ construct (var x) ~> ▹ X x ◃ => t
-    -- SAConLam :
+    data _⊢_=>_~_~>_=>_ : ·ctx → ê → τ̇ → action → ê → τ̇ → Set where
+      SAMove : {δ : direction} {e e' : ê} {Γ : ·ctx} {t : τ̇} →
+                (e + move δ +>e e') →
+                Γ ⊢ e => t ~ move δ ~> e' => t
+      SADel : {Γ : ·ctx} {e : ė} {t : τ̇} →
+                Γ ⊢ ▹ e ◃ => t ~ del ~> ▹ <||> ◃ => <||>
+      SAConAsc : {Γ : ·ctx} {e : ė} {t : τ̇} →
+                Γ ⊢ ▹ e ◃ => t ~ construct asc ~> (e ·:₂ ▹ t ◃ ) => t
+      SAConVar : {Γ : ·ctx} {x : Nat} {t : τ̇} →
+                (p : (x , t) ∈ Γ) → -- todo: is this right?
+                Γ ⊢ ▹ <||> ◃ => <||> ~ construct (var x) ~> ▹ X x ◃ => t
+      -- SAConLam : {Γ : ·ctx} {x : Nat} →
+      --          -- todo: add a constraint here that x # Γ?
+      --          Γ ⊢ ▹ <||> ◃ => <||> ~ construct (lam x) ~> (·λ x <||>) => <||>
 
+    -- analytic action expressions
+    data _⊢_~_~>_⇐_ : ·ctx → ê → action → ê → τ̇ → Set where
+      AASubsume : {Γ : ·ctx} {e e' : ê} {t t' t'' : τ̇} {α : action} →
+                  (Γ ⊢ (e ◆e) => t') →
+                  (Γ ⊢ e => t' ~ α ~> e' => t'') →
+                  (t ~ t'') →
+                  Γ ⊢ e ~ α ~> e' ⇐ t
+      AAMove : {e e' : ê} {δ : direction} {Γ : ·ctx} {t : τ̇} →
+                  (e + move δ +>e e') →
+                  Γ ⊢ e ~ move δ ~> e' ⇐ t
+      AADel : {e : ė} {Γ : ·ctx} {t : τ̇} →
+                 Γ ⊢ ▹ e ◃ ~ del ~> ▹ <||> ◃ ⇐ t
+      AAConAsc : {Γ : ·ctx} {e : ė} {t : τ̇} →
+                 Γ ⊢ ▹ e ◃ ~ construct asc ~> (e ·:₂ ▹ t ◃) ⇐ t
+      AAConVar : {Γ : ·ctx} {e : ė} {t t' : τ̇} {x : Nat} →
+                 (t ~̸ t') →           -- todo: i don't understand this
+                 (p : (x , t') ∈ Γ) → -- todo: is this right?
+                 Γ ⊢ ▹ <||> ◃ ~ construct (var x) ~> <| ▹ X x ◃ |> ⇐ t
+      AAConLam1 : {Γ : ·ctx} {x : Nat} {t1 t2 : τ̇} →
+                  Γ ⊢ ▹ <||> ◃ ~ construct (lam x) ~> ·λ x (▹ <||> ◃) ⇐ (t1 ==> t2)
+      -- AAConLam2 :
+      -- AAConNumlit :
+      AAFinish : {Γ : ·ctx} {e : ė} {t : τ̇} →
+                 (Γ ⊢ e <= t) →
+                 Γ ⊢ ▹ <| e |> ◃ ~ finish ~> ▹ e ◃ ⇐ t
+      -- AAZipLam
 
-
-
-
-  -- analytic action expressions
-  data _⊢_~_~>_⇐_ : ·ctx → ê → action → ê → τ̇ → Set where
-    -- AA
-  -- theorem 1
+  -- theorem 1: action sensibility
   actsense1 : (Γ : ·ctx) (e e' : ê) (t t' : τ̇) (α : action) →
               (Γ ⊢ e => t ~ α ~> e' => t') →
               (Γ ⊢ (e  ◆e) => t) →
