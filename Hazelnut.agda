@@ -11,8 +11,8 @@ module Hazelnut where
 
   -- those types without holes anywhere
   tcomplete : τ̇ → Set
-  tcomplete num = ⊤
-  tcomplete <||> = ⊥
+  tcomplete num         = ⊤
+  tcomplete <||>        = ⊥
   tcomplete (t1 ==> t2) = (tcomplete t1) × (tcomplete t2)
 
   -- expressions, prefixed with a · to distinguish name clashes with agda
@@ -29,14 +29,14 @@ module Hazelnut where
 
   -- similarly to the complete types, the complete expressions
   ecomplete : ė → Set
-  ecomplete (e1 ·: t) = ecomplete e1 × tcomplete t
-  ecomplete (X _) = ⊤
-  ecomplete (·λ _ e1) = ecomplete e1
-  ecomplete (N x) = ⊤
+  ecomplete (e1 ·: t)  = ecomplete e1 × tcomplete t
+  ecomplete (X _)      = ⊤
+  ecomplete (·λ _ e1)  = ecomplete e1
+  ecomplete (N x)      = ⊤
   ecomplete (e1 ·+ e2) = ecomplete e1 × ecomplete e2
-  ecomplete <||> = ⊥
-  ecomplete <| e1 |> = ecomplete e1
-  ecomplete (e1 ∘ e2) = ecomplete e1 × ecomplete e2
+  ecomplete <||>       = ⊥
+  ecomplete <| e1 |>   = ⊥
+  ecomplete (e1 ∘ e2)  = ecomplete e1 × ecomplete e2
 
   -- variables are named with naturals in ė, so we represent contexts
   -- simply as lists of pairs of variable names and types
@@ -104,21 +104,24 @@ module Hazelnut where
                     (Γ ⊢ e => t') →
                     (Γ ⊢ e <= t)
       ALam : {Γ : ·ctx} {e : ė} {t1 t2 : τ̇} {n : Nat} →
-                -- todo: check that this implements barendregt's convention
+                -- todo: double check that this correctly implements
+                -- barendregt's convention
                     (n # Γ) →
                     (Γ ,, (n , t1)) ⊢ e <= t2 →
                     Γ ⊢ (·λ n e) <= (t1 ==> t2)
 
+  -- the zippered form of types
   data τ̂ : Set where
-    ▹_◃  : τ̇ → τ̂ -- slash t 2 and 6
+    ▹_◃  : τ̇ → τ̂
     _==>₁_ : τ̂ → τ̇ → τ̂
     _==>₂_ : τ̇ → τ̂ → τ̂
 
+  -- the zippered form of expressions
   data ê : Set where
-    ▹_◃   : ė → ê -- slash t 2 and 6
+    ▹_◃   : ė → ê
     _·:₁_ : ê → τ̇ → ê
     _·:₂_ : ė → τ̂ → ê
-    ·λ    : Nat → ê → ê
+    ·λ    : Nat → ê → ê-
     _∘₁_  : ê → ė → ê
     _∘₂_  : ė → ê → ê
     _·+₁_ : ê → ė → ê
@@ -135,14 +138,15 @@ module Hazelnut where
   _◆e : ê → ė
   ▹ x ◃ ◆e       = x
   (e ·:₁ t) ◆e   = (e ◆e) ·: t
-  (e ·:₂ t) ◆e   = e ·: (t ◆t)
+  (e ·:₂ t) ◆e   = e      ·: (t ◆t)
   ·λ x e ◆e      = ·λ x (e ◆e)
   (e1 ∘₁ e2) ◆e  = (e1 ◆e) ∘ e2
-  (e1 ∘₂ e2) ◆e  = e1 ∘ (e2 ◆e)
+  (e1 ∘₂ e2) ◆e  = e1      ∘ (e2 ◆e)
   (e1 ·+₁ e2) ◆e = (e1 ◆e) ·+ e2
-  (e1 ·+₂ e2) ◆e = e1 ·+ (e2 ◆e)
+  (e1 ·+₂ e2) ◆e = e1      ·+ (e2 ◆e)
   <| e |> ◆e     = <| e ◆e |>
 
+  -- the three grammars that define actions
   data direction : Set where
     firstChild : direction
     parent : direction
@@ -150,15 +154,15 @@ module Hazelnut where
     prevSib : direction
 
   data shape : Set where
-    arr : shape
-    num : shape
-    asc : shape
-    var : Nat → shape
-    lam : Nat → shape
-    ap  : shape
-    arg : shape
+    arrow : shape
+    num   : shape
+    asc   : shape
+    var   : Nat → shape
+    lam   : Nat → shape
+    ap    : shape
+    arg   : shape
     numlit : Nat → shape
-    plus : shape
+    plus  : shape
 
   data action : Set where
     move : direction → action
@@ -178,13 +182,30 @@ module Hazelnut where
                (▹ t1 ◃ ==>₁ t2) + move nextSib +> (t1 ==>₂ ▹ t2 ◃)
     TMPrevSib : {t1 t2 : τ̇} →
                (t1 ==>₂ ▹ t2 ◃) + move prevSib +> (▹ t1 ◃ ==>₁ t2)
-    Test : {t2 tl tr : τ̇}
-           {_Cl_ : τ̂ → τ̇ → τ̂}
-           {_Cr_ : τ̇ → τ̂ → τ̂} →
-           (▹ tl ◃ Cl tr ) + move nextSib +> (tl Cr ▹ tr ◃ )
+    TMDel     : {t : τ̇} →
+                (▹ t ◃) + del +> (▹ <||> ◃)
+    TMConArr  : {t : τ̇} →
+                (▹ t ◃) + construct arrow +> (t ==>₂ ▹ <||> ◃)
+    TMConNum  : (▹ <||> ◃) + construct num +> (▹ num ◃)
+    TMZip1 : {t1 t1' : τ̂} {t2 : τ̇} {α : action} →
+                (t1 + α +> t1') →
+                ((t1 ==>₁ t2) + α +> (t1' ==>₁ t2))
+    TMZip2 : {t2 t2' : τ̂} {t1 : τ̇} {α : action} →
+                (t2 + α +> t2') →
+                ((t1 ==>₂ t2) + α +> (t1 ==>₂ t2'))
 
 
-
+  -- expression movement
+  -- todo: want this action to be direction, since they're all move?
+  data _+_+>e_ : ê → action → ê → Set where
+    EMAscFirstChild : {e : ė} {t : τ̇} →
+              (▹ e ·: t ◃) + move firstChild +>e (▹ e ◃ ·:₁ t)
+    EMAscParent1 : {e : ė} {t : τ̇} →
+              (▹ e ◃ ·:₁ t) + move parent +>e (▹ e ·: t ◃)
+    EMAscParent2 : {e : ė} {t : τ̇} →
+              (e ·:₂ ▹ t ◃) + move parent +>e (▹ e ·: t ◃)
+    EMAscNextSib : {e : ė} {t : τ̇} → (▹ ◃) + move +>e (▹ ◃)
+    EMAscPrevSib : {e : ė} {t : τ̇} → (▹ ◃) + move +>e (▹ ◃)
 
   data _⊢_=>_~_~>_=>_ : ·ctx → ê → τ̇ → action → ê → τ̇ → Set where
 
@@ -195,7 +216,7 @@ module Hazelnut where
               (Γ ⊢ e => t ~ α ~> e' => t') →
               (Γ ⊢ (e  ◆e) => t) →
               (Γ ⊢ (e' ◆e) => t')
-  actsense1 Γ e e1 t t' α D1 D2 = {!_==>₁_!}
+  actsense1 Γ e e1 t t' α D1 D2 = {!!}
 
   actsense2  : (Γ : ·ctx) (e e' : ê) (t : τ̇) (α : action) →
                 (Γ ⊢ e ~ α ~> e' ⇐ t) →

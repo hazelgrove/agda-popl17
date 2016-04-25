@@ -23,6 +23,6 @@ those special characters, in roughly the order that they appear in
  - "τ̂" is `\tau \^`
  - "ê" is `e \^`
 
- - "▹" is ``
- - "◃" is ``
- - "◆" is ``
+ - "▹" is `\t 2`
+ - "◃" is `\t 6`
+ - "◆" is `\di`
