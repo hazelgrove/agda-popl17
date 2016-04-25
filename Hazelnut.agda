@@ -199,8 +199,14 @@ module Hazelnut where
 
   -- this describes when two 2-ary constructors in zexps describe halves of
   -- the same hexp
-  cohere : (e1 e2 : ė) (_Cl_ : ê → ė → ê) (_Cr_ : ė → ê → ê) (_C_  : ė → ė → ė) → Set
-  cohere e1 e2 _Cl_ _Cr_ _C_ = (▹ e1 ◃ Cl e2) ◆e == (e1 Cr ▹ e2 ◃) ◆e
+  cohere : (e1 e2 : ė) → (ê → ė → ê) → (ė → ê → ê) → (ė → ė → ė) → Set
+  cohere e1 e2 _Cl_ _Cr_ _C_ =
+         ((▹ e1 ◃ Cl e2) ◆e == (e1 C e2)) ×
+         ((e1 Cr ▹ e2 ◃) ◆e == (e1 C e2))
+
+           -- todo: this is kind of wrong; that e1 and e2 is kind of a red
+           -- herring.
+
 
 
   -- todo: want this action to be direction, since they're all move?
@@ -221,7 +227,7 @@ module Hazelnut where
               ▹ (·λ x e) ◃ + move firstChild +>e ·λ x (▹ e ◃)
     EMLamParent : {e : ė} {x : Nat} →
                ·λ x (▹ e ◃) + move parent +>e ▹ (·λ x e) ◃
-    -- rules for 2-ary constructors (covers both ap and plus)
+    -- rules for 2-ary constructors (covers both ap and plus, scales to others)
     EM2aryFirstChild : {e1 e2 : ė}
                     (_Cl_ : ê → ė → ê) →
                     (_Cr_ : ė → ê → ê) →
@@ -258,10 +264,27 @@ module Hazelnut where
     EMNEHoleParent : {e : ė} →
                 <| ▹ e ◃ |> + move parent +>e (▹ <| e |> ◃)
 
+  -- synthetic action expressions
   data _⊢_=>_~_~>_=>_ : ·ctx → ê → τ̇ → action → ê → τ̇ → Set where
+    SAExpMove : {δ : direction} {e e' : ê} {Γ : ·ctx} {t : τ̇} →
+              (e + move δ +>e e') →
+              Γ ⊢ e => t ~ move δ ~> e' => t
+    SAExpDel : {Γ : ·ctx} {e : ė} {t : τ̇} →
+              Γ ⊢ ▹ e ◃ => t ~ del ~> ▹ <||> ◃ => <||>
+    SAConAsc : {Γ : ·ctx} {e : ė} {t : τ̇} →
+              Γ ⊢ ▹ e ◃ => t ~ construct asc ~> (e ·:₂ ▹ t ◃ ) => t
+    SAConVar : {Γ : ·ctx} {x : Nat} {t : τ̇} →
+              (p : (x , t) ∈ Γ) → -- todo: is this right?
+              Γ ⊢ ▹ <||> ◃ => <||> ~ construct (var x) ~> ▹ X x ◃ => t
+    -- SAConLam :
 
+
+
+
+
+  -- analytic action expressions
   data _⊢_~_~>_⇐_ : ·ctx → ê → action → ê → τ̇ → Set where
-
+    -- AA
   -- theorem 1
   actsense1 : (Γ : ·ctx) (e e' : ê) (t t' : τ̇) (α : action) →
               (Γ ⊢ e => t ~ α ~> e' => t') →
