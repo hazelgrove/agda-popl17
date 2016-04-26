@@ -307,7 +307,8 @@ module Hazelnut where
                 Γ ⊢ ▹ e ◃ => t ~ construct plus ~> ▹ {!!} ◃ => num
 
     -- analytic action expressions
-    data _⊢_~_~>_⇐_ : ·ctx → ê → action → ê → τ̇ → Set where
+    data _⊢_~_~>_⇐_ : (Γ : ·ctx) → (e : ê) → (α : action) →
+                      (e' : ê) → (t : τ̇) → Set where
       AASubsume : {Γ : ·ctx} {e e' : ê} {t t' t'' : τ̇} {α : action} →
                   (Γ ⊢ (e ◆e) => t') →
                   (Γ ⊢ e => t' ~ α ~> e' => t'') →
