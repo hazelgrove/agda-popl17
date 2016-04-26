@@ -72,3 +72,7 @@ from talking to ed:
   reachable : (e1 e2 : ê) (same : (e1 ◆e) == (e2 ◆e)) →
                Σ[ αs ∈ List action ] (iter αs e1 == e2)
   reachable = {!!}
+
+
+---> talk to ed about reflection
+---> talk to frank about frank things

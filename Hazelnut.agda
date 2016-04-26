@@ -50,6 +50,13 @@ module Hazelnut where
   ... | Inl <> = ⊥
   ... | Inr <> = x # Γ
 
+  -- remove possibly multiple copies of a variable from a context
+  _/_ : ·ctx → Nat → ·ctx
+  [] / x = []
+  ((y , t) :: Γ) / x with nateq x y
+  ... | Inl <> = Γ / x
+  ... | Inr <> = (y , t) :: (Γ / x)
+
   -- this is syntax for cons to make the rules look nicer below
   _,,_ : {A : Set} → List A → A → List A
   L ,, x = x :: L
@@ -206,7 +213,6 @@ module Hazelnut where
            -- todo: this is kind of wrong; that e1 and e2 is kind of a red
            -- herring. maybe Matched, below, is better?
 
-
   data Matched : (ê → ė → ê) →  (ė → ê → ê) → (ė → ė → ė) → Set where
     Match+ : Matched _·+₁_ _·+₂_ _·+_
     Match∘ : Matched _∘₁_  _∘₂_  _∘_
@@ -303,13 +309,22 @@ module Hazelnut where
                  (p : (x , t') ∈ Γ) → -- todo: is this right?
                  Γ ⊢ ▹ <||> ◃ ~ construct (var x) ~> <| ▹ X x ◃ |> ⇐ t
       AAConLam1 : {Γ : ·ctx} {x : Nat} {t1 t2 : τ̇} →
-                  Γ ⊢ ▹ <||> ◃ ~ construct (lam x) ~> ·λ x (▹ <||> ◃) ⇐ (t1 ==> t2)
-      -- AAConLam2 :
-      -- AAConNumlit :
+                  Γ ⊢ ▹ <||> ◃ ~ construct (lam x) ~>
+                      ·λ x (▹ <||> ◃) ⇐ (t1 ==> t2)
+      AAConLam2 : {Γ : ·ctx} {x : Nat} {t : τ̇} →
+                  (t ~̸ (<||> ==> <||>)) →
+                  Γ ⊢ ▹ <||> ◃ ~ construct (lam x) ~>
+                      <| ·λ x <||> ·:₂ (▹ <||> ◃ ==>₁ <||>) |> ⇐ t
+      AAConNumlit : {Γ : ·ctx} {t : τ̇} {n : Nat} →
+                    (t ~̸ num) →
+                    Γ ⊢ ▹ <||> ◃ ~ construct (numlit n) ~> <| ▹ (N n) ◃ |> ⇐ t
       AAFinish : {Γ : ·ctx} {e : ė} {t : τ̇} →
                  (Γ ⊢ e <= t) →
                  Γ ⊢ ▹ <| e |> ◃ ~ finish ~> ▹ e ◃ ⇐ t
-      -- AAZipLam
+      AAZipLam : {Γ : ·ctx} {x : Nat} {t1 t2 : τ̇} {e e' : ê} {α : action} →
+                 ((x , t1) ∈ Γ) → -- todo: check this move
+                 (Γ ⊢ e ~ α ~> e' ⇐ t2) →
+                 (Γ / x) ⊢ (·λ x e) ~ α ~> (·λ x e') ⇐ (t1 ==> t2)
 
   -- theorem 1: action sensibility
   actsense1 : (Γ : ·ctx) (e e' : ê) (t t' : τ̇) (α : action) →
