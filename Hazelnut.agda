@@ -302,9 +302,59 @@ module Hazelnut where
                 Γ ⊢ ▹ e ◃ => t ~ construct arg ~> ▹ <||> ◃ ∘₁ e => <||>
       SAConNumlit : {Γ : ·ctx} {e : ė} {n : Nat} →
                 Γ ⊢ ▹ <||> ◃ => <||> ~ construct (numlit n) ~> ▹ N n ◃ => num
+      -- todo: these ought to look like ap, no? why are there two here and
+      -- three there? probably because of the induced type
+      -- structure. otherwise i would try to abstract this..
       SAConPlus1 : {Γ : ·ctx} {e : ė} {t : τ̇} →
                 (t ~ num) →
-                Γ ⊢ ▹ e ◃ => t ~ construct plus ~> ▹ {!!} ◃ => num
+                Γ ⊢ ▹ e ◃ => t ~ construct plus ~> e ·+₂ ▹ <||> ◃  => num
+      SAConPlus2 : {Γ : ·ctx} {e : ė} {t : τ̇} →
+                (t ~̸ num) →
+                Γ ⊢ ▹ e ◃ => t ~ construct plus ~> <| e |> ·+₂ ▹ <||> ◃  => num
+      SAFinish : {Γ : ·ctx} {e : ė} {t : τ̇} →
+                 (Γ ⊢ e => t) →
+                 Γ ⊢ ▹ <| e |> ◃ => <||> ~ finish ~> ▹ e ◃ => t
+      SAZipAsc1 : {Γ : ·ctx} {e e' : ê} {α : action} {t : τ̇} →
+                  (Γ ⊢ e ~ α ~> e' ⇐ t) →
+                  Γ ⊢ (e ·:₁ t) => t ~ α ~> (e' ·:₁ t) => t
+      SAZipAsc2 : {Γ : ·ctx} {e : ė} {α : action} {t t' : τ̂} →
+                  (t + α +> t') →
+                  (Γ ⊢ e <= (t' ◆t)) → -- todo: this rule seems asymmetrical
+                  Γ ⊢ (e ·:₂ t) => (t ◆t) ~ α ~> (e ·:₂ t') => (t' ◆t)
+      SAZipAp1 : {Γ : ·ctx} {t1 t2 t3 t4 : τ̇} {α : action} {eh eh' : ê} {e : ė} →
+                 (Γ ⊢ (eh ◆e) => t2) →
+                 (Γ ⊢ eh => t2 ~ α ~> eh' => (t3 ==> t4)) →
+                 (Γ ⊢ e <= t3) →
+                 Γ ⊢ (eh ∘₁ e) => t1 ~ α ~> (eh' ∘₁ e) => t4
+      SAZipAp2 : {Γ : ·ctx} {t1 t2 : τ̇} {α : action} {eh eh' : ê} {e : ė} →
+                 (Γ ⊢ (eh ◆e) => t2) →
+                 (Γ ⊢ eh => t2 ~ α ~> eh' => <||>) →
+                 (Γ ⊢ e <= <||>) →
+                 Γ ⊢ (eh ∘₁ e) => t1 ~ α ~> (eh' ∘₁ e) => <||> -- todo: differs from text
+      SAZipAp3 : {Γ : ·ctx} {t2 t : τ̇} {e : ė} {eh eh' : ê} {α : action} →
+                 (Γ ⊢ e => (t2 ==> t)) →
+                 (Γ ⊢ eh ~ α ~> eh' ⇐ t2) →
+                 Γ ⊢ (e ∘₂ eh) => t ~ α ~> (e ∘₂ eh') => t
+      SAZipAp4 : {Γ : ·ctx} {e : ė} {eh eh' : ê} {α : action} →
+                 (Γ ⊢ e => <||>) →
+                 (Γ ⊢ eh ~ α ~> eh' ⇐ <||>) →
+                 Γ ⊢ (e ∘₂ eh) => <||> ~ α ~> (e ∘₂ eh') => <||>
+      SAZipPlus1 : {Γ : ·ctx} {e : ė} {eh eh' : ê} {α : action} →
+                   (Γ ⊢ eh ~ α ~> eh' ⇐ num) →
+                   Γ ⊢ (eh ·+₁ e) => num ~ α ~> (eh' ·+₁ e) => num
+      SAZipPlus2 : {Γ : ·ctx} {e : ė} {eh eh' : ê} {α : action} →
+                   (Γ ⊢ eh ~ α ~> eh' ⇐ num) →
+                   Γ ⊢ (e ·+₂ eh) => num ~ α ~> (e ·+₂ eh') => num
+      SAZipHole1 : {Γ : ·ctx} {e e' : ê} {t t' : τ̇} {α : action} →
+                   (Γ ⊢ (e ◆e) => t) →
+                   (Γ ⊢ e => t ~ α ~> e' => t') →
+                   ((e' == ▹ <||> ◃) → ⊥) → -- todo: *no* idea if this is right. what if it's an η-expanded form?
+                   Γ ⊢ <| e |> => <||> ~ α ~>  <| e' |> => <||>
+      SAZipHole2 : {Γ : ·ctx} {e : ê} {t : τ̇} {α : action} →
+                   (Γ ⊢ (e ◆e) => t) →
+                   (Γ ⊢ e => t ~ α ~> ▹ <||> ◃ => <||>) →
+                   Γ ⊢ <| e |> => <||> ~ α ~> ▹ <||> ◃ => <||>
+
 
     -- analytic action expressions
     data _⊢_~_~>_⇐_ : (Γ : ·ctx) → (e : ê) → (α : action) →
