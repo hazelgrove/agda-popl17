@@ -62,7 +62,7 @@ module Hazelnut where
   L ,, x = x :: L
 
   -- type compatability.
-  data _~_ : τ̇ → τ̇ → Set where
+  data _~_ : (t1 : τ̇) → (t2 : τ̇) → Set where
     TCNum : num ~ num
     TCHole : {t : τ̇} → t ~ <||>
     TCArr : {t1 t2 t1' t2' : τ̇} →
@@ -78,7 +78,7 @@ module Hazelnut where
 
   mutual
     -- synthesis
-    data _⊢_=>_ : ·ctx → ė → τ̇ → Set where
+    data _⊢_=>_ : (Γ : ·ctx) → (e : ė) → (t : τ̇) → Set where
       SAsc : {Γ : ·ctx} {e : ė} {t : τ̇} →
                 (Γ ⊢ e <= t) →
                 Γ ⊢ (e ·: t) => t
@@ -105,7 +105,7 @@ module Hazelnut where
                 Γ ⊢ (e1 ∘ e2) => <||>
 
     -- analysis
-    data _⊢_<=_ : ·ctx → ė → τ̇ → Set where
+    data _⊢_<=_ : (Γ : ·ctx) → (e : ė) → (t : τ̇) → Set where
       ASubsume : {Γ : ·ctx} {e : ė} {t t' : τ̇} →
                     (t ~ t') →
                     (Γ ⊢ e => t') →
@@ -178,7 +178,7 @@ module Hazelnut where
     finish : action
 
   -- type movement
-  data _+_+>_ : τ̂ → action → τ̂ → Set where
+  data _+_+>_ : (t : τ̂) → (α : action) → (t' : τ̂) → Set where
     TMFirstChild : {t1 t2 : τ̇} →
                ▹ t1 ==> t2 ◃ + move firstChild +> (▹ t1 ◃ ==>₁ t2)
     TMParent1 : {t1 t2 : τ̇} →
@@ -213,12 +213,12 @@ module Hazelnut where
            -- todo: this is kind of wrong; that e1 and e2 is kind of a red
            -- herring. maybe Matched, below, is better?
 
-  data Matched : (ê → ė → ê) →  (ė → ê → ê) → (ė → ė → ė) → Set where
+  data Matched : (CL : ê → ė → ê) → (CR : ė → ê → ê) → (C : ė → ė → ė) → Set where
     Match+ : Matched _·+₁_ _·+₂_ _·+_
     Match∘ : Matched _∘₁_  _∘₂_  _∘_
 
   -- todo: want this action to be direction, since they're all move?
-  data _+_+>e_ : ê → action → ê → Set where
+  data _+_+>e_ : (e : ê) → (α : action) → (e' : ê) → Set where
     -- rules for ascriptions
     EMAscFirstChild : {e : ė} {t : τ̇} →
               (▹ e ·: t ◃) + move firstChild +>e (▹ e ◃ ·:₁ t)
@@ -275,7 +275,8 @@ module Hazelnut where
 
   mutual
   -- synthetic action expressions
-    data _⊢_=>_~_~>_=>_ : ·ctx → ê → τ̇ → action → ê → τ̇ → Set where
+    data _⊢_=>_~_~>_=>_ : (Γ : ·ctx) → (e1 : ê) → (t1 : τ̇)
+                        → (α : action) → (e2 : ê) → (t2 : τ̇) → Set where
       SAMove : {δ : direction} {e e' : ê} {Γ : ·ctx} {t : τ̇} →
                 (e + move δ +>e e') →
                 Γ ⊢ e => t ~ move δ ~> e' => t
@@ -286,9 +287,24 @@ module Hazelnut where
       SAConVar : {Γ : ·ctx} {x : Nat} {t : τ̇} →
                 (p : (x , t) ∈ Γ) → -- todo: is this right?
                 Γ ⊢ ▹ <||> ◃ => <||> ~ construct (var x) ~> ▹ X x ◃ => t
-      -- SAConLam : {Γ : ·ctx} {x : Nat} →
-      --          -- todo: add a constraint here that x # Γ?
-      --          Γ ⊢ ▹ <||> ◃ => <||> ~ construct (lam x) ~> (·λ x <||>) => <||>
+      SAConLam : {Γ : ·ctx} {x : Nat} →
+               -- todo: add a constraint here that x # Γ?
+                Γ ⊢ ▹ <||> ◃ => <||> ~ construct (lam x) ~>
+                   ((·λ x <||>) ·:₂ (▹ <||> ◃ ==>₁ <||>)) => (<||> ==> <||>)
+      SAConAp1 : {Γ : ·ctx} {t1 t2 : τ̇} {e : ė} →
+                Γ ⊢ ▹ e ◃ => (t1 ==> t2) ~ construct ap ~> e ∘₂ ▹ <||> ◃ => t2
+      SAConAp2 : {Γ : ·ctx} {e : ė} →
+                Γ ⊢ ▹ e ◃ => <||> ~ construct ap ~>  e ∘₂ ▹ <||> ◃ => <||>
+      SAConAp3 : {Γ : ·ctx} {t : τ̇} {e : ė} →
+                (t ~̸ (<||> ==> <||>)) →
+                Γ ⊢ ▹ e ◃ => t ~ construct ap ~> <| e |> ∘₂ ▹ <||> ◃ => <||>
+      SAConArg : {Γ : ·ctx} {e : ė} {t : τ̇} →
+                Γ ⊢ ▹ e ◃ => t ~ construct arg ~> ▹ <||> ◃ ∘₁ e => <||>
+      SAConNumlit : {Γ : ·ctx} {e : ė} {n : Nat} →
+                Γ ⊢ ▹ <||> ◃ => <||> ~ construct (numlit n) ~> ▹ N n ◃ => num
+      SAConPlus1 : {Γ : ·ctx} {e : ė} {t : τ̇} →
+                (t ~ num) →
+                Γ ⊢ ▹ e ◃ => t ~ construct plus ~> ▹ {!!} ◃ => num
 
     -- analytic action expressions
     data _⊢_~_~>_⇐_ : ·ctx → ê → action → ê → τ̇ → Set where
