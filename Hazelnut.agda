@@ -240,13 +240,6 @@ module Hazelnut where
 
   -- this describes when two 2-ary constructors in zexps describe halves of
   -- the same hexp
-  cohere : (e1 e2 : ė) → (ê → ė → ê) → (ė → ê → ê) → (ė → ė → ė) → Set
-  cohere e1 e2 _Cl_ _Cr_ _C_ =
-         ((▹ e1 ◃ Cl e2) ◆e == (e1 C e2)) ×
-         ((e1 Cr ▹ e2 ◃) ◆e == (e1 C e2))
-           -- todo: this is kind of wrong; that e1 and e2 is kind of a red
-           -- herring. maybe Matched, below, is better?
-
   data Matched : (CL : ê → ė → ê) → (CR : ė → ê → ê) → (C : ė → ė → ė) → Set where
     Match+ : Matched _·+₁_ _·+₂_ _·+_
     Match∘ : Matched _∘₁_  _∘₂_  _∘_
@@ -274,32 +267,31 @@ module Hazelnut where
                     (_Cl_ : ê → ė → ê) →
                     (_Cr_ : ė → ê → ê) →
                     (_C_  : ė → ė → ė) →
-                    (m : Matched _Cl_ _Cr_ _C_) → -- todo: which one of these?
-                    -- (c : cohere e1 e2 _Cl_ _Cr_ _C_) →
+                    (m : Matched _Cl_ _Cr_ _C_) →
                (▹ e1 C e2 ◃) + move firstChild +>e (▹ e1 ◃ Cl e2)
     EM2aryParent1 : {e1 e2 : ė}
                     (_Cl_ : ê → ė → ê) →
                     (_Cr_ : ė → ê → ê) →
                     (_C_  : ė → ė → ė) →
-                    (c : cohere e1 e2 _Cl_ _Cr_  _C_) →
+                    (m : Matched _Cl_ _Cr_ _C_) →
                (▹ e1 ◃ Cl e2) + move parent +>e (▹ e1 C e2 ◃)
     EM2aryParent2 : {e1 e2 : ė}
                     (_Cl_ : ê → ė → ê) →
                     (_Cr_ : ė → ê → ê) →
                     (_C_  : ė → ė → ė) →
-                    (c : cohere e1 e2 _Cl_ _Cr_  _C_) →
+                    (m : Matched _Cl_ _Cr_ _C_) →
                (e1 Cr ▹ e2 ◃) + move parent +>e (▹ e1 C e2 ◃)
     EM2aryNextSib : {e1 e2 : ė}
                     (_Cl_ : ê → ė → ê) →
                     (_Cr_ : ė → ê → ê) →
                     (_C_  : ė → ė → ė) →
-                    (c : cohere e1 e2 _Cl_ _Cr_  _C_) →
+                    (m : Matched _Cl_ _Cr_ _C_) →
                (▹ e1 ◃ Cl e2) + move nextSib +>e (e1 Cr ▹ e2 ◃)
     EM2aryPrevSib : {e1 e2 : ė}
                     (_Cl_ : ê → ė → ê) →
                     (_Cr_ : ė → ê → ê) →
                     (_C_  : ė → ė → ė) →
-                    (c : cohere e1 e2 _Cl_ _Cr_ _C_) →
+                    (m : Matched _Cl_ _Cr_ _C_) →
                (e1 Cr ▹ e2 ◃) + move prevSib +>e (▹ e1 ◃ Cl e2)
     -- rules for non-empty holes
     EMNEHoleFirstChild : {e : ė} →

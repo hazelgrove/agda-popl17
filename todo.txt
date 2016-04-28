@@ -64,17 +64,24 @@ from talking to ed:
    	  (just list out the pairs)
 
 
-  -- not listed in pdf
-  iter : List action → ê → ê
-  iter [] e = e
-  iter (α :: l) e = iter l e
 
-  reachable : (e1 e2 : ê) (same : (e1 ◆e) == (e2 ◆e)) →
-               Σ[ αs ∈ List action ] (iter αs e1 == e2)
-  reachable = {!!}
 
 
 ---> talk to ed about reflection
 ---> talk to frank about frank things
 
 determinism for type synthesis
+
+
+  iter : List action → ê → ê
+  iter [] e = e
+  iter (move x :: l) e = {!!}
+  iter (del :: l) e = {!!}
+  iter (construct x :: l) e = {!!}
+  iter (finish :: l) e = {!!}
+
+  reachable : (e1 e2 : ê) (t : {!!}) (same : (e1 ◆e) == (e2 ◆e)) →
+               Σ[ αs ∈ List action ] (iter αs e1 == e2)
+  reachable = {!!}
+
+  -- constructable : (e : ê)
