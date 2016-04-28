@@ -76,3 +76,5 @@ from talking to ed:
 
 ---> talk to ed about reflection
 ---> talk to frank about frank things
+
+determinism for type synthesis

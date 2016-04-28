@@ -63,18 +63,52 @@ module Hazelnut where
 
   -- type compatability.
   data _~_ : (t1 : τ̇) → (t2 : τ̇) → Set where
-    TCNum : num ~ num
-    TCHole : {t : τ̇} → t ~ <||>
+    TCRefl : {t : τ̇} → t ~ t
+    TCHole1 : {t : τ̇} → t ~ <||>
+    TCHole2 : {t : τ̇} → <||> ~ t
     TCArr : {t1 t2 t1' t2' : τ̇} →
                t1 ~ t1' →
                t2 ~ t2' →
                (t1 ==> t2) ~ (t1' ==> t2')
-    TCSym : {t1 t2 : τ̇} → t1 ~ t2 → t2 ~ t1
 
   -- type incompatability; using this encoding rather than explicit
   -- constructors is equivalent to the one in the text but more convenient
   _~̸_ : τ̇ → τ̇ → Set
   t1 ~̸ t2 = (t1 ~ t2) → ⊥
+
+  lemsym : (t1 t2 : τ̇) → t1 ~ t2 → t2 ~ t1
+  lemsym t1 .t1 TCRefl = TCRefl
+  lemsym t1 .<||> TCHole1 = TCHole2
+  lemsym .<||> t2 TCHole2 = TCHole1
+  lemsym ._ ._ (TCArr p p₁) = TCArr (lemsym _ _ p) (lemsym _ _ p₁)
+
+  lemarr1 : {t1 t2 t3 t4 : τ̇} → (t1 ==> t2) ~ (t3 ==> t4) → (t1 ~ t3 → ⊥) → ⊥
+  lemarr1 TCRefl void = void TCRefl
+  lemarr1 (TCArr p p₁) void = void p
+
+  lemarr2 : {t1 t2 t3 t4 : τ̇} → (t1 ==> t2) ~ (t3 ==> t4) → (t2 ~ t4 → ⊥) → ⊥
+  lemarr2 TCRefl void = void TCRefl
+  lemarr2 (TCArr p p₁) void = void p₁
+
+  ~dec : (t1 t2 : τ̇) → ((t1 ~ t2) + (t1 ~̸ t2))
+  ~dec num num = Inl TCRefl
+  ~dec num <||> = Inl TCHole1
+  ~dec num (t2 ==> t3) = Inr (λ ())
+  ~dec <||> num = Inl TCHole2
+  ~dec <||> <||> = Inl TCRefl
+  ~dec <||> (t2 ==> t3) = Inl TCHole2
+  ~dec (t1 ==> t2) num = Inr (λ ())
+  ~dec (t1 ==> t2) <||> = Inl TCHole1
+  ~dec (t1 ==> t2) (t3 ==> t4) with ~dec t1 t3 | ~dec t2 t4
+  ... | Inl x | Inl y = Inl (TCArr x y)
+  ... | Inl x | Inr y = Inr (λ x₁ → lemarr2 x₁ y)
+  ... | Inr x | _ = Inr (λ p → lemarr1 p x)
+
+  ~dec1 : (t1 t2 : τ̇) → (t1 ~ t2) → (t1 ~̸ t2) → ⊥
+  ~dec1 t1 .t1 TCRefl pneq = pneq TCRefl
+  ~dec1 t1 .<||> TCHole1 pneq = pneq TCHole1
+  ~dec1 .<||> t2 TCHole2 pneq = pneq TCHole2
+  ~dec1 ._ ._ (TCArr peq peq₁) pneq = pneq (TCArr peq peq₁)
 
   mutual
     -- synthesis
