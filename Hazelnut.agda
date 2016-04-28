@@ -76,20 +76,22 @@ module Hazelnut where
   _~̸_ : τ̇ → τ̇ → Set
   t1 ~̸ t2 = (t1 ~ t2) → ⊥
 
-  lemsym : (t1 t2 : τ̇) → t1 ~ t2 → t2 ~ t1
-  lemsym t1 .t1 TCRefl = TCRefl
-  lemsym t1 .<||> TCHole1 = TCHole2
-  lemsym .<||> t2 TCHole2 = TCHole1
-  lemsym ._ ._ (TCArr p p₁) = TCArr (lemsym _ _ p) (lemsym _ _ p₁)
+  -- theorem: type compatablity is symmetric
+  ~sym : {t1 t2 : τ̇} → t1 ~ t2 → t2 ~ t1
+  ~sym TCRefl = TCRefl
+  ~sym TCHole1 = TCHole2
+  ~sym TCHole2 = TCHole1
+  ~sym (TCArr p1 p2) = TCArr (~sym p1) (~sym p2)
 
-  lemarr1 : {t1 t2 t3 t4 : τ̇} → (t1 ==> t2) ~ (t3 ==> t4) → (t1 ~ t3 → ⊥) → ⊥
-  lemarr1 TCRefl void = void TCRefl
-  lemarr1 (TCArr p p₁) void = void p
+  lemarr1 : {t1 t2 t3 t4 : τ̇} → (t1 ~ t3 → ⊥) → (t1 ==> t2) ~ (t3 ==> t4)  → ⊥
+  lemarr1 v TCRefl = v TCRefl
+  lemarr1 v (TCArr p _) = v p
 
-  lemarr2 : {t1 t2 t3 t4 : τ̇} → (t1 ==> t2) ~ (t3 ==> t4) → (t2 ~ t4 → ⊥) → ⊥
-  lemarr2 TCRefl void = void TCRefl
-  lemarr2 (TCArr p p₁) void = void p₁
+  lemarr2 : {t1 t2 t3 t4 : τ̇} → (t2 ~ t4 → ⊥) → (t1 ==> t2) ~ (t3 ==> t4) →  ⊥
+  lemarr2 v TCRefl = v TCRefl
+  lemarr2 v (TCArr _ p) = v p
 
+  -- theorem: every pair of types is either compatable or not compatable
   ~dec : (t1 t2 : τ̇) → ((t1 ~ t2) + (t1 ~̸ t2))
   ~dec num num = Inl TCRefl
   ~dec num <||> = Inl TCHole1
@@ -101,14 +103,15 @@ module Hazelnut where
   ~dec (t1 ==> t2) <||> = Inl TCHole1
   ~dec (t1 ==> t2) (t3 ==> t4) with ~dec t1 t3 | ~dec t2 t4
   ... | Inl x | Inl y = Inl (TCArr x y)
-  ... | Inl x | Inr y = Inr (λ x₁ → lemarr2 x₁ y)
-  ... | Inr x | _ = Inr (λ p → lemarr1 p x)
+  ... | Inl _ | Inr y = Inr (lemarr2 y)
+  ... | Inr x | _     = Inr (lemarr1 x)
 
-  ~dec1 : (t1 t2 : τ̇) → (t1 ~ t2) → (t1 ~̸ t2) → ⊥
-  ~dec1 t1 .t1 TCRefl pneq = pneq TCRefl
-  ~dec1 t1 .<||> TCHole1 pneq = pneq TCHole1
-  ~dec1 .<||> t2 TCHole2 pneq = pneq TCHole2
-  ~dec1 ._ ._ (TCArr peq peq₁) pneq = pneq (TCArr peq peq₁)
+  -- theorem: no pair of types is both compatable and not compatable
+  ~dec1 : {t1 t2 : τ̇} → (t1 ~ t2) → (t1 ~̸ t2) → ⊥
+  ~dec1 TCRefl pneq = pneq TCRefl
+  ~dec1 TCHole1 pneq = pneq TCHole1
+  ~dec1 TCHole2 pneq = pneq TCHole2
+  ~dec1 (TCArr peq peq₁) pneq = pneq (TCArr peq peq₁)
 
   mutual
     -- synthesis
@@ -356,7 +359,8 @@ module Hazelnut where
                  (Γ ⊢ (eh ◆e) => t2) →
                  (Γ ⊢ eh => t2 ~ α ~> eh' => <||>) →
                  (Γ ⊢ e <= <||>) →
-                 Γ ⊢ (eh ∘₁ e) => t1 ~ α ~> (eh' ∘₁ e) => <||> -- todo: differs from text
+                 Γ ⊢ (eh ∘₁ e) => t1 ~ α ~> (eh' ∘₁ e) => <||>
+                 -- todo: differs from text
       SAZipAp3 : {Γ : ·ctx} {t2 t : τ̇} {e : ė} {eh eh' : ê} {α : action} →
                  (Γ ⊢ e => (t2 ==> t)) →
                  (Γ ⊢ eh ~ α ~> eh' ⇐ t2) →
@@ -380,7 +384,6 @@ module Hazelnut where
                    (Γ ⊢ (e ◆e) => t) →
                    (Γ ⊢ e => t ~ α ~> ▹ <||> ◃ => <||>) →
                    Γ ⊢ <| e |> => <||> ~ α ~> ▹ <||> ◃ => <||>
-
 
     -- analytic action expressions
     data _⊢_~_~>_⇐_ : (Γ : ·ctx) → (e : ê) → (α : action) →

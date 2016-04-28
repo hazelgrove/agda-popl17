@@ -85,3 +85,11 @@ determinism for type synthesis
   reachable = {!!}
 
   -- constructable : (e : ê)
+
+- reflection: generate mapreduces, so that makes tcomplete and ecomplete
+  effectively just
+
+    (mapreduce τ̇) (\ <||> = ⊥ | _ = ⊤) (_×_)
+    (mapreduce ė) (\ <||> = ⊥ | <| _ |> = ⊥ | _ = ⊤) tcomplete (_×_)
+
+  generate e^ and t^ from e and t. also generate matched for both. what else?
