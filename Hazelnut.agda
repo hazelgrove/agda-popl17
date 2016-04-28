@@ -9,12 +9,6 @@ module Hazelnut where
     <||> : τ̇
     _==>_ : τ̇ → τ̇ → τ̇
 
-  -- those types without holes anywhere
-  tcomplete : τ̇ → Set
-  tcomplete num         = ⊤
-  tcomplete <||>        = ⊥
-  tcomplete (t1 ==> t2) = (tcomplete t1) × (tcomplete t2)
-
   -- expressions, prefixed with a · to distinguish name clashes with agda
   -- built-ins
   data ė : Set where
@@ -26,17 +20,6 @@ module Hazelnut where
     <||>  : ė
     <|_|> : ė → ė
     _∘_   : ė → ė → ė
-
-  -- similarly to the complete types, the complete expressions
-  ecomplete : ė → Set
-  ecomplete (e1 ·: t)  = ecomplete e1 × tcomplete t
-  ecomplete (X _)      = ⊤
-  ecomplete (·λ _ e1)  = ecomplete e1
-  ecomplete (N x)      = ⊤
-  ecomplete (e1 ·+ e2) = ecomplete e1 × ecomplete e2
-  ecomplete <||>       = ⊥
-  ecomplete <| e1 |>   = ⊥
-  ecomplete (e1 ∘ e2)  = ecomplete e1 × ecomplete e2
 
   -- variables are named with naturals in ė, so we represent contexts
   -- simply as lists of pairs of variable names and types
@@ -93,26 +76,28 @@ module Hazelnut where
 
   -- theorem: every pair of types is either compatable or not compatable
   ~dec : (t1 t2 : τ̇) → ((t1 ~ t2) + (t1 ~̸ t2))
+    -- this takes care of all hole cases, so we don't consider them below
+  ~dec _ <||> = Inl TCHole1
+  ~dec <||> _ = Inl TCHole2
+    -- num cases
   ~dec num num = Inl TCRefl
-  ~dec num <||> = Inl TCHole1
   ~dec num (t2 ==> t3) = Inr (λ ())
-  ~dec <||> num = Inl TCHole2
-  ~dec <||> <||> = Inl TCRefl
-  ~dec <||> (t2 ==> t3) = Inl TCHole2
+    -- arrow cases
   ~dec (t1 ==> t2) num = Inr (λ ())
-  ~dec (t1 ==> t2) <||> = Inl TCHole1
   ~dec (t1 ==> t2) (t3 ==> t4) with ~dec t1 t3 | ~dec t2 t4
   ... | Inl x | Inl y = Inl (TCArr x y)
   ... | Inl _ | Inr y = Inr (lemarr2 y)
   ... | Inr x | _     = Inr (lemarr1 x)
 
-  -- theorem: no pair of types is both compatable and not compatable
-  ~dec1 : {t1 t2 : τ̇} → (t1 ~ t2) → (t1 ~̸ t2) → ⊥
-  ~dec1 TCRefl pneq = pneq TCRefl
-  ~dec1 TCHole1 pneq = pneq TCHole1
-  ~dec1 TCHole2 pneq = pneq TCHole2
-  ~dec1 (TCArr peq peq₁) pneq = pneq (TCArr peq peq₁)
+  -- theorem: no pair of types is both compatable and not compatable. this
+  -- is immediate from our encoding of the ~̸ judgement in the formalism
+  -- here; in the mathematics presented in the paper, this would require
+  -- induction to relate the two judgements.
+  ~apart : {t1 t2 : τ̇} → (t1 ~̸ t2) → (t1 ~ t2) → ⊥
+  ~apart v p = v p
 
+
+  -- type checking for ė
   mutual
     -- synthesis
     data _⊢_=>_ : (Γ : ·ctx) → (e : ė) → (t : τ̇) → Set where
@@ -144,8 +129,8 @@ module Hazelnut where
     -- analysis
     data _⊢_<=_ : (Γ : ·ctx) → (e : ė) → (t : τ̇) → Set where
       ASubsume : {Γ : ·ctx} {e : ė} {t t' : τ̇} →
-                    (t ~ t') →
                     (Γ ⊢ e => t') →
+                    (t ~ t') →
                     (Γ ⊢ e <= t)
       ALam : {Γ : ·ctx} {e : ė} {t1 t2 : τ̇} {n : Nat} →
                 -- todo: double check that this correctly implements
@@ -154,13 +139,30 @@ module Hazelnut where
                     (Γ ,, (n , t1)) ⊢ e <= t2 →
                     Γ ⊢ (·λ n e) <= (t1 ==> t2)
 
-  -- the zippered form of types
+  -- those types without holes anywhere
+  tcomplete : τ̇ → Set
+  tcomplete num         = ⊤
+  tcomplete <||>        = ⊥
+  tcomplete (t1 ==> t2) = (tcomplete t1) × (tcomplete t2)
+
+  -- similarly to the complete types, the complete expressions
+  ecomplete : ė → Set
+  ecomplete (e1 ·: t)  = ecomplete e1 × tcomplete t
+  ecomplete (X _)      = ⊤
+  ecomplete (·λ _ e1)  = ecomplete e1
+  ecomplete (N x)      = ⊤
+  ecomplete (e1 ·+ e2) = ecomplete e1 × ecomplete e2
+  ecomplete <||>       = ⊥
+  ecomplete <| e1 |>   = ⊥
+  ecomplete (e1 ∘ e2)  = ecomplete e1 × ecomplete e2
+
+  -- zippered form of types
   data τ̂ : Set where
     ▹_◃  : τ̇ → τ̂
     _==>₁_ : τ̂ → τ̇ → τ̂
     _==>₂_ : τ̇ → τ̂ → τ̂
 
-  -- the zippered form of expressions
+  -- zippered form of expressions
   data ê : Set where
     ▹_◃   : ė → ê
     _·:₁_ : ê → τ̇ → ê
@@ -178,6 +180,8 @@ module Hazelnut where
   (t1 ==>₁ t2) ◆t = (t1 ◆t) ==> t2
   (t1 ==>₂ t2) ◆t = t1 ==> (t2 ◆t)
 
+  -- (mapreduce τ̂) (\x → x) ??
+
   --focus erasure for expressions
   _◆e : ê → ė
   ▹ x ◃ ◆e       = x
@@ -189,6 +193,8 @@ module Hazelnut where
   (e1 ·+₁ e2) ◆e = (e1 ◆e) ·+ e2
   (e1 ·+₂ e2) ◆e = e1      ·+ (e2 ◆e)
   <| e |> ◆e     = <| e ◆e |>
+
+  -- (mapreduce ê) (\x → x) ??
 
   -- the three grammars that define actions
   data direction : Set where
@@ -228,7 +234,7 @@ module Hazelnut where
                (t1 ==>₂ ▹ t2 ◃) + move prevSib +> (▹ t1 ◃ ==>₁ t2)
     TMDel     : {t : τ̇} →
                 (▹ t ◃) + del +> (▹ <||> ◃)
-    TMConArr  : {t : τ̇} →
+    TMConArrow  : {t : τ̇} →
                 (▹ t ◃) + construct arrow +> (t ==>₂ ▹ <||> ◃)
     TMConNum  : (▹ <||> ◃) + construct num +> (▹ num ◃)
     TMZip1 : {t1 t1' : τ̂} {t2 : τ̇} {α : action} →
@@ -238,12 +244,13 @@ module Hazelnut where
                 (t2 + α +> t2') →
                 ((t1 ==>₂ t2) + α +> (t1 ==>₂ t2'))
 
-
   -- expression movement
 
-  -- this describes when two 2-ary constructors in zexps describe halves of
-  -- the same hexp
-  data Matched : (CL : ê → ė → ê) → (CR : ė → ê → ê) → (C : ė → ė → ė) → Set where
+  -- this describes which two 2-ary constructors of zexps describe halves
+  -- of the same hexp
+  data Matched : (CL : ê → ė → ê) →
+                 (CR : ė → ê → ê) →
+                 (C : ė → ė → ė) → Set where
     Match+ : Matched _·+₁_ _·+₂_ _·+_
     Match∘ : Matched _∘₁_  _∘₂_  _∘_
 
@@ -297,9 +304,9 @@ module Hazelnut where
                     (m : Matched _Cl_ _Cr_ _C_) →
                (e1 Cr ▹ e2 ◃) + move prevSib +>e (▹ e1 ◃ Cl e2)
     -- rules for non-empty holes
-    EMNEHoleFirstChild : {e : ė} →
+    EMFHoleFirstChild : {e : ė} →
                (▹ <| e |> ◃) + move firstChild +>e <| ▹ e ◃ |>
-    EMNEHoleParent : {e : ė} →
+    EMFHoleParent : {e : ė} →
                 <| ▹ e ◃ |> + move parent +>e (▹ <| e |> ◃)
 
   mutual
@@ -348,7 +355,7 @@ module Hazelnut where
                   Γ ⊢ (e ·:₁ t) => t ~ α ~> (e' ·:₁ t) => t
       SAZipAsc2 : {Γ : ·ctx} {e : ė} {α : action} {t t' : τ̂} →
                   (t + α +> t') →
-                  (Γ ⊢ e <= (t' ◆t)) → -- todo: this rule seems asymmetrical
+                  (Γ ⊢ e <= (t' ◆t)) → -- todo: this rule seems weirdly asymmetrical
                   Γ ⊢ (e ·:₂ t) => (t ◆t) ~ α ~> (e ·:₂ t') => (t' ◆t)
       SAZipAp1 : {Γ : ·ctx} {t1 t2 t3 t4 : τ̇} {α : action} {eh eh' : ê} {e : ė} →
                  (Γ ⊢ (eh ◆e) => t2) →
@@ -359,8 +366,8 @@ module Hazelnut where
                  (Γ ⊢ (eh ◆e) => t2) →
                  (Γ ⊢ eh => t2 ~ α ~> eh' => <||>) →
                  (Γ ⊢ e <= <||>) →
+                 -- todo: this differs from the text
                  Γ ⊢ (eh ∘₁ e) => t1 ~ α ~> (eh' ∘₁ e) => <||>
-                 -- todo: differs from text
       SAZipAp3 : {Γ : ·ctx} {t2 t : τ̇} {e : ė} {eh eh' : ê} {α : action} →
                  (Γ ⊢ e => (t2 ==> t)) →
                  (Γ ⊢ eh ~ α ~> eh' ⇐ t2) →
@@ -378,7 +385,9 @@ module Hazelnut where
       SAZipHole1 : {Γ : ·ctx} {e e' : ê} {t t' : τ̇} {α : action} →
                    (Γ ⊢ (e ◆e) => t) →
                    (Γ ⊢ e => t ~ α ~> e' => t') →
-                   ((e' == ▹ <||> ◃) → ⊥) → -- todo: *no* idea if this is right. what if it's an η-expanded form?
+                   -- todo: *no* idea if this is right. what if it's an
+                   -- η-expanded form or something?
+                   ((e' == ▹ <||> ◃) → ⊥) →
                    Γ ⊢ <| e |> => <||> ~ α ~>  <| e' |> => <||>
       SAZipHole2 : {Γ : ·ctx} {e : ê} {t : τ̇} {α : action} →
                    (Γ ⊢ (e ◆e) => t) →
@@ -436,20 +445,33 @@ module Hazelnut where
   actsense2 Γ e e' t α D1 D2 = {!!}
 
   -- theorem 2
-  actdet1 : (Γ : ·ctx) (e e' e'' : ê) (t t' t'' : τ̇) (α : action) →
+  lem : (t : τ̇) → t ~ (t ==> <||>)
+  lem t with ~dec t (t ==> <||>)
+  lem _ | Inl x = x
+  lem num        | Inr x = {!!}
+  lem <||>       | Inr x = TCHole2
+  lem (t ==> t₁) | Inr x = {!!}
+
+  actdet1 : (t t' : τ̂) (α : action) →
+            (t + α +> t') →
+            ((t ◆t) ~ (t' ◆t)) -- todo: i added erasure, changed == to ~
+  actdet1 ._ ._ .(move firstChild) TMFirstChild = TCRefl
+  actdet1 ._ ._ .(move parent) TMParent1 = TCRefl
+  actdet1 ._ ._ .(move parent) TMParent2 = TCRefl
+  actdet1 ._ ._ .(move nextSib) TMNextSib = TCRefl
+  actdet1 ._ ._ .(move prevSib) TMPrevSib = TCRefl
+  actdet1 ._ .(▹ <||> ◃) .del TMDel = TCHole1
+  actdet1 ._ ._ .(construct arrow) TMConArrow = {!!}
+  actdet1 .(▹ <||> ◃) .(▹ num ◃) .(construct num) TMConNum = TCHole2
+  actdet1 ._ ._ α (TMZip1 m) = TCArr (actdet1 _ _ α m) TCRefl
+  actdet1 ._ ._ α (TMZip2 m) = TCArr TCRefl (actdet1 _ _ α m)
+
+  actdet2 : (Γ : ·ctx) (e e' e'' : ê) (t t' t'' : τ̇) (α : action) →
             (Γ ⊢ (e ◆e) => t) →
             (Γ ⊢ e => t ~ α ~> e'  => t') →
             (Γ ⊢ e => t ~ α ~> e'' => t'') →
             (e' == e'' × t' == t'') -- todo: maybe 1a and 1b?
-  actdet1 Γ e e' e'' t t' t'' α D1 D2 D3 = {!!}
-
-  actdet2 : (Γ : ·ctx) (e e' e'' : ê) (t t' : τ̇) (α : action) →
-             (Γ ⊢ (e ◆e) => t) →
-             (Γ ⊢ e => t ~ α ~> e' => t') →
-             (t ~ t') →
-             ((Γ ⊢ e ~ α ~> e'' ⇐ t) + (Γ ⊢ e ~ α ~> e'' ⇐ t')) →
-             (e' == e'')
-  actdet2 Γ e e' e'' t t' α D1 D2 D3 D45 = {!D3!}
+  actdet2 Γ e e' e'' t t' t'' α D1 D2 D3 = {!!}
 
   actdet3 : (Γ : ·ctx) (e e' e'' : ê) (t : τ̇) (α : action) →
             (Γ ⊢ (e ◆e) <= t) →
@@ -457,3 +479,11 @@ module Hazelnut where
             (Γ ⊢ e ~ α ~> e'' ⇐ t) →
             (e' == e'')
   actdet3 Γ e e' e'' t α D1 D2 D3 = {!!}
+
+  -- actdet2 : (Γ : ·ctx) (e e' e'' : ê) (t t' : τ̇) (α : action) →
+  --            (Γ ⊢ (e ◆e) => t) →
+  --            (Γ ⊢ e => t ~ α ~> e' => t') →
+  --            (t ~ t') →
+  --            ((Γ ⊢ e ~ α ~> e'' ⇐ t) + (Γ ⊢ e ~ α ~> e'' ⇐ t')) →
+  --            (e' == e'')
+  -- actdet2 Γ e e' e'' t t' α D1 D2 D3 D45 = {!D3!}

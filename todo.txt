@@ -92,4 +92,5 @@ determinism for type synthesis
     (mapreduce τ̇) (\ <||> = ⊥ | _ = ⊤) (_×_)
     (mapreduce ė) (\ <||> = ⊥ | <| _ |> = ⊥ | _ = ⊤) tcomplete (_×_)
 
-  generate e^ and t^ from e and t. also generate matched for both. what else?
+  generate e^ and t^ from e and t, both erasure erasure functions, matched
+  for both. what else?
