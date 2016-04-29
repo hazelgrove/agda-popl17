@@ -452,19 +452,30 @@ module Hazelnut where
   lem <||>       | Inr x = TCHole2
   lem (t ==> t₁) | Inr x = {!!}
 
-  actdet1 : (t t' : τ̂) (α : action) →
+  actdet1 : {t t' t'' : τ̂} {α : action} →
             (t + α +> t') →
-            ((t ◆t) ~ (t' ◆t)) -- todo: i added erasure, changed == to ~
-  actdet1 ._ ._ .(move firstChild) TMFirstChild = TCRefl
-  actdet1 ._ ._ .(move parent) TMParent1 = TCRefl
-  actdet1 ._ ._ .(move parent) TMParent2 = TCRefl
-  actdet1 ._ ._ .(move nextSib) TMNextSib = TCRefl
-  actdet1 ._ ._ .(move prevSib) TMPrevSib = TCRefl
-  actdet1 ._ .(▹ <||> ◃) .del TMDel = TCHole1
-  actdet1 ._ ._ .(construct arrow) TMConArrow = {!!}
-  actdet1 .(▹ <||> ◃) .(▹ num ◃) .(construct num) TMConNum = TCHole2
-  actdet1 ._ ._ α (TMZip1 m) = TCArr (actdet1 _ _ α m) TCRefl
-  actdet1 ._ ._ α (TMZip2 m) = TCArr TCRefl (actdet1 _ _ α m)
+            (t + α +> t'') →
+            (t' == t'')
+  actdet1 TMFirstChild TMFirstChild = refl
+  actdet1 TMParent1 TMParent1 = refl
+  actdet1 TMParent1 (TMZip1 ())
+  actdet1 TMParent2 TMParent2 = refl
+  actdet1 TMParent2 (TMZip2 ())
+  actdet1 TMNextSib TMNextSib = refl
+  actdet1 TMNextSib (TMZip1 ())
+  actdet1 TMPrevSib TMPrevSib = refl
+  actdet1 TMPrevSib (TMZip2 ())
+  actdet1 TMDel TMDel = refl
+  actdet1 TMConArrow TMConArrow = refl
+  actdet1 TMConNum TMConNum = refl
+  actdet1 (TMZip1 ()) TMParent1
+  actdet1 (TMZip1 ()) TMNextSib
+  actdet1 (TMZip1 p1) (TMZip1 p2) with actdet1 p1 p2
+  ... | refl = refl
+  actdet1 (TMZip2 ()) TMParent2
+  actdet1 (TMZip2 ()) TMPrevSib
+  actdet1 (TMZip2 p1) (TMZip2 p2) with actdet1 p1 p2
+  ... | refl = refl
 
   actdet2 : (Γ : ·ctx) (e e' e'' : ê) (t t' t'' : τ̇) (α : action) →
             (Γ ⊢ (e ◆e) => t) →
