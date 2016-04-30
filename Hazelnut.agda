@@ -432,26 +432,33 @@ module Hazelnut where
                  (Γ / x) ⊢ (·λ x e) ~ α ~> (·λ x e') ⇐ (t1 ==> t2)
 
   -- theorem 1: action sensibility
-  actsense1 : (Γ : ·ctx) (e e' : ê) (t t' : τ̇) (α : action) →
+  actsense1 : {Γ : ·ctx} {e e' : ê} {t t' : τ̇} {α : action} →
               (Γ ⊢ e => t ~ α ~> e' => t') →
               (Γ ⊢ (e  ◆e) => t) →
               (Γ ⊢ (e' ◆e) => t')
-  actsense1 Γ e e1 t t' α D1 D2 = {!!}
+  actsense1 = {!!}
+
+  -- lem : (Γ : ·ctx) (t : τ̇) → Γ ⊢ <||> <= t
+  -- lem Γ num = ASubsume SEHole TCHole1
+  -- lem Γ <||> = ASubsume SEHole TCRefl
+  -- lem Γ (t ==> t₁) = ASubsume SEHole TCHole1
 
   actsense2  : (Γ : ·ctx) (e e' : ê) (t : τ̇) (α : action) →
                 (Γ ⊢ e ~ α ~> e' ⇐ t) →
                 (Γ ⊢ (e ◆e) <= t) →
                 (Γ ⊢ (e' ◆e) <= t)
-  actsense2 Γ e e' t α D1 D2 = {!!}
+  actsense2 Γ e e' t α (AASubsume x x₁ x₂) D2 = ASubsume (actsense1 x₁ x) x₂
+  actsense2 Γ e e' t ._ (AAMove x) D2 = {!!}
+  actsense2 Γ ._ .(▹ <||> ◃) t .del AADel D2 = ASubsume SEHole TCHole1
+  actsense2 Γ ._ ._ t .(construct asc) AAConAsc D2 = {!!}
+  actsense2 Γ .(▹ <||> ◃) ._ t ._ (AAConVar x₁ p) D2 = {!!}
+  actsense2 Γ .(▹ <||> ◃) ._ ._ ._ AAConLam1 D2 = {!!}
+  actsense2 Γ .(▹ <||> ◃) ._ t ._ (AAConLam2 x₁) D2 = {!!}
+  actsense2 Γ .(▹ <||> ◃) ._ t ._ (AAConNumlit x) D2 = ASubsume (SFHole SNum) TCHole1
+  actsense2 Γ ._ ._ t .finish (AAFinish x) D2 = x
+  actsense2 ._ ._ ._ ._ α (AAZipLam x₁ D1) D2 = {!!}
 
   -- theorem 2
-  lem : (t : τ̇) → t ~ (t ==> <||>)
-  lem t with ~dec t (t ==> <||>)
-  lem _ | Inl x = x
-  lem num        | Inr x = {!!}
-  lem <||>       | Inr x = TCHole2
-  lem (t ==> t₁) | Inr x = {!!}
-
   actdet1 : {t t' t'' : τ̂} {α : action} →
             (t + α +> t') →
             (t + α +> t'') →
@@ -490,11 +497,3 @@ module Hazelnut where
             (Γ ⊢ e ~ α ~> e'' ⇐ t) →
             (e' == e'')
   actdet3 Γ e e' e'' t α D1 D2 D3 = {!!}
-
-  -- actdet2 : (Γ : ·ctx) (e e' e'' : ê) (t t' : τ̇) (α : action) →
-  --            (Γ ⊢ (e ◆e) => t) →
-  --            (Γ ⊢ e => t ~ α ~> e' => t') →
-  --            (t ~ t') →
-  --            ((Γ ⊢ e ~ α ~> e'' ⇐ t) + (Γ ⊢ e ~ α ~> e'' ⇐ t')) →
-  --            (e' == e'')
-  -- actdet2 Γ e e' e'' t t' α D1 D2 D3 D45 = {!D3!}

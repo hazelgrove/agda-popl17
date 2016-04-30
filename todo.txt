@@ -94,3 +94,11 @@ determinism for type synthesis
 
   generate e^ and t^ from e and t, both erasure erasure functions, matched
   for both. what else?
+
+  -- actdet2 : (Γ : ·ctx) (e e' e'' : ê) (t t' : τ̇) (α : action) →
+  --            (Γ ⊢ (e ◆e) => t) →
+  --            (Γ ⊢ e => t ~ α ~> e' => t') →
+  --            (t ~ t') →
+  --            ((Γ ⊢ e ~ α ~> e'' ⇐ t) + (Γ ⊢ e ~ α ~> e'' ⇐ t')) →
+  --            (e' == e'')
+  -- actdet2 Γ e e' e'' t t' α D1 D2 D3 D45 = {!D3!}
