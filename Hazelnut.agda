@@ -441,13 +441,37 @@ module Hazelnut where
 
   -- theorem 1: action sensibility
 
+  synthmovelem : {Γ : ·ctx} {e e' : ê} {t : τ̇} {δ : direction} →
+                 (e + move δ +>e e') →
+                 (Γ ⊢ e ◆e => t) →
+                 (Γ ⊢ e' ◆e => t)
+  synthmovelem EMAscFirstChild d2 = d2
+  synthmovelem EMAscParent1 d2 = d2
+  synthmovelem EMAscParent2 d2 = d2
+  synthmovelem EMAscNextSib d2 = d2
+  synthmovelem EMAscPrevSib d2 = d2
+  synthmovelem EMLamFirstChild d2 = d2
+  synthmovelem EMLamParent d2 = d2
+  synthmovelem (EM2aryFirstChild ._·+₁_ ._·+₂_ ._·+_ Match+) d2 = d2
+  synthmovelem (EM2aryFirstChild ._∘₁_ ._∘₂_ ._∘_ Match∘) d2 = d2
+  synthmovelem (EM2aryParent1 ._·+₁_ ._·+₂_ ._·+_ Match+) d2 = d2
+  synthmovelem (EM2aryParent1 ._∘₁_ ._∘₂_ ._∘_ Match∘) d2 = d2
+  synthmovelem (EM2aryParent2 ._·+₁_ ._·+₂_ ._·+_ Match+) d2 = d2
+  synthmovelem (EM2aryParent2 ._∘₁_ ._∘₂_ ._∘_ Match∘) d2 = d2
+  synthmovelem (EM2aryNextSib ._·+₁_ ._·+₂_ ._·+_ Match+) d2 = d2
+  synthmovelem (EM2aryNextSib ._∘₁_ ._∘₂_ ._∘_ Match∘) d2 = d2
+  synthmovelem (EM2aryPrevSib ._·+₁_ ._·+₂_ ._·+_ Match+) d2 = d2
+  synthmovelem (EM2aryPrevSib ._∘₁_ ._∘₂_ ._∘_ Match∘) d2 = d2
+  synthmovelem EMFHoleFirstChild d2 = d2
+  synthmovelem EMFHoleParent d2 = d2
+
   -- if an action transforms an zexp in a synthetic posistion to another
   -- zexp, they have the same type up erasure of focus.
   actsense1 : {Γ : ·ctx} {e e' : ê} {t t' : τ̇} {α : action} →
               (Γ ⊢ e => t ~ α ~> e' => t') →
               (Γ ⊢ (e  ◆e) => t) →
                Γ ⊢ (e' ◆e) => t'
-  actsense1 (SAMove x) D2 = {!!}
+  actsense1 (SAMove x) D2 = synthmovelem x D2
   actsense1 SADel D2 = SEHole
   actsense1 SAConAsc D2 = SAsc (ASubsume D2 TCRefl)
   actsense1 (SAConVar p) D2 = SVar p
@@ -477,29 +501,29 @@ module Hazelnut where
   -- derivation may be in each case, and is therefore actually
   -- non-trivial. it's just that most of the work is happening in the
   -- implicit arguments.
-  movelem : {Γ : ·ctx} {δ : direction} {e e' : ê} {t : τ̇}
+  anamovelem : {Γ : ·ctx} {δ : direction} {e e' : ê} {t : τ̇}
             (p : e + move δ +>e e') →
             (Γ ⊢ e ◆e <= t) →
             (Γ ⊢ e' ◆e <= t)
-  movelem EMAscFirstChild D = D
-  movelem EMAscParent1 D = D
-  movelem EMAscParent2 D = D
-  movelem EMAscNextSib D = D
-  movelem EMAscPrevSib D = D
-  movelem EMLamFirstChild D = D
-  movelem EMLamParent D = D
-  movelem (EM2aryFirstChild ._·+₁_ ._·+₂_ ._·+_ Match+) D = D
-  movelem (EM2aryFirstChild ._∘₁_ ._∘₂_ ._∘_ Match∘) D = D
-  movelem (EM2aryParent1 ._·+₁_ ._·+₂_ ._·+_ Match+) D = D
-  movelem (EM2aryParent1 ._∘₁_ ._∘₂_ ._∘_ Match∘) D = D
-  movelem (EM2aryParent2 ._·+₁_ ._·+₂_ ._·+_ Match+) D = D
-  movelem (EM2aryParent2 ._∘₁_ ._∘₂_ ._∘_ Match∘) D = D
-  movelem (EM2aryNextSib ._·+₁_ ._·+₂_ ._·+_ Match+) D = D
-  movelem (EM2aryNextSib ._∘₁_ ._∘₂_ ._∘_ Match∘) D = D
-  movelem (EM2aryPrevSib ._·+₁_ ._·+₂_ ._·+_ Match+) D = D
-  movelem (EM2aryPrevSib ._∘₁_ ._∘₂_ ._∘_ Match∘) D = D
-  movelem EMFHoleFirstChild D = D
-  movelem EMFHoleParent D = D
+  anamovelem EMAscFirstChild D = D
+  anamovelem EMAscParent1 D = D
+  anamovelem EMAscParent2 D = D
+  anamovelem EMAscNextSib D = D
+  anamovelem EMAscPrevSib D = D
+  anamovelem EMLamFirstChild D = D
+  anamovelem EMLamParent D = D
+  anamovelem (EM2aryFirstChild ._·+₁_ ._·+₂_ ._·+_ Match+) D = D
+  anamovelem (EM2aryFirstChild ._∘₁_ ._∘₂_ ._∘_ Match∘) D = D
+  anamovelem (EM2aryParent1 ._·+₁_ ._·+₂_ ._·+_ Match+) D = D
+  anamovelem (EM2aryParent1 ._∘₁_ ._∘₂_ ._∘_ Match∘) D = D
+  anamovelem (EM2aryParent2 ._·+₁_ ._·+₂_ ._·+_ Match+) D = D
+  anamovelem (EM2aryParent2 ._∘₁_ ._∘₂_ ._∘_ Match∘) D = D
+  anamovelem (EM2aryNextSib ._·+₁_ ._·+₂_ ._·+_ Match+) D = D
+  anamovelem (EM2aryNextSib ._∘₁_ ._∘₂_ ._∘_ Match∘) D = D
+  anamovelem (EM2aryPrevSib ._·+₁_ ._·+₂_ ._·+_ Match+) D = D
+  anamovelem (EM2aryPrevSib ._∘₁_ ._∘₂_ ._∘_ Match∘) D = D
+  anamovelem EMFHoleFirstChild D = D
+  anamovelem EMFHoleParent D = D
 
   -- L : (Γ : ·ctx) (x : Nat) → Γ ⊢ ·λ x <||> ·: (<||> ==> <||>) => (<||> ==> <||>)
   -- L Γ x =  SAsc (ASubsume {t' = <||> ==> <||>} {!ASubsume!} TCRefl)
@@ -511,7 +535,7 @@ module Hazelnut where
                 (Γ ⊢ (e ◆e) <= t) →
                 (Γ ⊢ (e' ◆e) <= t)
   actsense2 Γ e e' t α (AASubsume x act p) D2 = ASubsume (actsense1 act x) p
-  actsense2 Γ e e' t ._ (AAMove x) D2 = movelem x D2
+  actsense2 Γ e e' t ._ (AAMove x) D2 = anamovelem x D2
   actsense2 Γ ._ .(▹ <||> ◃) t .del AADel D2 = ASubsume SEHole TCHole1
   actsense2 Γ ._ ._ t .(construct asc) AAConAsc D2 = ASubsume (SAsc D2) TCRefl
   actsense2 Γ .(▹ <||> ◃) ._ t ._ (AAConVar x₁ p) D2 = ASubsume (SFHole (SVar p)) TCHole1
