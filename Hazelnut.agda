@@ -27,18 +27,26 @@ module Hazelnut where
   ·ctx = List (Nat × τ̇)
 
   -- apartness for contexts, so that we can follow barendregt's convention
-  _#_ : Nat → ·ctx → Set
-  x # [] = ⊤
-  x # (v , _) :: Γ with nateq x v
-  ... | Inl <> = ⊥
-  ... | Inr <> = x # Γ
+  data _#_ : (n : Nat) → (Γ : ·ctx) → Set where
+    #[] : {n : Nat} → n # []
+    #:: : {n m : Nat} {Γ : ·ctx} {t : τ̇} →
+           (n == m → ⊥) →
+           (n # Γ) →
+           n # ((m , t) :: Γ)
 
   -- remove possibly multiple copies of a variable from a context
   _/_ : ·ctx → Nat → ·ctx
   [] / x = []
-  ((y , t) :: Γ) / x with nateq x y
-  ... | Inl <> = Γ / x
-  ... | Inr <> = (y , t) :: (Γ / x)
+  (y , t) :: Γ / x with natEQ x y
+  (y , t) :: Γ / .y | Inl refl = Γ / y
+  (y , t) :: Γ / x  | Inr neq = (y , t) :: (Γ / x)
+
+  -- apart after remove
+  aar : (Γ : ·ctx) (x : Nat) → x # (Γ / x)
+  aar [] x = #[]
+  aar ((y , t) :: Γ) x with natEQ x y
+  aar ((y , t) :: Γ) .y | Inl refl = aar Γ y
+  aar ((y , t) :: Γ) x  | Inr neq = #:: neq (aar Γ x)
 
   -- this is syntax for cons to make the rules look nicer below
   _,,_ : {A : Set} → List A → A → List A
@@ -104,7 +112,7 @@ module Hazelnut where
       SAsc : {Γ : ·ctx} {e : ė} {t : τ̇} →
                 (Γ ⊢ e <= t) →
                 Γ ⊢ (e ·: t) => t
-      SVar : {Γ : ·ctx} {e : ė} {t : τ̇} {n : Nat} →
+      SVar : {Γ : ·ctx} {t : τ̇} {n : Nat} →
                 ((n , t) ∈ Γ) →
                 Γ ⊢ X n => t
       SAp  : {Γ : ·ctx} {e1 e2 : ė} {t t2 : τ̇} →
@@ -432,33 +440,93 @@ module Hazelnut where
                  (Γ / x) ⊢ (·λ x e) ~ α ~> (·λ x e') ⇐ (t1 ==> t2)
 
   -- theorem 1: action sensibility
+
+  -- if an action transforms an zexp in a synthetic posistion to another
+  -- zexp, they have the same type up erasure of focus.
   actsense1 : {Γ : ·ctx} {e e' : ê} {t t' : τ̇} {α : action} →
               (Γ ⊢ e => t ~ α ~> e' => t') →
               (Γ ⊢ (e  ◆e) => t) →
-              (Γ ⊢ (e' ◆e) => t')
-  actsense1 = {!!}
+               Γ ⊢ (e' ◆e) => t'
+  actsense1 (SAMove x) D2 = {!!}
+  actsense1 SADel D2 = SEHole
+  actsense1 SAConAsc D2 = SAsc (ASubsume D2 TCRefl)
+  actsense1 (SAConVar p) D2 = SVar p
+  actsense1 SAConLam D2 = SAsc (ALam {!!} (ASubsume SEHole TCRefl))
+  actsense1 SAConAp1 D2 = SAp D2 (ASubsume SEHole TCHole1)
+  actsense1 SAConAp2 D2 = {!!}
+  actsense1 (SAConAp3 x) D2 = {!!}
+  actsense1 SAConArg D2 = SApHole SEHole (ASubsume D2 TCHole2)
+  actsense1 SAConNumlit D2 = SNum
+  actsense1 (SAConPlus1 x) D2 = {!!}
+  actsense1 (SAConPlus2 x) D2 = {!!}
+  actsense1 (SAFinish x) D2 = x
+  actsense1 (SAZipAsc1 x) D2 = {!!}
+  actsense1 (SAZipAsc2 x x₁) D2 = {!!}
+  actsense1 (SAZipAp1 x D1 x₁) D2 = {!!}
+  actsense1 (SAZipAp2 x D1 x₁) D2 = {!!}
+  actsense1 (SAZipAp3 x x₁) D2 = {!!}
+  actsense1 (SAZipAp4 x x₁) D2 = {!!}
+  actsense1 (SAZipPlus1 x) D2 = {!!}
+  actsense1 (SAZipPlus2 x) D2 = {!!}
+  actsense1 (SAZipHole1 x D1 x₁) D2 = {!!}
+  actsense1 (SAZipHole2 x D1) D2 = {!!}
 
-  -- lem : (Γ : ·ctx) (t : τ̇) → Γ ⊢ <||> <= t
-  -- lem Γ num = ASubsume SEHole TCHole1
-  -- lem Γ <||> = ASubsume SEHole TCRefl
-  -- lem Γ (t ==> t₁) = ASubsume SEHole TCHole1
+  -- movements preserve analytic types up to erasure. this lemma seems
+  -- silly because all it seems to do in each case is return the second
+  -- derivation D. the pattern matching here, though, constrains what that
+  -- derivation may be in each case, and is therefore actually
+  -- non-trivial. it's just that most of the work is happening in the
+  -- implicit arguments.
+  movelem : {Γ : ·ctx} {δ : direction} {e e' : ê} {t : τ̇}
+            (p : e + move δ +>e e') →
+            (Γ ⊢ e ◆e <= t) →
+            (Γ ⊢ e' ◆e <= t)
+  movelem EMAscFirstChild D = D
+  movelem EMAscParent1 D = D
+  movelem EMAscParent2 D = D
+  movelem EMAscNextSib D = D
+  movelem EMAscPrevSib D = D
+  movelem EMLamFirstChild D = D
+  movelem EMLamParent D = D
+  movelem (EM2aryFirstChild ._·+₁_ ._·+₂_ ._·+_ Match+) D = D
+  movelem (EM2aryFirstChild ._∘₁_ ._∘₂_ ._∘_ Match∘) D = D
+  movelem (EM2aryParent1 ._·+₁_ ._·+₂_ ._·+_ Match+) D = D
+  movelem (EM2aryParent1 ._∘₁_ ._∘₂_ ._∘_ Match∘) D = D
+  movelem (EM2aryParent2 ._·+₁_ ._·+₂_ ._·+_ Match+) D = D
+  movelem (EM2aryParent2 ._∘₁_ ._∘₂_ ._∘_ Match∘) D = D
+  movelem (EM2aryNextSib ._·+₁_ ._·+₂_ ._·+_ Match+) D = D
+  movelem (EM2aryNextSib ._∘₁_ ._∘₂_ ._∘_ Match∘) D = D
+  movelem (EM2aryPrevSib ._·+₁_ ._·+₂_ ._·+_ Match+) D = D
+  movelem (EM2aryPrevSib ._∘₁_ ._∘₂_ ._∘_ Match∘) D = D
+  movelem EMFHoleFirstChild D = D
+  movelem EMFHoleParent D = D
 
+  -- L : (Γ : ·ctx) (x : Nat) → Γ ⊢ ·λ x <||> ·: (<||> ==> <||>) => (<||> ==> <||>)
+  -- L Γ x =  SAsc (ASubsume {t' = <||> ==> <||>} {!ASubsume!} TCRefl)
+
+  -- if an action transforms an zexp in an analytic posistion to another
+  -- zexp, they have the same type up erasure of focus.
   actsense2  : (Γ : ·ctx) (e e' : ê) (t : τ̇) (α : action) →
                 (Γ ⊢ e ~ α ~> e' ⇐ t) →
                 (Γ ⊢ (e ◆e) <= t) →
                 (Γ ⊢ (e' ◆e) <= t)
-  actsense2 Γ e e' t α (AASubsume x x₁ x₂) D2 = ASubsume (actsense1 x₁ x) x₂
-  actsense2 Γ e e' t ._ (AAMove x) D2 = {!!}
+  actsense2 Γ e e' t α (AASubsume x act p) D2 = ASubsume (actsense1 act x) p
+  actsense2 Γ e e' t ._ (AAMove x) D2 = movelem x D2
   actsense2 Γ ._ .(▹ <||> ◃) t .del AADel D2 = ASubsume SEHole TCHole1
-  actsense2 Γ ._ ._ t .(construct asc) AAConAsc D2 = {!!}
-  actsense2 Γ .(▹ <||> ◃) ._ t ._ (AAConVar x₁ p) D2 = {!!}
-  actsense2 Γ .(▹ <||> ◃) ._ ._ ._ AAConLam1 D2 = {!!}
-  actsense2 Γ .(▹ <||> ◃) ._ t ._ (AAConLam2 x₁) D2 = {!!}
+  actsense2 Γ ._ ._ t .(construct asc) AAConAsc D2 = ASubsume (SAsc D2) TCRefl
+  actsense2 Γ .(▹ <||> ◃) ._ t ._ (AAConVar x₁ p) D2 = ASubsume (SFHole (SVar p)) TCHole1
+  actsense2 Γ .(▹ <||> ◃) ._ ._ ._ AAConLam1 (ASubsume SEHole TCHole1) = ALam {!!} (ASubsume SEHole TCHole1)
+  actsense2 Γ .(▹ <||> ◃) ._ .<||> ._ (AAConLam2 n~) (ASubsume SEHole TCRefl) = abort (n~ TCHole2) -- ASubsume (SFHole {t = <||> ==> <||>} {!!}) TCHole2
+  actsense2 Γ .(▹ <||> ◃) ._ t ._ (AAConLam2 x₁) (ASubsume SEHole TCHole1) = ASubsume (SFHole {t = <||> ==> <||>} (SAsc (ALam {!!} (ASubsume SEHole TCRefl)))) TCHole1
+  actsense2 Γ .(▹ <||> ◃) ._ .<||> ._ (AAConLam2 n~) (ASubsume SEHole TCHole2) = abort (n~ TCHole2) -- this seems wrong
   actsense2 Γ .(▹ <||> ◃) ._ t ._ (AAConNumlit x) D2 = ASubsume (SFHole SNum) TCHole1
   actsense2 Γ ._ ._ t .finish (AAFinish x) D2 = x
-  actsense2 ._ ._ ._ ._ α (AAZipLam x₁ D1) D2 = {!!}
+  actsense2 ._ ._ ._ ._ α (AAZipLam x₁ D1) D2 = {!actsense2 _ _ _ _ _ D1!}
 
   -- theorem 2
+
+  -- the same action applied to the same type makes the same resultant
+  -- type.
   actdet1 : {t t' t'' : τ̂} {α : action} →
             (t + α +> t') →
             (t + α +> t'') →
