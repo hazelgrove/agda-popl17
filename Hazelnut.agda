@@ -332,7 +332,7 @@ module Hazelnut where
                 (p : (x , t) ∈ Γ) → -- todo: is this right?
                 Γ ⊢ ▹ <||> ◃ => <||> ~ construct (var x) ~> ▹ X x ◃ => t
       SAConLam : {Γ : ·ctx} {x : Nat} →
-               -- todo: add a constraint here that x # Γ?
+               (x # Γ) → -- todo: i added this; it doesn't appear in the text
                 Γ ⊢ ▹ <||> ◃ => <||> ~ construct (lam x) ~>
                    ((·λ x <||>) ·:₂ (▹ <||> ◃ ==>₁ <||>)) => (<||> ==> <||>)
       SAConAp1 : {Γ : ·ctx} {t1 t2 : τ̇} {e : ė} →
@@ -422,9 +422,11 @@ module Hazelnut where
                  (p : (x , t') ∈ Γ) → -- todo: is this right?
                  Γ ⊢ ▹ <||> ◃ ~ construct (var x) ~> <| ▹ X x ◃ |> ⇐ t
       AAConLam1 : {Γ : ·ctx} {x : Nat} {t1 t2 : τ̇} →
+                  (x # Γ) → -- todo: i added this
                   Γ ⊢ ▹ <||> ◃ ~ construct (lam x) ~>
                       ·λ x (▹ <||> ◃) ⇐ (t1 ==> t2)
       AAConLam2 : {Γ : ·ctx} {x : Nat} {t : τ̇} →
+                  (x # Γ) → -- todo: i added this
                   (t ~̸ (<||> ==> <||>)) →
                   Γ ⊢ ▹ <||> ◃ ~ construct (lam x) ~>
                       <| ·λ x <||> ·:₂ (▹ <||> ◃ ==>₁ <||>) |> ⇐ t
@@ -475,14 +477,15 @@ module Hazelnut where
   actsense1 SADel D2 = SEHole
   actsense1 SAConAsc D2 = SAsc (ASubsume D2 TCRefl)
   actsense1 (SAConVar p) D2 = SVar p
-  actsense1 SAConLam D2 = SAsc (ALam {!!} (ASubsume SEHole TCRefl))
+  actsense1 (SAConLam p) D2 = SAsc (ALam p (ASubsume SEHole TCRefl))
   actsense1 SAConAp1 D2 = SAp D2 (ASubsume SEHole TCHole1)
-  actsense1 SAConAp2 D2 = {!!}
-  actsense1 (SAConAp3 x) D2 = {!!}
+  actsense1 SAConAp2 D2 = SApHole D2 (ASubsume SEHole TCRefl)
+  actsense1 (SAConAp3 x) D2 = SApHole (SFHole D2) (ASubsume SEHole TCRefl)
   actsense1 SAConArg D2 = SApHole SEHole (ASubsume D2 TCHole2)
   actsense1 SAConNumlit D2 = SNum
-  actsense1 (SAConPlus1 x) D2 = {!!}
-  actsense1 (SAConPlus2 x) D2 = {!!}
+  actsense1 (SAConPlus1 TCRefl) D2 = SPlus (ASubsume D2 TCRefl) (ASubsume SEHole TCHole1)
+  actsense1 (SAConPlus1 TCHole2) D2 = SPlus (ASubsume D2 TCHole1) (ASubsume SEHole TCHole1)
+  actsense1 (SAConPlus2 x) D2 = SPlus (ASubsume (SFHole D2) TCHole1) (ASubsume SEHole TCHole1)
   actsense1 (SAFinish x) D2 = x
   actsense1 (SAZipAsc1 x) D2 = {!!}
   actsense1 (SAZipAsc2 x x₁) D2 = {!!}
@@ -492,8 +495,8 @@ module Hazelnut where
   actsense1 (SAZipAp4 x x₁) D2 = {!!}
   actsense1 (SAZipPlus1 x) D2 = {!!}
   actsense1 (SAZipPlus2 x) D2 = {!!}
-  actsense1 (SAZipHole1 x D1 x₁) D2 = {!!}
-  actsense1 (SAZipHole2 x D1) D2 = {!!}
+  actsense1 (SAZipHole1 x D1 x₁) D2 = SFHole (actsense1 D1 x)
+  actsense1 (SAZipHole2 x D1) D2 = SEHole
 
   -- movements preserve analytic types up to erasure. this lemma seems
   -- silly because all it seems to do in each case is return the second
@@ -539,13 +542,13 @@ module Hazelnut where
   actsense2 Γ ._ .(▹ <||> ◃) t .del AADel D2 = ASubsume SEHole TCHole1
   actsense2 Γ ._ ._ t .(construct asc) AAConAsc D2 = ASubsume (SAsc D2) TCRefl
   actsense2 Γ .(▹ <||> ◃) ._ t ._ (AAConVar x₁ p) D2 = ASubsume (SFHole (SVar p)) TCHole1
-  actsense2 Γ .(▹ <||> ◃) ._ ._ ._ AAConLam1 (ASubsume SEHole TCHole1) = ALam {!!} (ASubsume SEHole TCHole1)
-  actsense2 Γ .(▹ <||> ◃) ._ .<||> ._ (AAConLam2 n~) (ASubsume SEHole TCRefl) = abort (n~ TCHole2) -- ASubsume (SFHole {t = <||> ==> <||>} {!!}) TCHole2
-  actsense2 Γ .(▹ <||> ◃) ._ t ._ (AAConLam2 x₁) (ASubsume SEHole TCHole1) = ASubsume (SFHole {t = <||> ==> <||>} (SAsc (ALam {!!} (ASubsume SEHole TCRefl)))) TCHole1
-  actsense2 Γ .(▹ <||> ◃) ._ .<||> ._ (AAConLam2 n~) (ASubsume SEHole TCHole2) = abort (n~ TCHole2) -- this seems wrong
+  actsense2 Γ .(▹ <||> ◃) ._ ._ ._ (AAConLam1 p) (ASubsume SEHole TCHole1) = ALam p (ASubsume SEHole TCHole1)
+  actsense2 Γ .(▹ <||> ◃) ._ .<||> ._ (AAConLam2 p n~) (ASubsume SEHole TCRefl) = abort (n~ TCHole2) -- ASubsume (SFHole {t = <||> ==> <||>} {!!}) TCHole2
+  actsense2 Γ .(▹ <||> ◃) ._ t ._ (AAConLam2 p x₁) (ASubsume SEHole TCHole1) = ASubsume (SFHole {t = <||> ==> <||>} (SAsc (ALam p (ASubsume SEHole TCRefl)))) TCHole1
+  actsense2 Γ .(▹ <||> ◃) ._ .<||> ._ (AAConLam2 p n~) (ASubsume SEHole TCHole2) = abort (n~ TCHole2) -- this seems wrong
   actsense2 Γ .(▹ <||> ◃) ._ t ._ (AAConNumlit x) D2 = ASubsume (SFHole SNum) TCHole1
   actsense2 Γ ._ ._ t .finish (AAFinish x) D2 = x
-  actsense2 ._ ._ ._ ._ α (AAZipLam x₁ D1) D2 = {!actsense2 _ _ _ _ _ D1!}
+  actsense2 ._ ._ ._ ._ α (AAZipLam x₁ D1) D2 = {!!}
 
   -- theorem 2
 
