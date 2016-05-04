@@ -522,15 +522,15 @@ module Hazelnut where
     actsense1 (SAZipAsc2 x x₁) _ = SAsc x₁
     actsense1 (SAZipAp1 x D1 x₁) D2 = SAp (actsense1 D1 x) x₁
     actsense1 (SAZipAp2 x D1 x₁) D2 = SApHole (actsense1 D1 x) x₁
-    actsense1 (SAZipAp3 x x₁) D2 = {!!}
-    actsense1 (SAZipAp4 x x₁) D2 = {!D2!}
+    -- todo: in all three cases, e synthesizes different types.
+    actsense1 (SAZipAp3 x x₁) (SAp D2 x₃) = {!!}
+    actsense1 (SAZipAp3 x x₁) (SApHole D2 x₂)  = {!!}
+    actsense1 (SAZipAp4 x x₁) (SAp D2 x₂)      = {!!}
+    actsense1 (SAZipAp4 x x₁) (SApHole D2 x₂)  = SApHole x (actsense2 x₁ x₂)
     actsense1 (SAZipPlus1 x) (SPlus x₁ x₂) = SPlus (actsense2 x x₁) x₂
     actsense1 (SAZipPlus2 x) (SPlus x₁ x₂) = SPlus x₁ (actsense2 x x₂)
     actsense1 (SAZipHole1 x D1 x₁) D2 = SFHole (actsense1 D1 x)
     actsense1 (SAZipHole2 x D1) D2 = SEHole
-
-    -- L : (Γ : ·ctx) (x : Nat) → Γ ⊢ ·λ x <||> ·: (<||> ==> <||>) => (<||> ==> <||>)
-    -- L Γ x =  SAsc (ASubsume {t' = <||> ==> <||>} {!ASubsume!} TCRefl)
 
     -- if an action transforms an zexp in an analytic posistion to another
     -- zexp, they have the same type up erasure of focus.
@@ -544,12 +544,39 @@ module Hazelnut where
     actsense2 AAConAsc D2 = ASubsume (SAsc D2) TCRefl
     actsense2 (AAConVar x₁ p) D2 = ASubsume (SFHole (SVar p)) TCHole1
     actsense2 (AAConLam1 p) (ASubsume SEHole TCHole1) = ALam p (ASubsume SEHole TCHole1)
-    actsense2 (AAConLam2 p n~) (ASubsume SEHole TCRefl) = abort (n~ TCHole2) -- ASubsume (SFHole {t = <||> ==> <||>} {!!}) TCHole2
-    actsense2 (AAConLam2 p x₁) (ASubsume SEHole TCHole1) = ASubsume (SFHole {t = <||> ==> <||>} (SAsc (ALam p (ASubsume SEHole TCRefl)))) TCHole1
-    actsense2 (AAConLam2 p n~) (ASubsume SEHole TCHole2) = abort (n~ TCHole2) -- this seems wrong
+    actsense2 (AAConLam2 p n~) (ASubsume SEHole TCRefl) = abort (n~ TCHole2) -- todo
+    actsense2 (AAConLam2 p x₁) (ASubsume SEHole TCHole1) = ASubsume (SFHole (SAsc (ALam p (ASubsume SEHole TCRefl)))) TCHole1
+    actsense2 (AAConLam2 p n~) (ASubsume SEHole TCHole2) = abort (n~ TCHole2) -- todo
     actsense2 (AAConNumlit x) D2 = ASubsume (SFHole SNum) TCHole1
     actsense2 (AAFinish x) D2 = x
-    actsense2 (AAZipLam x₁ D1) D2 = {!!}
+    actsense2 (AAZipLam x₁ D1) (ASubsume () x₃)
+    actsense2 (AAZipLam x₁ D1) (ALam x₂ D2) = ALam x₂ (actsense2 (weaken x₁ x₂ D1) D2)
+
+    weaken : {Γ : ·ctx} {e e' : ê} {t1 t2 : τ̇} {α : action} {x : Nat} →
+             ((x , t1) ∈ Γ) →
+             (x # (Γ / x)) → -- don't really need this one? it's always true..
+             (Γ ⊢ e ~ α ~> e' ⇐ t2) →
+             (((Γ / x) ,, (x , t1)) ⊢ e ~ α ~> e' ⇐ t2)
+    weaken xin apart (AASubsume x₁ x₂ x₃) = {!!}
+    weaken xin apart (AAMove x₁) = {!!}
+    weaken xin apart AADel = AADel
+    weaken xin apart AAConAsc = AAConAsc
+    weaken xin apart (AAConVar x₂ p) = {!!}
+    weaken xin apart (AAConLam1 x₂) = {!!}
+    weaken xin apart (AAConLam2 x₂ x₃) = {!!}
+    weaken xin apart (AAConNumlit x₁) = AAConNumlit x₁
+    weaken xin apart (AAFinish x₁) = AAFinish {!!}
+    weaken xin apart (AAZipLam x₂ D) = {!!}
+    -- weaken (AASubsume x₁ x₂ x₃) = AASubsume {!!} {!!} x₃
+    -- weaken (AAMove x₁) = AAMove x₁
+    -- weaken AADel = AADel
+    -- weaken AAConAsc = AAConAsc
+    -- weaken (AAConVar x₂ p) = AAConVar x₂ {!!}
+    -- weaken (AAConLam1 x₂) = AAConLam1 {!!}
+    -- weaken (AAConLam2 x₂ x₃) = AAConLam2 {!!} x₃
+    -- weaken (AAConNumlit x₁) = AAConNumlit x₁
+    -- weaken (AAFinish x₁) = AAFinish {!!}
+    -- weaken (AAZipLam x₂ D) = AAZipLam {!!} {!!}
 
   -- theorem 2
 
@@ -580,16 +607,74 @@ module Hazelnut where
   actdet1 (TMZip2 p1) (TMZip2 p2) with actdet1 p1 p2
   ... | refl = refl
 
-  actdet2 : (Γ : ·ctx) (e e' e'' : ê) (t t' t'' : τ̇) (α : action) →
-            (Γ ⊢ (e ◆e) => t) →
-            (Γ ⊢ e => t ~ α ~> e'  => t') →
-            (Γ ⊢ e => t ~ α ~> e'' => t'') →
-            (e' == e'' × t' == t'') -- todo: maybe 1a and 1b?
-  actdet2 Γ e e' e'' t t' t'' α D1 D2 D3 = {!!}
 
-  actdet3 : (Γ : ·ctx) (e e' e'' : ê) (t : τ̇) (α : action) →
+  -- this theorem is false.
+  movedet : {Γ : ·ctx} {e e' e'' : ê} {δ : direction} {t : τ̇} →
             (Γ ⊢ (e ◆e) <= t) →
-            (Γ ⊢ e ~ α ~> e' ⇐ t) →
-            (Γ ⊢ e ~ α ~> e'' ⇐ t) →
-            (e' == e'')
-  actdet3 Γ e e' e'' t α D1 D2 D3 = {!!}
+            (e + move δ +>e e') →
+            (e + move δ +>e e'') →
+            e' == e''
+  movedet = {!!}
+
+  -- here's a counter-example
+  ex1 : (▹ N 5 ◃ ·+₁ N 10) + move parent +>e  (▹ N 5 ·+ N 10 ◃)
+  ex1 = EM2aryParent1 _·+₁_ _·+₂_ _·+_ Match+
+
+  ex2 : (▹ N 5 ◃ ·+₁ N 10) + move nextSib +>e  (N 5 ·+₂ ▹ N 10 ◃)
+  ex2 = EM2aryNextSib _·+₁_ _·+₂_ _·+_ Match+
+
+  -- either this is a bug in the rules for movement, and nextSib needs to
+  -- be a derived form or something, or the theorem should be stated only
+  -- up to focus erasure.
+  movedet◆ : {Γ : ·ctx} {e e' e'' : ê} {δ : direction} {t : τ̇} →
+            (Γ ⊢ (e ◆e) <= t) →
+            (e + move δ +>e e') →
+            (e + move δ +>e e'') →
+            (e' ◆e) == (e'' ◆e)
+  movedet◆ = {!!}
+
+
+
+  mutual
+    actdet2 : {Γ : ·ctx} {e e' e'' : ê} {t t' t'' : τ̇} {α : action} →
+              (Γ ⊢ (e ◆e) => t) →
+              (Γ ⊢ e => t ~ α ~> e'  => t') →
+              (Γ ⊢ e => t ~ α ~> e'' => t'') →
+              (e' == e'' × t' == t'') -- todo: maybe 1a and 1b?
+    actdet2 D1 D2 D3 = {!D2 D3!}
+
+    actdet3 : {Γ : ·ctx} {e e' e'' : ê} {t : τ̇} {α : action} →
+              (Γ ⊢ (e ◆e) <= t) →
+              (Γ ⊢ e ~ α ~> e' ⇐ t) →
+              (Γ ⊢ e ~ α ~> e'' ⇐ t) →
+              (e' == e'')
+    actdet3 D1 (AASubsume x x₁ x₂) D3 = {!!}
+
+    actdet3 D1 (AAMove x) (AASubsume x₁ x₂ x₃) = {!!}
+    actdet3 D1 (AAMove x) (AAMove x₁) = movedet D1 x x₁
+    actdet3 D1 (AAMove x₁) (AAZipLam x₂ D3) = {!!}
+
+    actdet3 D1 AADel (AASubsume _ SADel _) = refl
+    actdet3 D1 AADel AADel = refl
+
+    actdet3 D1 AAConAsc (AASubsume x x₁ x₂) = {!!}
+    actdet3 D1 AAConAsc AAConAsc = refl
+
+    actdet3 D1 (AAConVar x₁ p) (AASubsume x₂ x₃ x₄) = {!!}
+    actdet3 D1 (AAConVar x₁ p) (AAConVar x₂ p₁) = refl
+
+    actdet3 D1 (AAConLam1 x₁) (AASubsume x₂ x₃ x₄) = {!!}
+    actdet3 D1 (AAConLam1 x₁) (AAConLam1 x₂) = refl
+    actdet3 D1 (AAConLam1 x₁) (AAConLam2 x₂ x₃) = {!!}
+
+    actdet3 D1 (AAConLam2 x₁ x₂) (AASubsume x₃ x₄ x₅) = {!!}
+    actdet3 D1 (AAConLam2 x₁ x₂) (AAConLam1 x₃) = {!!}
+    actdet3 D1 (AAConLam2 x₁ x₂) (AAConLam2 x₃ x₄) = refl
+
+    actdet3 D1 (AAConNumlit x) (AASubsume x₁ x₂ x₃) = {!!}
+    actdet3 D1 (AAConNumlit x) (AAConNumlit x₁) = refl
+
+    actdet3 D1 (AAFinish x) (AASubsume x₁ x₂ x₃) = {!!}
+    actdet3 D1 (AAFinish x) (AAFinish x₁) = refl
+
+    actdet3 D1 (AAZipLam x₁ D2) D3 = {!!}
