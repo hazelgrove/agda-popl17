@@ -497,6 +497,37 @@ module Hazelnut where
   anamovelem EMFHoleFirstChild D = D
   anamovelem EMFHoleParent D = D
 
+  -- need this lemma for contexts, to make unicity go through, to make
+  -- determinism go through. it turns out to be false, however. ∈ is
+  -- defined by equality on the whole alpha, so there's nothing wrong with
+  --
+  --     (5, num) :: (5, <||>) :: []
+
+  ctxunicity : {Γ : ·ctx} {n : Nat} {t t' : τ̇} →
+               (n , t') ∈ Γ →
+               (n , t) ∈ Γ →
+               t == t'
+  ctxunicity ∈h ∈h = refl
+  ctxunicity ∈h (∈t p2) = ctxunicity {!!} p2
+  ctxunicity (∈t p1) ∈h = {!!} -- ctxunicity p1 {!p1!}
+  ctxunicity (∈t p1) (∈t p2) = ctxunicity p1 p2
+
+
+  synthunicity : {Γ : ·ctx} {e e' : ė} {t t' : τ̇} →
+                  (Γ ⊢ e => t)
+                → (Γ ⊢ e => t')
+                → t == t'
+  synthunicity (SAsc x) (SAsc x₁) = refl
+  synthunicity (SVar x) (SVar x₁) = ctxunicity x₁ x
+  synthunicity (SAp D1 x) (SAp D2 x₁) = {!x₁!}
+  synthunicity (SAp D1 x) (SApHole D2 x₁) = {!!}
+  synthunicity SNum SNum = refl
+  synthunicity (SPlus x₁ x) (SPlus x₂ x₃) = {!!}
+  synthunicity SEHole SEHole = refl
+  synthunicity (SFHole D1) (SFHole D2) = refl
+  synthunicity (SApHole D1 x) (SAp D2 x₁) = {!!}
+  synthunicity (SApHole D1 x) (SApHole D2 x₁) = refl
+
   mutual
     -- if an action transforms an zexp in a synthetic posistion to another
     -- zexp, they have the same type up erasure of focus.
@@ -522,10 +553,12 @@ module Hazelnut where
     actsense1 (SAZipAsc2 x x₁) _ = SAsc x₁
     actsense1 (SAZipAp1 x D1 x₁) D2 = SAp (actsense1 D1 x) x₁
     actsense1 (SAZipAp2 x D1 x₁) D2 = SApHole (actsense1 D1 x) x₁
-    -- todo: in all three cases, e synthesizes different types.
-    actsense1 (SAZipAp3 x x₁) (SAp D2 x₃) = {!!}
-    actsense1 (SAZipAp3 x x₁) (SApHole D2 x₂)  = {!!}
-    actsense1 (SAZipAp4 x x₁) (SAp D2 x₂)      = {!!}
+    actsense1 (SAZipAp3 x x₁) (SAp D2 x₃) with synthunicity x D2
+    ... | refl = SAp x (actsense2 x₁ x₃)
+    actsense1 (SAZipAp3 x x₁) (SApHole D2 x₂) with synthunicity x D2
+    ... | ()
+    actsense1 (SAZipAp4 x x₁) (SAp D2 x₂) with synthunicity x D2
+    ... | ()
     actsense1 (SAZipAp4 x x₁) (SApHole D2 x₂)  = SApHole x (actsense2 x₁ x₂)
     actsense1 (SAZipPlus1 x) (SPlus x₁ x₂) = SPlus (actsense2 x x₁) x₂
     actsense1 (SAZipPlus2 x) (SPlus x₁ x₂) = SPlus x₁ (actsense2 x x₂)
@@ -608,32 +641,17 @@ module Hazelnut where
   ... | refl = refl
 
 
-  -- this theorem is false.
-  movedet : {Γ : ·ctx} {e e' e'' : ê} {δ : direction} {t : τ̇} →
-            (Γ ⊢ (e ◆e) <= t) →
+  -- this theorem is false?
+  movedet : {e e' e'' : ê} {δ : direction} {t : τ̇} →
             (e + move δ +>e e') →
             (e + move δ +>e e'') →
             e' == e''
   movedet = {!!}
 
-  -- here's a counter-example
-  ex1 : (▹ N 5 ◃ ·+₁ N 10) + move parent +>e  (▹ N 5 ·+ N 10 ◃)
-  ex1 = EM2aryParent1 _·+₁_ _·+₂_ _·+_ Match+
-
-  ex2 : (▹ N 5 ◃ ·+₁ N 10) + move nextSib +>e  (N 5 ·+₂ ▹ N 10 ◃)
-  ex2 = EM2aryNextSib _·+₁_ _·+₂_ _·+_ Match+
-
-  -- either this is a bug in the rules for movement, and nextSib needs to
-  -- be a derived form or something, or the theorem should be stated only
-  -- up to focus erasure.
-  movedet◆ : {Γ : ·ctx} {e e' e'' : ê} {δ : direction} {t : τ̇} →
-            (Γ ⊢ (e ◆e) <= t) →
+  moveerase : {e e' : ê} {δ : direction} {t : τ̇} →
             (e + move δ +>e e') →
-            (e + move δ +>e e'') →
-            (e' ◆e) == (e'' ◆e)
-  movedet◆ = {!!}
-
-
+            (e ◆e) == (e' ◆e)
+  moveerase = {!!}
 
   mutual
     actdet2 : {Γ : ·ctx} {e e' e'' : ê} {t t' t'' : τ̇} {α : action} →
@@ -651,7 +669,7 @@ module Hazelnut where
     actdet3 D1 (AASubsume x x₁ x₂) D3 = {!!}
 
     actdet3 D1 (AAMove x) (AASubsume x₁ x₂ x₃) = {!!}
-    actdet3 D1 (AAMove x) (AAMove x₁) = movedet D1 x x₁
+    actdet3 D1 (AAMove x) (AAMove x₁) = {!movedet x x₁!}
     actdet3 D1 (AAMove x₁) (AAZipLam x₂ D3) = {!!}
 
     actdet3 D1 AADel (AASubsume _ SADel _) = refl
