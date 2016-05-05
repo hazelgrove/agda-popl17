@@ -508,6 +508,17 @@ module Hazelnut where
                t == t'
   ctxunicity = {!!}
 
+  -- actions don't change under weakening
+  weaken : {Γ : ·ctx} {e e' : ê} {t1 t2 : τ̇} {α : action} {x : Nat} →
+           ((x , t1) ∈ Γ) →
+           (x # (Γ / x)) → -- don't really need this one? it's always true..
+           (Γ ⊢ e ~ α ~> e' ⇐ t2) →
+           (((Γ / x) ,, (x , t1)) ⊢ e ~ α ~> e' ⇐ t2)
+  weaken = {!!}
+
+  -- synthesis only produces equal types. note that there is no need for an
+  -- analagous theorem for analytic posititions, just because we think of
+  -- the type as an input
   synthunicity : {Γ : ·ctx} {e : ė} {t t' : τ̇} →
                   (Γ ⊢ e => t)
                 → (Γ ⊢ e => t')
@@ -571,24 +582,17 @@ module Hazelnut where
                   (Γ ⊢ (e' ◆e) <= t)
     actsense2 (AASubsume x act p) D2 = ASubsume (actsense1 act x) p
     actsense2 (AAMove x) D2 = anamovelem x D2
-    actsense2 AADel D2 = ASubsume SEHole TCHole1
+    actsense2 AADel _ = ASubsume SEHole TCHole1
     actsense2 AAConAsc D2 = ASubsume (SAsc D2) TCRefl
     actsense2 (AAConVar x₁ p) D2 = ASubsume (SFHole (SVar p)) TCHole1
     actsense2 (AAConLam1 p) (ASubsume SEHole TCHole1) = ALam p (ASubsume SEHole TCHole1)
-    actsense2 (AAConLam2 p n~) (ASubsume SEHole TCRefl) = abort (n~ TCHole2) -- todo
+    actsense2 (AAConLam2 p n~) (ASubsume SEHole TCRefl) = abort (n~ TCHole2)
     actsense2 (AAConLam2 p x₁) (ASubsume SEHole TCHole1) = ASubsume (SFHole (SAsc (ALam p (ASubsume SEHole TCRefl)))) TCHole1
-    actsense2 (AAConLam2 p n~) (ASubsume SEHole TCHole2) = abort (n~ TCHole2) -- todo
-    actsense2 (AAConNumlit x) D2 = ASubsume (SFHole SNum) TCHole1
-    actsense2 (AAFinish x) D2 = x
-    actsense2 (AAZipLam x₁ D1) (ASubsume () x₃)
+    actsense2 (AAConLam2 p n~) (ASubsume SEHole TCHole2) = abort (n~ TCHole2)
+    actsense2 (AAConNumlit _) _ = ASubsume (SFHole SNum) TCHole1
+    actsense2 (AAFinish x) _ = x
+    actsense2 (AAZipLam _ _ ) (ASubsume () _)
     actsense2 (AAZipLam x₁ D1) (ALam x₂ D2) = ALam x₂ (actsense2 (weaken x₁ x₂ D1) D2)
-
-    weaken : {Γ : ·ctx} {e e' : ê} {t1 t2 : τ̇} {α : action} {x : Nat} →
-             ((x , t1) ∈ Γ) →
-             (x # (Γ / x)) → -- don't really need this one? it's always true..
-             (Γ ⊢ e ~ α ~> e' ⇐ t2) →
-             (((Γ / x) ,, (x , t1)) ⊢ e ~ α ~> e' ⇐ t2)
-    weaken = {!!}
 
   -- theorem 2
 
@@ -627,10 +631,6 @@ module Hazelnut where
             e' == e''
   movedet = {!!}
 
-  moveerase : {e e' : ê} {δ : direction} {t : τ̇} →
-            (e + move δ +>e e') →
-            (e ◆e) == (e' ◆e)
-  moveerase = {!!}
 
   mutual
     actdet2 : {Γ : ·ctx} {e e' e'' : ê} {t t' t'' : τ̇} {α : action} →
@@ -675,3 +675,36 @@ module Hazelnut where
     actdet3 D1 (AAFinish x) (AAFinish x₁) = refl
 
     actdet3 D1 (AAZipLam x₁ D2) D3 = {!!}
+
+  -- these theorems aren't listed in the draft, but have been discussed
+  -- since submission.
+
+  -- movement doesn't change the term other than moving the focus around.
+  moveerase : {e e' : ê} {δ : direction} {t : τ̇} →
+            (e + move δ +>e e') →
+            (e ◆e) == (e' ◆e)
+  moveerase EMAscFirstChild = refl
+  moveerase EMAscParent1 = refl
+  moveerase EMAscParent2 = refl
+  moveerase EMAscNextSib = refl
+  moveerase EMAscPrevSib = refl
+  moveerase EMLamFirstChild = refl
+  moveerase EMLamParent = refl
+  moveerase (EM2aryFirstChild ._·+₁_ ._·+₂_ ._·+_ Match+) = refl
+  moveerase (EM2aryFirstChild ._∘₁_ ._∘₂_ ._∘_ Match∘) = refl
+  moveerase (EM2aryParent1 ._·+₁_ ._·+₂_ ._·+_ Match+) = refl
+  moveerase (EM2aryParent1 ._∘₁_ ._∘₂_ ._∘_ Match∘) = refl
+  moveerase (EM2aryParent2 ._·+₁_ ._·+₂_ ._·+_ Match+) = refl
+  moveerase (EM2aryParent2 ._∘₁_ ._∘₂_ ._∘_ Match∘) = refl
+  moveerase (EM2aryNextSib ._·+₁_ ._·+₂_ ._·+_ Match+) = refl
+  moveerase (EM2aryNextSib ._∘₁_ ._∘₂_ ._∘_ Match∘) = refl
+  moveerase (EM2aryPrevSib ._·+₁_ ._·+₂_ ._·+_ Match+) = refl
+  moveerase (EM2aryPrevSib ._∘₁_ ._∘₂_ ._∘_ Match∘) = refl
+  moveerase EMFHoleFirstChild = refl
+  moveerase EMFHoleParent = refl
+
+  -- constructability: any well-typed term can be built by a sequence of
+  -- actions from the empty hole
+
+  -- reachability: there is a sequence of actions that brings you from any
+  -- two terms that are the same up to focus erasure
