@@ -91,3 +91,8 @@ module Prelude where
     Less : Order
     Equal : Order
     Greater : Order
+
+  -- function extensionality
+  postulate
+     funext : {A : Set} {B : A → Set} {f g : (x : A) → (B x)} →
+              ((x : A) → f x == g x) → f == g
