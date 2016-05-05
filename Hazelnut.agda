@@ -513,7 +513,7 @@ module Hazelnut where
   ctxunicity (∈t p1) (∈t p2) = ctxunicity p1 p2
 
 
-  synthunicity : {Γ : ·ctx} {e e' : ė} {t t' : τ̇} →
+  synthunicity : {Γ : ·ctx} {e : ė} {t t' : τ̇} →
                   (Γ ⊢ e => t)
                 → (Γ ⊢ e => t')
                 → t == t'
@@ -553,11 +553,11 @@ module Hazelnut where
     actsense1 (SAZipAsc2 x x₁) _ = SAsc x₁
     actsense1 (SAZipAp1 x D1 x₁) D2 = SAp (actsense1 D1 x) x₁
     actsense1 (SAZipAp2 x D1 x₁) D2 = SApHole (actsense1 D1 x) x₁
-    actsense1 (SAZipAp3 x x₁) (SAp D2 x₃) with synthunicity x D2
+    actsense1 (SAZipAp3 x x₁) (SAp D2 x₃)     with synthunicity x D2
     ... | refl = SAp x (actsense2 x₁ x₃)
     actsense1 (SAZipAp3 x x₁) (SApHole D2 x₂) with synthunicity x D2
     ... | ()
-    actsense1 (SAZipAp4 x x₁) (SAp D2 x₂) with synthunicity x D2
+    actsense1 (SAZipAp4 x x₁) (SAp D2 x₂)     with synthunicity x D2
     ... | ()
     actsense1 (SAZipAp4 x x₁) (SApHole D2 x₂)  = SApHole x (actsense2 x₁ x₂)
     actsense1 (SAZipPlus1 x) (SPlus x₁ x₂) = SPlus (actsense2 x x₁) x₂
@@ -590,26 +590,7 @@ module Hazelnut where
              (x # (Γ / x)) → -- don't really need this one? it's always true..
              (Γ ⊢ e ~ α ~> e' ⇐ t2) →
              (((Γ / x) ,, (x , t1)) ⊢ e ~ α ~> e' ⇐ t2)
-    weaken xin apart (AASubsume x₁ x₂ x₃) = {!!}
-    weaken xin apart (AAMove x₁) = {!!}
-    weaken xin apart AADel = AADel
-    weaken xin apart AAConAsc = AAConAsc
-    weaken xin apart (AAConVar x₂ p) = {!!}
-    weaken xin apart (AAConLam1 x₂) = {!!}
-    weaken xin apart (AAConLam2 x₂ x₃) = {!!}
-    weaken xin apart (AAConNumlit x₁) = AAConNumlit x₁
-    weaken xin apart (AAFinish x₁) = AAFinish {!!}
-    weaken xin apart (AAZipLam x₂ D) = {!!}
-    -- weaken (AASubsume x₁ x₂ x₃) = AASubsume {!!} {!!} x₃
-    -- weaken (AAMove x₁) = AAMove x₁
-    -- weaken AADel = AADel
-    -- weaken AAConAsc = AAConAsc
-    -- weaken (AAConVar x₂ p) = AAConVar x₂ {!!}
-    -- weaken (AAConLam1 x₂) = AAConLam1 {!!}
-    -- weaken (AAConLam2 x₂ x₃) = AAConLam2 {!!} x₃
-    -- weaken (AAConNumlit x₁) = AAConNumlit x₁
-    -- weaken (AAFinish x₁) = AAFinish {!!}
-    -- weaken (AAZipLam x₂ D) = AAZipLam {!!} {!!}
+    weaken = ?
 
   -- theorem 2
 
