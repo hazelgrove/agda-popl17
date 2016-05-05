@@ -510,12 +510,30 @@ module Hazelnut where
   anamovelem EMFHoleFirstChild D = D
   anamovelem EMFHoleParent D = D
 
+
+
   -- actions don't change under weakening the context
   weaken : {Γ : ·ctx} {e e' : ê} {t1 t2 : τ̇} {α : action} {x : Nat} →
            ((x , t1) ∈ Γ) →
            (Γ ⊢ e ~ α ~> e' ⇐ t2) →
            (((Γ / x) ,, (x , t1)) ⊢ e ~ α ~> e' ⇐ t2)
-  weaken = {!!}
+  weaken {_} {e} {e'} {t1} {t2} {α} xin =
+             tr (λ g → g ⊢ e ~ α ~> e' ⇐ t2) (funext (ctxeq _ _ _ xin))
+   where
+      -- todo: this is messy and i don't 100% know why it has to be
+      lem : (x y : Nat) → (Γ : ·ctx) → (x == y → ⊥) → Γ y == ((Γ / x) y)
+      lem x y G neq with natEQ x y
+      lem x₂ .x₂ G neq | Inl refl = abort (neq refl)
+      lem x₂ y₁ G neq  | Inr x₃ = refl
+
+      ctxeq : (Γ : ·ctx) (t : τ̇) (x : Nat) →
+               (x , t) ∈ Γ →
+               (y : Nat) → Γ y == ((Γ / x) ,, (x , t)) y
+      ctxeq Γ t x xin y with natEQ x y
+      ctxeq Γ t x xin .x | Inl refl = xin
+      ctxeq Γ t x xin y  | Inr x₁ = lem x y Γ x₁
+
+
 
   -- synthesis only produces equal types. note that there is no need for an
   -- analagous theorem for analytic posititions, just because we think of
