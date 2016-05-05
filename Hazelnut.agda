@@ -1,4 +1,3 @@
-open import List
 open import Nat
 open import Prelude
 
@@ -21,38 +20,52 @@ module Hazelnut where
     <|_|> : ė → ė
     _∘_   : ė → ė → ė
 
-  -- variables are named with naturals in ė, so we represent contexts
-  -- simply as lists of pairs of variable names and types
+  -- contexts, and some operations on them
+
+  -- variables are named with naturals in ė. therefore we represent
+  -- contexts as functions from names for variables (nats) to possible
+  -- bindings.
   ·ctx : Set
-  ·ctx = List (Nat × τ̇)
+  ·ctx = Nat → Maybe τ̇ -- todo: (Σ[ n : Nat ] (y : Nat) → y ∈ Γ → x > y)?
 
   -- apartness for contexts, so that we can follow barendregt's convention
-  data _#_ : (n : Nat) → (Γ : ·ctx) → Set where
-    #[] : {n : Nat} → n # []
-    #:: : {n m : Nat} {Γ : ·ctx} {t : τ̇} →
-           (n == m → ⊥) →
-           (n # Γ) →
-           n # ((m , t) :: Γ)
+  _#_ : (n : Nat) → (Γ : ·ctx) → Set
+  x # Γ = (Γ x) == None
+
+  -- not sure if this should take a pair
+  _∈_ : (p : Nat × τ̇) → (Γ : ·ctx) → Set
+  (x , t) ∈ Γ = (Γ x) == Some t
 
   -- remove possibly multiple copies of a variable from a context
   _/_ : ·ctx → Nat → ·ctx
-  [] / x = []
-  (y , t) :: Γ / x with natEQ x y
-  (y , t) :: Γ / .y | Inl refl = Γ / y
-  (y , t) :: Γ / x  | Inr neq = (y , t) :: (Γ / x)
+  (Γ / x) y with natEQ x y
+  (Γ / x) .x | Inl refl = None
+  (Γ / x) y  | Inr neq  = Γ y
 
-  -- apart after remove
+  -- a variable is apart from a context from which it is removed
   aar : (Γ : ·ctx) (x : Nat) → x # (Γ / x)
-  aar [] x = #[]
-  aar ((y , t) :: Γ) x with natEQ x y
-  aar ((y , t) :: Γ) .y | Inl refl = aar Γ y
-  aar ((y , t) :: Γ) x  | Inr neq = #:: neq (aar Γ x)
+  aar Γ x with natEQ x x
+  aar Γ x | Inl refl = refl
+  aar Γ x | Inr x≠x  = abort (x≠x refl)
 
-  -- this is syntax for cons to make the rules look nicer below
-  _,,_ : {A : Set} → List A → A → List A
-  L ,, x = x :: L
+  -- contexts give only one binding for each variable that they
+  -- include. this is needed for unicity.
+  ctxunicity : {Γ : ·ctx} {n : Nat} {t t' : τ̇} →
+               (n , t) ∈ Γ →
+               (n , t') ∈ Γ →
+               t == t'
+  ctxunicity {n = n} p q with natEQ n n
+  ctxunicity p q | Inl refl = someinj (! p · q)
+  ctxunicity _ _ | Inr x≠x = abort (x≠x refl)
 
-  -- type compatability.
+  -- this adds a new binding to the context, clobbering anything that might
+  -- have been there before.
+  _,,_ : ·ctx → (Nat × τ̇) → ·ctx
+  (Γ ,, (x , t)) y with natEQ x y
+  (Γ ,, (x , t)) .x | Inl refl = Some t
+  (Γ ,, (x , t)) y  | Inr neq  = Γ y
+
+  -- type compatability
   data _~_ : (t1 : τ̇) → (t2 : τ̇) → Set where
     TCRefl : {t : τ̇} → t ~ t
     TCHole1 : {t : τ̇} → t ~ <||>
@@ -497,21 +510,9 @@ module Hazelnut where
   anamovelem EMFHoleFirstChild D = D
   anamovelem EMFHoleParent D = D
 
-  -- need this lemma for contexts, to make unicity go through, to make
-  -- determinism go through. it turns out to be false, however. ∈ is
-  -- defined by equality on the whole alpha, so there's nothing wrong with
-  --
-  --     (5, num) :: (5, <||>) :: []
-  ctxunicity : {Γ : ·ctx} {n : Nat} {t t' : τ̇} →
-               (n , t) ∈ Γ →
-               (n , t') ∈ Γ →
-               t == t'
-  ctxunicity = {!!}
-
-  -- actions don't change under weakening
+  -- actions don't change under weakening the context
   weaken : {Γ : ·ctx} {e e' : ê} {t1 t2 : τ̇} {α : action} {x : Nat} →
            ((x , t1) ∈ Γ) →
-           (x # (Γ / x)) → -- don't really need this one? it's always true..
            (Γ ⊢ e ~ α ~> e' ⇐ t2) →
            (((Γ / x) ,, (x , t1)) ⊢ e ~ α ~> e' ⇐ t2)
   weaken = {!!}
@@ -524,7 +525,7 @@ module Hazelnut where
                 → (Γ ⊢ e => t')
                 → t == t'
   synthunicity (SAsc _) (SAsc _) = refl
-  synthunicity (SVar in1) (SVar in2) = ctxunicity in1 in2
+  synthunicity {Γ = G} (SVar in1) (SVar in2) = ctxunicity {Γ = G} in1 in2
   synthunicity (SAp D1 _) (SAp D2 _) with synthunicity D1 D2
   ... | refl = refl
   synthunicity (SAp D1 _) (SApHole D2 _) with synthunicity D1 D2
@@ -592,7 +593,7 @@ module Hazelnut where
     actsense2 (AAConNumlit _) _ = ASubsume (SFHole SNum) TCHole1
     actsense2 (AAFinish x) _ = x
     actsense2 (AAZipLam _ _ ) (ASubsume () _)
-    actsense2 (AAZipLam x₁ D1) (ALam x₂ D2) = ALam x₂ (actsense2 (weaken x₁ x₂ D1) D2)
+    actsense2 (AAZipLam x₁ D1) (ALam x₂ D2) = ALam x₂ (actsense2 (weaken x₁ D1) D2)
 
   -- theorem 2
 
@@ -623,14 +624,12 @@ module Hazelnut where
   actdet1 (TMZip2 p1) (TMZip2 p2) with actdet1 p1 p2
   ... | refl = refl
 
-
-  -- this theorem is false?
-  movedet : {e e' e'' : ê} {δ : direction} {t : τ̇} →
+  -- all expressions only move to one other expression
+  movedet : {e e' e'' : ê} {δ : direction} →
             (e + move δ +>e e') →
             (e + move δ +>e e'') →
             e' == e''
-  movedet = {!!}
-
+  movedet move1 move2 = {!!}
 
   mutual
     actdet2 : {Γ : ·ctx} {e e' e'' : ê} {t t' t'' : τ̇} {α : action} →
@@ -648,7 +647,7 @@ module Hazelnut where
     actdet3 D1 (AASubsume x x₁ x₂) D3 = {!!}
 
     actdet3 D1 (AAMove x) (AASubsume x₁ x₂ x₃) = {!!}
-    actdet3 D1 (AAMove x) (AAMove x₁) = {!movedet x x₁!}
+    actdet3 D1 (AAMove x) (AAMove x₁) = movedet x x₁
     actdet3 D1 (AAMove x₁) (AAZipLam x₂ D3) = {!!}
 
     actdet3 D1 AADel (AASubsume _ SADel _) = refl
@@ -675,6 +674,9 @@ module Hazelnut where
     actdet3 D1 (AAFinish x) (AAFinish x₁) = refl
 
     actdet3 D1 (AAZipLam x₁ D2) D3 = {!!}
+
+
+
 
   -- these theorems aren't listed in the draft, but have been discussed
   -- since submission.
@@ -703,8 +705,11 @@ module Hazelnut where
   moveerase EMFHoleFirstChild = refl
   moveerase EMFHoleParent = refl
 
-  -- constructability: any well-typed term can be built by a sequence of
-  -- actions from the empty hole
+  -- there exists a sequence of actions that builds any W.T. e from <||>
+  constructable : Set
+  constructable = ⊤
 
-  -- reachability: there is a sequence of actions that brings you from any
-  -- two terms that are the same up to focus erasure
+  -- there exists a sequence of actions that transforms any term into any
+  -- other that differs only in focus.
+  reachable : Set
+  reachable = ⊤

@@ -82,6 +82,10 @@ module Prelude where
     Some : A → Maybe A
     None : Maybe A
 
+  -- the some constructor is injective. perhaps unsurprisingly.
+  someinj : {A : Set} {x y : A} → Some x == Some y → x == y
+  someinj refl = refl
+
   -- order
   data Order : Set where
     Less : Order
