@@ -10,6 +10,10 @@ module List where
   map f [] = []
   map f (x :: L) = (f x) :: map f L
 
+  foldr : {A B : Set} → (A → B → B) → B → List A → B
+  foldr f b [] = b
+  foldr f b (x :: l) = f x (foldr f b l)
+
   -- list  membership
   data _∈_ {A : Set} : A → List A → Set where
     ∈h : {x : A} {l : List A} → x ∈ (x :: l)
@@ -38,3 +42,11 @@ module List where
 
   ex2 : Unique π2 L → ⊥
   ex2 (U:: p x) = x ∈h
+
+  maxl : List Nat → Nat
+  maxl = foldr max 0
+
+  -- addmax : {L : List Nat} (p : Unique (\x → x) L) → Unique (\x → x) ((1+ (maxl L)) :: L)
+  -- addmax U[] = U:: U[] (λ ())
+  -- addmax (U:: p x₁) with addmax p
+  -- ... | ih = U:: (U:: p x₁) (λ x → x₁ {!!})

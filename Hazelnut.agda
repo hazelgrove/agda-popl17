@@ -502,31 +502,29 @@ module Hazelnut where
   -- defined by equality on the whole alpha, so there's nothing wrong with
   --
   --     (5, num) :: (5, <||>) :: []
-
   ctxunicity : {Γ : ·ctx} {n : Nat} {t t' : τ̇} →
-               (n , t') ∈ Γ →
                (n , t) ∈ Γ →
+               (n , t') ∈ Γ →
                t == t'
-  ctxunicity ∈h ∈h = refl
-  ctxunicity ∈h (∈t p2) = ctxunicity {!!} p2
-  ctxunicity (∈t p1) ∈h = {!!} -- ctxunicity p1 {!p1!}
-  ctxunicity (∈t p1) (∈t p2) = ctxunicity p1 p2
-
+  ctxunicity = {!!}
 
   synthunicity : {Γ : ·ctx} {e : ė} {t t' : τ̇} →
                   (Γ ⊢ e => t)
                 → (Γ ⊢ e => t')
                 → t == t'
-  synthunicity (SAsc x) (SAsc x₁) = refl
-  synthunicity (SVar x) (SVar x₁) = ctxunicity x₁ x
-  synthunicity (SAp D1 x) (SAp D2 x₁) = {!x₁!}
-  synthunicity (SAp D1 x) (SApHole D2 x₁) = {!!}
+  synthunicity (SAsc _) (SAsc _) = refl
+  synthunicity (SVar in1) (SVar in2) = ctxunicity in1 in2
+  synthunicity (SAp D1 _) (SAp D2 _) with synthunicity D1 D2
+  ... | refl = refl
+  synthunicity (SAp D1 _) (SApHole D2 _) with synthunicity D1 D2
+  ... | ()
   synthunicity SNum SNum = refl
-  synthunicity (SPlus x₁ x) (SPlus x₂ x₃) = {!!}
+  synthunicity (SPlus _ _ ) (SPlus _ _ ) = refl
   synthunicity SEHole SEHole = refl
-  synthunicity (SFHole D1) (SFHole D2) = refl
-  synthunicity (SApHole D1 x) (SAp D2 x₁) = {!!}
-  synthunicity (SApHole D1 x) (SApHole D2 x₁) = refl
+  synthunicity (SFHole _) (SFHole _) = refl
+  synthunicity (SApHole D1 _) (SAp D2 _) with synthunicity D1 D2
+  ... | ()
+  synthunicity (SApHole _ _) (SApHole _ _) = refl
 
   mutual
     -- if an action transforms an zexp in a synthetic posistion to another
@@ -590,7 +588,7 @@ module Hazelnut where
              (x # (Γ / x)) → -- don't really need this one? it's always true..
              (Γ ⊢ e ~ α ~> e' ⇐ t2) →
              (((Γ / x) ,, (x , t1)) ⊢ e ~ α ~> e' ⇐ t2)
-    weaken = ?
+    weaken = {!!}
 
   -- theorem 2
 
