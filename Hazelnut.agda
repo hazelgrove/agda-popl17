@@ -647,7 +647,7 @@ module Hazelnut where
             (e + move δ +>e e') →
             (e + move δ +>e e'') →
             e' == e''
-  movedet = {!!}
+  movedet d1 d2 = {!d1 d2!}
 
   mutual
     actdet2 : {Γ : ·ctx} {e e' e'' : ê} {t t' t'' : τ̇} {α : action} →
