@@ -28,6 +28,9 @@ module Hazelnut where
   ·ctx : Set
   ·ctx = Nat → Maybe τ̇ -- todo: (Σ[ n : Nat ] (y : Nat) → y ∈ Γ → x > y)?
 
+  ∅ : ·ctx
+  ∅ x = None
+
   -- apartness for contexts, so that we can follow barendregt's convention
   _#_ : (n : Nat) → (Γ : ·ctx) → Set
   x # Γ = (Γ x) == None
@@ -159,6 +162,32 @@ module Hazelnut where
                     (n # Γ) →
                     (Γ ,, (n , t1)) ⊢ e <= t2 →
                     Γ ⊢ (·λ n e) <= (t1 ==> t2)
+
+  -- a small exmaple to demonstrate how the encoding above works
+  -- this is the encoding of the function (λx. x + 0).
+  fn : ė
+  fn = ·λ 0 (X 0 ·+ N 0)
+
+  -- this is the derivation that it has type num ==> num
+  ex1 : ∅ ⊢ ·λ 0 (X 0 ·+ N 0) <= (num ==> num)
+  ex1 = ALam refl
+         (ASubsume
+          (SPlus (ASubsume (SVar refl) TCRefl) (ASubsume SNum TCRefl))
+          TCRefl)
+
+  -- and the derivation that when applied to a numeric argument it produces
+  -- a num.
+  ex2 : ∅ ⊢ (fn ·: (num ==> num)) ∘ (N 10) => num
+  ex2 = SAp (SAsc ex1) (ASubsume SNum TCRefl)
+
+  -- eta-expanded curried addition
+  ex3 : ∅ ⊢ ·λ 0 ( (·λ 1 (X 0 ·+ X 1)) ·: (num ==> num)  )
+               <= (num ==> (num ==> num))
+  ex3 = ALam refl (ASubsume (SAsc (ALam refl
+                                    (ASubsume
+                                      (SPlus (ASubsume (SVar refl) TCRefl)
+                                             (ASubsume (SVar refl) TCRefl))
+                                          TCRefl))) TCRefl)
 
   -- those types without holes anywhere
   tcomplete : τ̇ → Set
