@@ -567,6 +567,16 @@ module Hazelnut where
   ... | ()
   synthunicity (SApHole _ _) (SApHole _ _) = refl
 
+
+  -- not sure this is true
+  anasynthuni : {Γ : ·ctx} {t t' : τ̇} {e : ė} →
+                Γ ⊢ e => t' →
+                Γ ⊢ e <= t  →
+                t == t'
+  anasynthuni = {!!}
+
+
+
   mutual
     -- if an action transforms an zexp in a synthetic posistion to another
     -- zexp, they have the same type up erasure of focus.
@@ -686,12 +696,19 @@ module Hazelnut where
               (e' == e'' × t' == t'')
     actdet2 wt d1 d2 = {!!}
 
+    -- a lemma for actdet3.
+    lem1 : {Γ : ·ctx} {t1 t2 : τ̇} →
+           Γ ⊢ <||> <= (t1 ==> t2) →
+           (t1 ==> t2) ~ (<||> ==> <||>)
+    lem1 (ASubsume SEHole TCHole1) = TCArr TCHole1 TCHole1
+
+    -- actions on analytic expressions produce the same expression
     actdet3 : {Γ : ·ctx} {e e' e'' : ê} {t : τ̇} {α : action} →
               (Γ ⊢ (e ◆e) <= t) →
               (Γ ⊢ e ~ α ~> e' ⇐ t) →
               (Γ ⊢ e ~ α ~> e'' ⇐ t) →
               (e' == e'')
-    actdet3 D1 (AASubsume x x₁ x₂) D3 = {!!}
+    actdet3 D1 (AASubsume x x₁ x₂) D3 = {!D3!}
 
     actdet3 D1 (AAMove x) (AASubsume x₁ x₂ x₃) = {!!}
     actdet3 D1 (AAMove x) (AAMove x₁) = movedet x x₁
@@ -700,24 +717,25 @@ module Hazelnut where
     actdet3 D1 AADel (AASubsume _ SADel _) = refl
     actdet3 D1 AADel AADel = refl
 
-    actdet3 D1 AAConAsc (AASubsume x x₁ x₂) = {!!}
+    actdet3 D1 AAConAsc (AASubsume x SAConAsc x₂) = {!x₂!}
     actdet3 D1 AAConAsc AAConAsc = refl
 
-    actdet3 D1 (AAConVar x₁ p) (AASubsume x₂ x₃ x₄) = {!!}
+    actdet3 {Γ = G} D1 (AAConVar x₁ p) (AASubsume x₂ (SAConVar p₁) x₄) with ctxunicity {Γ = G} p p₁
+    ... | refl = abort (x₁ x₄)
     actdet3 D1 (AAConVar x₁ p) (AAConVar x₂ p₁) = refl
 
-    actdet3 D1 (AAConLam1 x₁) (AASubsume x₂ x₃ x₄) = {!!}
+    actdet3 D1 (AAConLam1 x₃) (AASubsume x₄ (SAConLam x₅) x₆) = {!!}
     actdet3 D1 (AAConLam1 x₁) (AAConLam1 x₂) = refl
-    actdet3 D1 (AAConLam1 x₁) (AAConLam2 x₂ x₃) = {!!}
+    actdet3 D1 (AAConLam1 x₃) (AAConLam2 x₄ x₅) = abort (x₅ (lem1 D1))
 
-    actdet3 D1 (AAConLam2 x₁ x₂) (AASubsume x₃ x₄ x₅) = {!!}
-    actdet3 D1 (AAConLam2 x₁ x₂) (AAConLam1 x₃) = {!!}
+    actdet3 D1 (AAConLam2 x₁ x₂) (AASubsume x₃ (SAConLam x₄) x₅) = abort (x₂ x₅)
+    actdet3 D1 (AAConLam2 x₁ x₂) (AAConLam1 x₃) = abort (x₂ (lem1 D1))
     actdet3 D1 (AAConLam2 x₁ x₂) (AAConLam2 x₃ x₄) = refl
 
-    actdet3 D1 (AAConNumlit x) (AASubsume x₁ x₂ x₃) = {!!}
+    actdet3 D1 (AAConNumlit x) (AASubsume x₁ SAConNumlit x₃) = abort (x x₃)
     actdet3 D1 (AAConNumlit x) (AAConNumlit x₁) = refl
 
-    actdet3 D1 (AAFinish x) (AASubsume x₁ x₂ x₃) = {!!}
+    actdet3 D1 (AAFinish x) (AASubsume x₁ (SAFinish x₂) x₃) = refl
     actdet3 D1 (AAFinish x) (AAFinish x₁) = refl
 
     actdet3 D1 (AAZipLam x₁ D2) D3 = {!!}
