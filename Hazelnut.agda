@@ -295,15 +295,6 @@ module Hazelnut where
                 ((t1 ==>₂ t2) + α +> (t1 ==>₂ t2'))
 
   -- expression movement
-
-  -- this describes which two 2-ary constructors of zexps describe halves
-  -- of the same hexp
-  data Matched : (CL : ê → ė → ê) →
-                 (CR : ė → ê → ê) →
-                 (C : ė → ė → ė) → Set where
-    Match+ : Matched _·+₁_ _·+₂_ _·+_
-    Match∘ : Matched _∘₁_  _∘₂_  _∘_
-
   -- todo: want this action to be direction, since they're all move?
   data _+_+>e_ : (e : ê) → (α : action) → (e' : ê) → Set where
     -- rules for ascriptions
@@ -322,37 +313,29 @@ module Hazelnut where
               ▹ (·λ x e) ◃ + move firstChild +>e ·λ x (▹ e ◃)
     EMLamParent : {e : ė} {x : Nat} →
                ·λ x (▹ e ◃) + move parent +>e ▹ (·λ x e) ◃
-    -- rules for 2-ary constructors (covers both ap and plus, scales to others)
-    EM2aryFirstChild : {e1 e2 : ė}
-                    (_Cl_ : ê → ė → ê) →
-                    (_Cr_ : ė → ê → ê) →
-                    (_C_  : ė → ė → ė) →
-                    (m : Matched _Cl_ _Cr_ _C_) →
-               (▹ e1 C e2 ◃) + move firstChild +>e (▹ e1 ◃ Cl e2)
-    EM2aryParent1 : {e1 e2 : ė}
-                    (_Cl_ : ê → ė → ê) →
-                    (_Cr_ : ė → ê → ê) →
-                    (_C_  : ė → ė → ė) →
-                    (m : Matched _Cl_ _Cr_ _C_) →
-               (▹ e1 ◃ Cl e2) + move parent +>e (▹ e1 C e2 ◃)
-    EM2aryParent2 : {e1 e2 : ė}
-                    (_Cl_ : ê → ė → ê) →
-                    (_Cr_ : ė → ê → ê) →
-                    (_C_  : ė → ė → ė) →
-                    (m : Matched _Cl_ _Cr_ _C_) →
-               (e1 Cr ▹ e2 ◃) + move parent +>e (▹ e1 C e2 ◃)
-    EM2aryNextSib : {e1 e2 : ė}
-                    (_Cl_ : ê → ė → ê) →
-                    (_Cr_ : ė → ê → ê) →
-                    (_C_  : ė → ė → ė) →
-                    (m : Matched _Cl_ _Cr_ _C_) →
-               (▹ e1 ◃ Cl e2) + move nextSib +>e (e1 Cr ▹ e2 ◃)
-    EM2aryPrevSib : {e1 e2 : ė}
-                    (_Cl_ : ê → ė → ê) →
-                    (_Cr_ : ė → ê → ê) →
-                    (_C_  : ė → ė → ė) →
-                    (m : Matched _Cl_ _Cr_ _C_) →
-               (e1 Cr ▹ e2 ◃) + move prevSib +>e (▹ e1 ◃ Cl e2)
+    -- rules for 2-ary constructors
+    EMPlusFirstChild : {e1 e2 : ė} →
+               (▹ e1 ·+ e2 ◃) + move firstChild +>e (▹ e1 ◃ ·+₁ e2)
+    EMPlusParent1 : {e1 e2 : ė} →
+               (▹ e1 ◃ ·+₁ e2) + move parent +>e (▹ e1 ·+ e2 ◃)
+    EMPlusParent2 : {e1 e2 : ė} →
+               (e1 ·+₂ ▹ e2 ◃) + move parent +>e (▹ e1 ·+ e2 ◃)
+    EMPlusNextSib : {e1 e2 : ė} →
+               (▹ e1 ◃ ·+₁ e2) + move nextSib +>e (e1 ·+₂ ▹ e2 ◃)
+    EMPlusPrevSib : {e1 e2 : ė} →
+               (e1 ·+₂ ▹ e2 ◃) + move prevSib +>e (▹ e1 ◃ ·+₁ e2)
+
+    EMApFirstChild : {e1 e2 : ė} →
+               (▹ e1 ∘ e2 ◃) + move firstChild +>e (▹ e1 ◃ ∘₁ e2)
+    EMApParent1 : {e1 e2 : ė} →
+               (▹ e1 ◃ ∘₁ e2) + move parent +>e (▹ e1 ∘ e2 ◃)
+    EMApParent2 : {e1 e2 : ė} →
+               (e1 ∘₂ ▹ e2 ◃) + move parent +>e (▹ e1 ∘ e2 ◃)
+    EMApNextSib : {e1 e2 : ė} →
+               (▹ e1 ◃ ∘₁ e2) + move nextSib +>e (e1 ∘₂ ▹ e2 ◃)
+    EMApPrevSib : {e1 e2 : ė} →
+               (e1 ∘₂ ▹ e2 ◃) + move prevSib +>e (▹ e1 ◃ ∘₁ e2)
+
     -- rules for non-empty holes
     EMFHoleFirstChild : {e : ė} →
                (▹ <| e |> ◃) + move firstChild +>e <| ▹ e ◃ |>
@@ -496,16 +479,16 @@ module Hazelnut where
   synthmovelem EMAscPrevSib d2 = d2
   synthmovelem EMLamFirstChild d2 = d2
   synthmovelem EMLamParent d2 = d2
-  synthmovelem (EM2aryFirstChild ._·+₁_ ._·+₂_ ._·+_ Match+) d2 = d2
-  synthmovelem (EM2aryFirstChild ._∘₁_ ._∘₂_ ._∘_ Match∘) d2 = d2
-  synthmovelem (EM2aryParent1 ._·+₁_ ._·+₂_ ._·+_ Match+) d2 = d2
-  synthmovelem (EM2aryParent1 ._∘₁_ ._∘₂_ ._∘_ Match∘) d2 = d2
-  synthmovelem (EM2aryParent2 ._·+₁_ ._·+₂_ ._·+_ Match+) d2 = d2
-  synthmovelem (EM2aryParent2 ._∘₁_ ._∘₂_ ._∘_ Match∘) d2 = d2
-  synthmovelem (EM2aryNextSib ._·+₁_ ._·+₂_ ._·+_ Match+) d2 = d2
-  synthmovelem (EM2aryNextSib ._∘₁_ ._∘₂_ ._∘_ Match∘) d2 = d2
-  synthmovelem (EM2aryPrevSib ._·+₁_ ._·+₂_ ._·+_ Match+) d2 = d2
-  synthmovelem (EM2aryPrevSib ._∘₁_ ._∘₂_ ._∘_ Match∘) d2 = d2
+  synthmovelem EMPlusFirstChild d2 = d2
+  synthmovelem EMPlusParent1 d2 = d2
+  synthmovelem EMPlusParent2 d2 = d2
+  synthmovelem EMPlusNextSib d2 = d2
+  synthmovelem EMPlusPrevSib d2 = d2
+  synthmovelem EMApFirstChild d2 = d2
+  synthmovelem EMApParent1 d2 = d2
+  synthmovelem EMApParent2 d2 = d2
+  synthmovelem EMApNextSib d2 = d2
+  synthmovelem EMApPrevSib d2 = d2
   synthmovelem EMFHoleFirstChild d2 = d2
   synthmovelem EMFHoleParent d2 = d2
 
@@ -519,26 +502,25 @@ module Hazelnut where
             (p : e + move δ +>e e') →
             (Γ ⊢ e ◆e <= t) →
             (Γ ⊢ e' ◆e <= t)
-  anamovelem EMAscFirstChild D = D
-  anamovelem EMAscParent1 D = D
-  anamovelem EMAscParent2 D = D
-  anamovelem EMAscNextSib D = D
-  anamovelem EMAscPrevSib D = D
-  anamovelem EMLamFirstChild D = D
-  anamovelem EMLamParent D = D
-  anamovelem (EM2aryFirstChild ._·+₁_ ._·+₂_ ._·+_ Match+) D = D
-  anamovelem (EM2aryFirstChild ._∘₁_ ._∘₂_ ._∘_ Match∘) D = D
-  anamovelem (EM2aryParent1 ._·+₁_ ._·+₂_ ._·+_ Match+) D = D
-  anamovelem (EM2aryParent1 ._∘₁_ ._∘₂_ ._∘_ Match∘) D = D
-  anamovelem (EM2aryParent2 ._·+₁_ ._·+₂_ ._·+_ Match+) D = D
-  anamovelem (EM2aryParent2 ._∘₁_ ._∘₂_ ._∘_ Match∘) D = D
-  anamovelem (EM2aryNextSib ._·+₁_ ._·+₂_ ._·+_ Match+) D = D
-  anamovelem (EM2aryNextSib ._∘₁_ ._∘₂_ ._∘_ Match∘) D = D
-  anamovelem (EM2aryPrevSib ._·+₁_ ._·+₂_ ._·+_ Match+) D = D
-  anamovelem (EM2aryPrevSib ._∘₁_ ._∘₂_ ._∘_ Match∘) D = D
-  anamovelem EMFHoleFirstChild D = D
-  anamovelem EMFHoleParent D = D
-
+  anamovelem EMAscFirstChild d2 = d2
+  anamovelem EMAscParent1 d2 = d2
+  anamovelem EMAscParent2 d2 = d2
+  anamovelem EMAscNextSib d2 = d2
+  anamovelem EMAscPrevSib d2 = d2
+  anamovelem EMLamFirstChild d2 = d2
+  anamovelem EMLamParent d2 = d2
+  anamovelem EMPlusFirstChild d2 = d2
+  anamovelem EMPlusParent1 d2 = d2
+  anamovelem EMPlusParent2 d2 = d2
+  anamovelem EMPlusNextSib d2 = d2
+  anamovelem EMPlusPrevSib d2 = d2
+  anamovelem EMApFirstChild d2 = d2
+  anamovelem EMApParent1 d2 = d2
+  anamovelem EMApParent2 d2 = d2
+  anamovelem EMApNextSib d2 = d2
+  anamovelem EMApPrevSib d2 = d2
+  anamovelem EMFHoleFirstChild d2 = d2
+  anamovelem EMFHoleParent d2 = d2
 
 
   -- actions don't change under weakening the context
@@ -676,15 +658,33 @@ module Hazelnut where
             (e + move δ +>e e') →
             (e + move δ +>e e'') →
             e' == e''
-  movedet d1 d2 = {!d1 d2!}
+  movedet EMAscFirstChild EMAscFirstChild = refl
+  movedet EMAscParent1 EMAscParent1 = refl
+  movedet EMAscParent2 EMAscParent2 = refl
+  movedet EMAscNextSib EMAscNextSib = refl
+  movedet EMAscPrevSib EMAscPrevSib = refl
+  movedet EMLamFirstChild EMLamFirstChild = refl
+  movedet EMLamParent EMLamParent = refl
+  movedet EMPlusFirstChild EMPlusFirstChild = refl
+  movedet EMPlusParent1 EMPlusParent1 = refl
+  movedet EMPlusParent2 EMPlusParent2 = refl
+  movedet EMPlusNextSib EMPlusNextSib = refl
+  movedet EMPlusPrevSib EMPlusPrevSib = refl
+  movedet EMApFirstChild EMApFirstChild = refl
+  movedet EMApParent1 EMApParent1 = refl
+  movedet EMApParent2 EMApParent2 = refl
+  movedet EMApNextSib EMApNextSib = refl
+  movedet EMApPrevSib EMApPrevSib = refl
+  movedet EMFHoleFirstChild EMFHoleFirstChild = refl
+  movedet EMFHoleParent EMFHoleParent = refl
 
   mutual
     actdet2 : {Γ : ·ctx} {e e' e'' : ê} {t t' t'' : τ̇} {α : action} →
               (Γ ⊢ (e ◆e) => t) →
               (Γ ⊢ e => t ~ α ~> e'  => t') →
               (Γ ⊢ e => t ~ α ~> e'' => t'') →
-              (e' == e'' × t' == t'') -- todo: maybe 1a and 1b?
-    actdet2 D1 D2 D3 = {!D2 D3!}
+              (e' == e'' × t' == t'')
+    actdet2 wt d1 d2 = {!!}
 
     actdet3 : {Γ : ·ctx} {e e' e'' : ê} {t : τ̇} {α : action} →
               (Γ ⊢ (e ◆e) <= t) →
@@ -739,16 +739,16 @@ module Hazelnut where
   moveerase EMAscPrevSib = refl
   moveerase EMLamFirstChild = refl
   moveerase EMLamParent = refl
-  moveerase (EM2aryFirstChild ._·+₁_ ._·+₂_ ._·+_ Match+) = refl
-  moveerase (EM2aryFirstChild ._∘₁_ ._∘₂_ ._∘_ Match∘) = refl
-  moveerase (EM2aryParent1 ._·+₁_ ._·+₂_ ._·+_ Match+) = refl
-  moveerase (EM2aryParent1 ._∘₁_ ._∘₂_ ._∘_ Match∘) = refl
-  moveerase (EM2aryParent2 ._·+₁_ ._·+₂_ ._·+_ Match+) = refl
-  moveerase (EM2aryParent2 ._∘₁_ ._∘₂_ ._∘_ Match∘) = refl
-  moveerase (EM2aryNextSib ._·+₁_ ._·+₂_ ._·+_ Match+) = refl
-  moveerase (EM2aryNextSib ._∘₁_ ._∘₂_ ._∘_ Match∘) = refl
-  moveerase (EM2aryPrevSib ._·+₁_ ._·+₂_ ._·+_ Match+) = refl
-  moveerase (EM2aryPrevSib ._∘₁_ ._∘₂_ ._∘_ Match∘) = refl
+  moveerase EMPlusFirstChild = refl
+  moveerase EMPlusParent1 = refl
+  moveerase EMPlusParent2 = refl
+  moveerase EMPlusNextSib = refl
+  moveerase EMPlusPrevSib = refl
+  moveerase EMApFirstChild = refl
+  moveerase EMApParent1 = refl
+  moveerase EMApParent2 = refl
+  moveerase EMApNextSib = refl
+  moveerase EMApPrevSib = refl
   moveerase EMFHoleFirstChild = refl
   moveerase EMFHoleParent = refl
 
