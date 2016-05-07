@@ -572,8 +572,13 @@ module Hazelnut where
   anasynthuni : {Γ : ·ctx} {t t' : τ̇} {e : ė} →
                 Γ ⊢ e => t' →
                 Γ ⊢ e <= t  →
+                t ~ t' →
                 t == t'
-  anasynthuni = {!!}
+  anasynthuni d1 (ASubsume x TCRefl) d3 = synthunicity x d1
+  anasynthuni d1 (ASubsume x TCHole1) d3 = {!synthunicity x d1!}
+  anasynthuni d1 (ASubsume x TCHole2) d3 = {!!}
+  anasynthuni d1 (ASubsume x (TCArr x₁ x₂)) d3 = {!d3!}
+  anasynthuni () (ALam x d2) d3
 
 
 
@@ -696,7 +701,8 @@ module Hazelnut where
               (e' == e'' × t' == t'')
     actdet2 wt d1 d2 = {!!}
 
-    -- a lemma for actdet3.
+    -- a lemma for actdet3. an arrow type given to a hole might as well be
+    -- holes itself.
     lem1 : {Γ : ·ctx} {t1 t2 : τ̇} →
            Γ ⊢ <||> <= (t1 ==> t2) →
            (t1 ==> t2) ~ (<||> ==> <||>)
@@ -708,16 +714,18 @@ module Hazelnut where
               (Γ ⊢ e ~ α ~> e' ⇐ t) →
               (Γ ⊢ e ~ α ~> e'' ⇐ t) →
               (e' == e'')
-    actdet3 D1 (AASubsume x x₁ x₂) D3 = {!D3!}
+    actdet3 D1 (AASubsume x x₁ x₂) D3 = {!!} -- π1 (actdet2 x x₁ {!D3!})
 
-    actdet3 D1 (AAMove x) (AASubsume x₁ x₂ x₃) = {!!}
+    actdet3 D1 (AAMove x) (AASubsume x₁ x₂ x₃) = {!x!}
     actdet3 D1 (AAMove x) (AAMove x₁) = movedet x x₁
-    actdet3 D1 (AAMove x₁) (AAZipLam x₂ D3) = {!!}
+    actdet3 D1 (AAMove EMLamParent) (AAZipLam x₃ D3) = {!!}
 
     actdet3 D1 AADel (AASubsume _ SADel _) = refl
     actdet3 D1 AADel AADel = refl
 
-    actdet3 D1 AAConAsc (AASubsume x SAConAsc x₂) = {!x₂!}
+    actdet3 D1 AAConAsc (AASubsume x SAConAsc x₂) = {!!}
+    -- with anasynthuni x D1 x₂  -- no idea if this lemma is true
+    -- ... | refl = refl
     actdet3 D1 AAConAsc AAConAsc = refl
 
     actdet3 {Γ = G} D1 (AAConVar x₁ p) (AASubsume x₂ (SAConVar p₁) x₄) with ctxunicity {Γ = G} p p₁
@@ -738,7 +746,7 @@ module Hazelnut where
     actdet3 D1 (AAFinish x) (AASubsume x₁ (SAFinish x₂) x₃) = refl
     actdet3 D1 (AAFinish x) (AAFinish x₁) = refl
 
-    actdet3 D1 (AAZipLam x₁ D2) D3 = {!!}
+    actdet3 D1 (AAZipLam x₁ D2) D3 = actdet3 D1 {!D2!} D3
 
 
 
