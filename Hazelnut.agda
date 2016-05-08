@@ -567,21 +567,6 @@ module Hazelnut where
   ... | ()
   synthunicity (SApHole _ _) (SApHole _ _) = refl
 
-
-  -- not sure this is true
-  anasynthuni : {Γ : ·ctx} {t t' : τ̇} {e : ė} →
-                Γ ⊢ e => t' →
-                Γ ⊢ e <= t  →
-                t ~ t' →
-                t == t'
-  anasynthuni d1 (ASubsume x TCRefl) d3 = synthunicity x d1
-  anasynthuni d1 (ASubsume x TCHole1) d3 = {!synthunicity x d1!}
-  anasynthuni d1 (ASubsume x TCHole2) d3 = {!!}
-  anasynthuni d1 (ASubsume x (TCArr x₁ x₂)) d3 = {!d3!}
-  anasynthuni () (ALam x d2) d3
-
-
-
   mutual
     -- if an action transforms an zexp in a synthetic posistion to another
     -- zexp, they have the same type up erasure of focus.
@@ -723,16 +708,14 @@ module Hazelnut where
     actdet3 D1 AADel (AASubsume _ SADel _) = refl
     actdet3 D1 AADel AADel = refl
 
-    actdet3 D1 AAConAsc (AASubsume x SAConAsc x₂) = {!!}
-    -- with anasynthuni x D1 x₂  -- no idea if this lemma is true
-    -- ... | refl = refl
+    actdet3 D1 AAConAsc (AASubsume x SAConAsc x₂) = {!x₂!}
     actdet3 D1 AAConAsc AAConAsc = refl
 
     actdet3 {Γ = G} D1 (AAConVar x₁ p) (AASubsume x₂ (SAConVar p₁) x₄) with ctxunicity {Γ = G} p p₁
     ... | refl = abort (x₁ x₄)
     actdet3 D1 (AAConVar x₁ p) (AAConVar x₂ p₁) = refl
 
-    actdet3 D1 (AAConLam1 x₃) (AASubsume x₄ (SAConLam x₅) x₆) = {!!}
+    actdet3 D1 (AAConLam1 x₃) (AASubsume SEHole (SAConLam x₅) x₆) = {!SEHole!}
     actdet3 D1 (AAConLam1 x₁) (AAConLam1 x₂) = refl
     actdet3 D1 (AAConLam1 x₃) (AAConLam2 x₄ x₅) = abort (x₅ (lem1 D1))
 
