@@ -685,21 +685,12 @@ module Hazelnut where
            (t1 ==> t2) ~ (<||> ==> <||>)
   lem1 (ASubsume SEHole TCHole1) = TCArr TCHole1 TCHole1
 
-  lem2 : {Γ : ·ctx} {e e' : ê} {t1 t2 : τ̇} {α : action} {x : Nat} →
-               (x , t1) ∈ Γ →
-               Γ ⊢ e ~ α ~> e' ⇐ t2 →
-               (Γ / x) ⊢ ·λ x e ~ α ~> ·λ x e' ⇐ (t1 ==> t2)
-  lem2 xin D = AAZipLam xin D
-  -- lem2 xin (AASubsume x₁ x₂ x₃) = AAZipLam xin (AASubsume x₁ x₂ x₃)
-  -- lem2 xin (AAMove x₁)          = AAZipLam xin (AAMove x₁)
-  -- lem2 xin AADel                = AAZipLam xin AADel
-  -- lem2 xin AAConAsc             = AAZipLam xin AAConAsc
-  -- lem2 xin (AAConVar x₂ p)      = AAZipLam xin (AAConVar x₂ p)
-  -- lem2 xin (AAConLam1 x₂)       = AAZipLam xin (AAConLam1 x₂)
-  -- lem2 xin (AAConLam2 x₂ x₃)    = AAZipLam xin (AAConLam2 x₂ x₃)
-  -- lem2 xin (AAConNumlit x₁)     = AAZipLam xin (AAConNumlit x₁)
-  -- lem2 xin (AAFinish x₁)        = AAZipLam xin (AAFinish x₁)
-  -- lem2 xin (AAZipLam x₂ d)      = AAZipLam xin (AAZipLam x₂ d)
+  lem2 : {Γ : ·ctx} {e e' e'' : ê} {t' t'' : τ̇} {δ : direction} →
+         (Γ ⊢ e => t' ~ move δ ~> e'' => t'') →
+         (Γ ⊢ e ◆e => t') →
+         (e + move δ +>e e') →
+         e == e'
+  lem2 d1 d2 d3 = {!!}
 
   mutual
     actdet2 : {Γ : ·ctx} {e e' e'' : ê} {t t' t'' : τ̇} {α : action} →
@@ -718,7 +709,55 @@ module Hazelnut where
     actdet3 D1 (AASubsume x x₁ x₂) (AASubsume x₃ x₄ x₅)
      with synthunicity x x₃
     ... | refl = π1 (actdet2 x x₁ x₄)
-    actdet3 D1 (AASubsume x x₁ x₂) (AAMove x₃) = {!!}
+    -- subsume / move cases; these are all a lot of pattern matching.
+    actdet3 D1 (AASubsume x (SAMove EMAscFirstChild) x₂) (AAMove EMAscFirstChild) = refl
+    actdet3 D1 (AASubsume x (SAMove EMAscParent1) x₂) (AAMove EMAscParent1) = refl
+    actdet3 D1 (AASubsume x (SAZipAsc1 (AASubsume x₁ (SAMove ()) x₄)) x₂) (AAMove EMAscParent1)
+    actdet3 D1 (AASubsume x (SAZipAsc1 (AAMove ())) x₂) (AAMove EMAscParent1)
+    actdet3 D1 (AASubsume x (SAMove EMAscParent2) x₂) (AAMove EMAscParent2) = refl
+    actdet3 D1 (AASubsume x (SAZipAsc2 () x₃) x₂) (AAMove EMAscParent2)
+    actdet3 D1 (AASubsume x (SAMove EMAscNextSib) x₂) (AAMove EMAscNextSib) = refl
+    actdet3 D1 (AASubsume x (SAZipAsc1 (AASubsume x₁ (SAMove ()) x₄)) x₂) (AAMove EMAscNextSib)
+    actdet3 D1 (AASubsume x (SAZipAsc1 (AAMove ())) x₂) (AAMove EMAscNextSib)
+    actdet3 D1 (AASubsume x (SAMove EMAscPrevSib) x₂) (AAMove EMAscPrevSib) = refl
+    actdet3 D1 (AASubsume x (SAZipAsc2 () x₃) x₂) (AAMove EMAscPrevSib)
+    actdet3 D1 (AASubsume _ (SAMove EMLamFirstChild) _) (AAMove EMLamFirstChild) = refl
+    actdet3 D1 (AASubsume x₁ (SAMove EMLamParent) x₂) (AAMove EMLamParent) = refl
+    actdet3 D1 (AASubsume x (SAMove EMPlusFirstChild) x₂) (AAMove EMPlusFirstChild) = refl
+    actdet3 D1 (AASubsume x (SAMove EMPlusParent1) x₂) (AAMove EMPlusParent1) = refl
+    actdet3 D1 (AASubsume x (SAZipPlus1 (AASubsume x₁ (SAMove ()) x₄)) x₂) (AAMove EMPlusParent1)
+    actdet3 D1 (AASubsume x (SAZipPlus1 (AAMove ())) x₂) (AAMove EMPlusParent1)
+    actdet3 D1 (AASubsume x (SAMove EMPlusParent2) x₂) (AAMove EMPlusParent2) = refl
+    actdet3 D1 (AASubsume x (SAZipPlus2 (AASubsume x₁ (SAMove ()) x₄)) x₂) (AAMove EMPlusParent2)
+    actdet3 D1 (AASubsume x (SAZipPlus2 (AAMove ())) x₂) (AAMove EMPlusParent2)
+    actdet3 D1 (AASubsume x (SAMove EMPlusNextSib) x₂) (AAMove EMPlusNextSib) = refl
+    actdet3 D1 (AASubsume x (SAZipPlus1 (AASubsume x₁ (SAMove ()) x₄)) x₂) (AAMove EMPlusNextSib)
+    actdet3 D1 (AASubsume x (SAZipPlus1 (AAMove ())) x₂) (AAMove EMPlusNextSib)
+    actdet3 D1 (AASubsume x (SAMove EMPlusPrevSib) x₂) (AAMove EMPlusPrevSib) = refl
+    actdet3 D1 (AASubsume x (SAZipPlus2 (AASubsume x₁ (SAMove ()) x₄)) x₂) (AAMove EMPlusPrevSib)
+    actdet3 D1 (AASubsume x (SAZipPlus2 (AAMove ())) x₂) (AAMove EMPlusPrevSib)
+    actdet3 D1 (AASubsume x (SAMove EMApFirstChild) x₂) (AAMove EMApFirstChild) = refl
+    actdet3 D1 (AASubsume x (SAMove EMApParent1) x₂) (AAMove EMApParent1) = refl
+    actdet3 D1 (AASubsume x (SAZipAp1 x₁ (SAMove ()) x₄) x₂) (AAMove EMApParent1)
+    actdet3 D1 (AASubsume x (SAZipAp2 x₁ (SAMove ()) x₄) x₂) (AAMove EMApParent1)
+    actdet3 D1 (AASubsume x (SAMove EMApParent2) x₂) (AAMove EMApParent2) = refl
+    actdet3 D1 (AASubsume x (SAZipAp3 x₁ (AASubsume x₃ (SAMove ()) x₅)) x₂) (AAMove EMApParent2)
+    actdet3 D1 (AASubsume x (SAZipAp3 x₁ (AAMove ())) x₂) (AAMove EMApParent2)
+    actdet3 D1 (AASubsume x (SAZipAp4 x₁ (AASubsume x₃ (SAMove ()) x₅)) x₂) (AAMove EMApParent2)
+    actdet3 D1 (AASubsume x (SAZipAp4 x₁ (AAMove ())) x₂) (AAMove EMApParent2)
+    actdet3 D1 (AASubsume x (SAMove EMApNextSib) x₂) (AAMove EMApNextSib) = refl
+    actdet3 D1 (AASubsume x (SAZipAp1 x₁ (SAMove ()) x₄) x₂) (AAMove EMApNextSib)
+    actdet3 D1 (AASubsume x (SAZipAp2 x₁ (SAMove ()) x₄) x₂) (AAMove EMApNextSib)
+    actdet3 D1 (AASubsume x (SAMove EMApPrevSib) x₂) (AAMove EMApPrevSib) = refl
+    actdet3 D1 (AASubsume x (SAZipAp3 x₁ (AASubsume x₃ (SAMove ()) x₅)) x₂) (AAMove EMApPrevSib)
+    actdet3 D1 (AASubsume x (SAZipAp3 x₁ (AAMove ())) x₂) (AAMove EMApPrevSib)
+    actdet3 D1 (AASubsume x (SAZipAp4 x₁ (AASubsume x₃ (SAMove ()) x₅)) x₂) (AAMove EMApPrevSib)
+    actdet3 D1 (AASubsume x (SAZipAp4 x₁ (AAMove ())) x₂) (AAMove EMApPrevSib)
+    actdet3 D1 (AASubsume x (SAMove EMFHoleFirstChild) x₂) (AAMove EMFHoleFirstChild) = refl
+    actdet3 D1 (AASubsume x (SAMove EMFHoleParent) x₂) (AAMove EMFHoleParent) = refl
+    actdet3 D1 (AASubsume x (SAZipHole1 x₁ (SAMove ()) x₄) x₂) (AAMove EMFHoleParent)
+    actdet3 D1 (AASubsume x (SAZipHole2 x₁ (SAMove ())) x₂) (AAMove EMFHoleParent)
+
     actdet3 D1 (AASubsume x SADel x₂) AADel = refl
     actdet3 D1 (AASubsume x SAConAsc x₂) AAConAsc = {!!} -- bad kind 1
     actdet3 {Γ = G} (ASubsume x x₁) (AASubsume x₂ (SAConVar p) x₄) (AAConVar x₅ p₁)
@@ -730,7 +769,7 @@ module Hazelnut where
     actdet3 D1 (AASubsume x (SAFinish x₁) x₂) (AAFinish x₃) = refl
     actdet3 D1 (AASubsume x₁ x₃ x₂) (AAZipLam x₄ D3) = {!!}
 
-    actdet3 D1 (AAMove x) (AASubsume x₁ x₂ x₃) = {!x₂!}
+    actdet3 D1 (AAMove x) (AASubsume x₁ x₂ x₃) = {!lem2 x₂ x₁ x!}
     actdet3 D1 (AAMove x) (AAMove x₁) = movedet x x₁
     actdet3 D1 (AAMove EMLamParent) (AAZipLam x₃ (AASubsume x₁ (SAMove ()) x₄))
     actdet3 D1 (AAMove EMLamParent) (AAZipLam x₃ (AAMove ()))
