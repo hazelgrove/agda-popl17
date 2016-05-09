@@ -430,7 +430,7 @@ module Hazelnut where
     -- analytic action expressions
     data _⊢_~_~>_⇐_ : (Γ : ·ctx) → (e : ê) → (α : action) →
                       (e' : ê) → (t : τ̇) → Set where
-      AASubsume : {Γ : ·ctx} {e e' : ê} {t t' t'' : τ̇} {α : action} →
+      AASubsume : {Γ : ·ctx} {e e' : ê} {t t' t'' : τ̇} {α : action} → -- troublemaker
                   (Γ ⊢ (e ◆e) => t') →
                   (Γ ⊢ e => t' ~ α ~> e' => t'') →
                   (t ~ t'') →
@@ -699,19 +699,34 @@ module Hazelnut where
               (Γ ⊢ e ~ α ~> e' ⇐ t) →
               (Γ ⊢ e ~ α ~> e'' ⇐ t) →
               (e' == e'')
-    actdet3 D1 (AASubsume x x₁ x₂) D3 = {!!} -- π1 (actdet2 x x₁ {!D3!})
+    actdet3 D1 (AASubsume x x₁ x₂) (AASubsume x₃ x₄ x₅)
+     with synthunicity x x₃
+    ... | refl = π1 (actdet2 x x₁ x₄)
+    actdet3 D1 (AASubsume x x₁ x₂) (AAMove x₃) = {!!}
+    actdet3 D1 (AASubsume x SADel x₂) AADel = refl
+    actdet3 D1 (AASubsume x SAConAsc x₂) AAConAsc = {!!} -- bad case
+    actdet3 {Γ = G} (ASubsume x x₁) (AASubsume x₂ (SAConVar p) x₄) (AAConVar x₅ p₁)
+     with ctxunicity {Γ = G} p p₁
+    ... | refl = abort (x₅ x₄)
+    actdet3 D1 (AASubsume x₁ (SAConLam x₂) x₃) (AAConLam1 x₄) = {!!} -- bad case ?
+    actdet3 D1 (AASubsume x₁ (SAConLam x₃) x₂) (AAConLam2 x₄ x₅) = abort (x₅ x₂)
+    actdet3 D1 (AASubsume x SAConNumlit x₂) (AAConNumlit x₃) = abort (x₃ x₂)
+    actdet3 D1 (AASubsume x (SAFinish x₁) x₂) (AAFinish x₃) = refl
+    actdet3 D1 (AASubsume x₁ x₃ x₂) (AAZipLam x₄ D3) = {!!}
 
-    actdet3 D1 (AAMove x) (AASubsume x₁ x₂ x₃) = {!x!}
+    actdet3 D1 (AAMove x) (AASubsume x₁ x₂ x₃) = {!!}
     actdet3 D1 (AAMove x) (AAMove x₁) = movedet x x₁
-    actdet3 D1 (AAMove EMLamParent) (AAZipLam x₃ D3) = {!!}
+    actdet3 D1 (AAMove EMLamParent) (AAZipLam x₃ (AASubsume x₁ (SAMove ()) x₄))
+    actdet3 D1 (AAMove EMLamParent) (AAZipLam x₃ (AAMove ()))
 
     actdet3 D1 AADel (AASubsume _ SADel _) = refl
     actdet3 D1 AADel AADel = refl
 
-    actdet3 D1 AAConAsc (AASubsume x SAConAsc x₂) = {!x₂!}
+    actdet3 D1 AAConAsc (AASubsume x SAConAsc x₂) = {!!} -- bad case
     actdet3 D1 AAConAsc AAConAsc = refl
 
-    actdet3 {Γ = G} D1 (AAConVar x₁ p) (AASubsume x₂ (SAConVar p₁) x₄) with ctxunicity {Γ = G} p p₁
+    actdet3 {Γ = G} D1 (AAConVar x₁ p) (AASubsume x₂ (SAConVar p₁) x₄)
+     with ctxunicity {Γ = G} p p₁
     ... | refl = abort (x₁ x₄)
     actdet3 D1 (AAConVar x₁ p) (AAConVar x₂ p₁) = refl
 
@@ -729,7 +744,7 @@ module Hazelnut where
     actdet3 D1 (AAFinish x) (AASubsume x₁ (SAFinish x₂) x₃) = refl
     actdet3 D1 (AAFinish x) (AAFinish x₁) = refl
 
-    actdet3 D1 (AAZipLam x₁ D2) D3 = actdet3 D1 {!D2!} D3
+    actdet3 D1 (AAZipLam x₁ D2) D3 = {!!} -- actdet3 D1 {!D2!} D3
 
 
 
