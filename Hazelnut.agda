@@ -442,7 +442,7 @@ module Hazelnut where
                  Γ ⊢ ▹ e ◃ ~ del ~> ▹ <||> ◃ ⇐ t
       AAConAsc : {Γ : ·ctx} {e : ė} {t : τ̇} →
                  Γ ⊢ ▹ e ◃ ~ construct asc ~> (e ·:₂ ▹ t ◃) ⇐ t
-      AAConVar : {Γ : ·ctx} {e : ė} {t t' : τ̇} {x : Nat} →
+      AAConVar : {Γ : ·ctx} {t t' : τ̇} {x : Nat} →
                  (t ~̸ t') →           -- todo: i don't understand this
                  (p : (x , t') ∈ Γ) → -- todo: is this right?
                  Γ ⊢ ▹ <||> ◃ ~ construct (var x) ~> <| ▹ X x ◃ |> ⇐ t
@@ -523,7 +523,7 @@ module Hazelnut where
   anamovelem EMFHoleParent d2 = d2
 
 
-  -- actions don't change under weakening the context
+  -- actions don't change under weakening the context. TODO: better name
   weaken : {Γ : ·ctx} {e e' : ê} {t1 t2 : τ̇} {α : action} {x : Nat} →
            ((x , t1) ∈ Γ) →
            (Γ ⊢ e ~ α ~> e' ⇐ t2) →
@@ -678,20 +678,35 @@ module Hazelnut where
   movedet EMFHoleFirstChild EMFHoleFirstChild = refl
   movedet EMFHoleParent EMFHoleParent = refl
 
+  -- a lemma for actdet3. an arrow type given to a hole might as well be
+  -- holes itself.
+  lem1 : {Γ : ·ctx} {t1 t2 : τ̇} →
+           Γ ⊢ <||> <= (t1 ==> t2) →
+           (t1 ==> t2) ~ (<||> ==> <||>)
+  lem1 (ASubsume SEHole TCHole1) = TCArr TCHole1 TCHole1
+
+  lem2 : {Γ : ·ctx} {e e' : ê} {t1 t2 : τ̇} {α : action} {x : Nat} →
+               (x , t1) ∈ Γ →
+               Γ ⊢ e ~ α ~> e' ⇐ t2 →
+               (Γ / x) ⊢ ·λ x e ~ α ~> ·λ x e' ⇐ (t1 ==> t2)
+  lem2 xin (AASubsume x₁ x₂ x₃) = AAZipLam xin {!!}
+  lem2 xin (AAMove x₁)          = AAZipLam xin (AAMove x₁)
+  lem2 xin AADel                = AAZipLam xin AADel
+  lem2 xin AAConAsc             = AAZipLam xin AAConAsc
+  lem2 xin (AAConVar x₂ p)      = AAZipLam xin (AAConVar x₂ p)
+  lem2 xin (AAConLam1 x₂)       = AAZipLam xin (AAConLam1 x₂)
+  lem2 xin (AAConLam2 x₂ x₃)    = AAZipLam xin (AAConLam2 x₂ x₃)
+  lem2 xin (AAConNumlit x₁)     = AAZipLam xin (AAConNumlit x₁)
+  lem2 xin (AAFinish x₁)        = AAZipLam xin (AAFinish x₁)
+  lem2 xin (AAZipLam x₂ d)      = AAZipLam xin {!!}
+
   mutual
     actdet2 : {Γ : ·ctx} {e e' e'' : ê} {t t' t'' : τ̇} {α : action} →
               (Γ ⊢ (e ◆e) => t) →
               (Γ ⊢ e => t ~ α ~> e'  => t') →
               (Γ ⊢ e => t ~ α ~> e'' => t'') →
               (e' == e'' × t' == t'')
-    actdet2 wt d1 d2 = {!!}
-
-    -- a lemma for actdet3. an arrow type given to a hole might as well be
-    -- holes itself.
-    lem1 : {Γ : ·ctx} {t1 t2 : τ̇} →
-           Γ ⊢ <||> <= (t1 ==> t2) →
-           (t1 ==> t2) ~ (<||> ==> <||>)
-    lem1 (ASubsume SEHole TCHole1) = TCArr TCHole1 TCHole1
+    actdet2 wt d1 d2 = {!d1 d2!}
 
     -- actions on analytic expressions produce the same expression
     actdet3 : {Γ : ·ctx} {e e' e'' : ê} {t : τ̇} {α : action} →
@@ -704,17 +719,17 @@ module Hazelnut where
     ... | refl = π1 (actdet2 x x₁ x₄)
     actdet3 D1 (AASubsume x x₁ x₂) (AAMove x₃) = {!!}
     actdet3 D1 (AASubsume x SADel x₂) AADel = refl
-    actdet3 D1 (AASubsume x SAConAsc x₂) AAConAsc = {!!} -- bad case
+    actdet3 D1 (AASubsume x SAConAsc x₂) AAConAsc = {!!} -- bad kind 1
     actdet3 {Γ = G} (ASubsume x x₁) (AASubsume x₂ (SAConVar p) x₄) (AAConVar x₅ p₁)
      with ctxunicity {Γ = G} p p₁
     ... | refl = abort (x₅ x₄)
-    actdet3 D1 (AASubsume x₁ (SAConLam x₂) x₃) (AAConLam1 x₄) = {!!} -- bad case ?
+    actdet3 D1 (AASubsume x₁ (SAConLam x₂) x₃) (AAConLam1 x₄) = {!!} -- bad kind 2
     actdet3 D1 (AASubsume x₁ (SAConLam x₃) x₂) (AAConLam2 x₄ x₅) = abort (x₅ x₂)
     actdet3 D1 (AASubsume x SAConNumlit x₂) (AAConNumlit x₃) = abort (x₃ x₂)
     actdet3 D1 (AASubsume x (SAFinish x₁) x₂) (AAFinish x₃) = refl
     actdet3 D1 (AASubsume x₁ x₃ x₂) (AAZipLam x₄ D3) = {!!}
 
-    actdet3 D1 (AAMove x) (AASubsume x₁ x₂ x₃) = {!!}
+    actdet3 D1 (AAMove x) (AASubsume x₁ x₂ x₃) = {!x₂!}
     actdet3 D1 (AAMove x) (AAMove x₁) = movedet x x₁
     actdet3 D1 (AAMove EMLamParent) (AAZipLam x₃ (AASubsume x₁ (SAMove ()) x₄))
     actdet3 D1 (AAMove EMLamParent) (AAZipLam x₃ (AAMove ()))
@@ -722,7 +737,7 @@ module Hazelnut where
     actdet3 D1 AADel (AASubsume _ SADel _) = refl
     actdet3 D1 AADel AADel = refl
 
-    actdet3 D1 AAConAsc (AASubsume x SAConAsc x₂) = {!!} -- bad case
+    actdet3 D1 AAConAsc (AASubsume x SAConAsc x₂) = {!!} -- bad kind 1
     actdet3 D1 AAConAsc AAConAsc = refl
 
     actdet3 {Γ = G} D1 (AAConVar x₁ p) (AASubsume x₂ (SAConVar p₁) x₄)
@@ -730,7 +745,7 @@ module Hazelnut where
     ... | refl = abort (x₁ x₄)
     actdet3 D1 (AAConVar x₁ p) (AAConVar x₂ p₁) = refl
 
-    actdet3 D1 (AAConLam1 x₃) (AASubsume SEHole (SAConLam x₅) x₆) = {!SEHole!}
+    actdet3 D1 (AAConLam1 x₃) (AASubsume SEHole (SAConLam x₅) x₆) = {!!} -- bad kind 2
     actdet3 D1 (AAConLam1 x₁) (AAConLam1 x₂) = refl
     actdet3 D1 (AAConLam1 x₃) (AAConLam2 x₄ x₅) = abort (x₅ (lem1 D1))
 
@@ -744,13 +759,20 @@ module Hazelnut where
     actdet3 D1 (AAFinish x) (AASubsume x₁ (SAFinish x₂) x₃) = refl
     actdet3 D1 (AAFinish x) (AAFinish x₁) = refl
 
-    actdet3 D1 (AAZipLam x₁ D2) D3 = {!!} -- actdet3 D1 {!D2!} D3
+    actdet3 D1 (AAZipLam x₁ D2) D3 = {!actdet3 D1 (lem2 x₁ D2) D3!}
 
 
 
+
+
+
+
+  -----------------------------------------------------------------------------
 
   -- these theorems aren't listed in the draft, but have been discussed
   -- since submission.
+
+  -----------------------------------------------------------------------------
 
   -- movement doesn't change the term other than moving the focus around.
   moveerase : {e e' : ê} {δ : direction} {t : τ̇} →
