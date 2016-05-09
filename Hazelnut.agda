@@ -459,7 +459,7 @@ module Hazelnut where
                  Γ ⊢ ▹ e ◃ ~ del ~> ▹ <||> ◃ ⇐ t
       AAConAsc : {Γ : ·ctx} {e : ė} {t : τ̇} →
                  Γ ⊢ ▹ e ◃ ~ construct asc ~> (e ·:₂ ▹ t ◃) ⇐ t
-      AAConVar : {Γ : ·ctx} {e : ė} {t t' : τ̇} {x : Nat} →
+      AAConVar : {Γ : ·ctx} {t t' : τ̇} {x : Nat} →
                  (t ~̸ t') →           -- todo: i don't understand this
                  (p : (x , t') ∈ Γ) → -- todo: is this right?
                  Γ ⊢ ▹ <||> ◃ ~ construct (var x) ~> <| ▹ X x ◃ |> ⇐ t
