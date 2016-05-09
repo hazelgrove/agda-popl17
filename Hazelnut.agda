@@ -689,16 +689,17 @@ module Hazelnut where
                (x , t1) ∈ Γ →
                Γ ⊢ e ~ α ~> e' ⇐ t2 →
                (Γ / x) ⊢ ·λ x e ~ α ~> ·λ x e' ⇐ (t1 ==> t2)
-  lem2 xin (AASubsume x₁ x₂ x₃) = AAZipLam xin {!!}
-  lem2 xin (AAMove x₁)          = AAZipLam xin (AAMove x₁)
-  lem2 xin AADel                = AAZipLam xin AADel
-  lem2 xin AAConAsc             = AAZipLam xin AAConAsc
-  lem2 xin (AAConVar x₂ p)      = AAZipLam xin (AAConVar x₂ p)
-  lem2 xin (AAConLam1 x₂)       = AAZipLam xin (AAConLam1 x₂)
-  lem2 xin (AAConLam2 x₂ x₃)    = AAZipLam xin (AAConLam2 x₂ x₃)
-  lem2 xin (AAConNumlit x₁)     = AAZipLam xin (AAConNumlit x₁)
-  lem2 xin (AAFinish x₁)        = AAZipLam xin (AAFinish x₁)
-  lem2 xin (AAZipLam x₂ d)      = AAZipLam xin {!!}
+  lem2 xin D = AAZipLam xin D
+  -- lem2 xin (AASubsume x₁ x₂ x₃) = AAZipLam xin (AASubsume x₁ x₂ x₃)
+  -- lem2 xin (AAMove x₁)          = AAZipLam xin (AAMove x₁)
+  -- lem2 xin AADel                = AAZipLam xin AADel
+  -- lem2 xin AAConAsc             = AAZipLam xin AAConAsc
+  -- lem2 xin (AAConVar x₂ p)      = AAZipLam xin (AAConVar x₂ p)
+  -- lem2 xin (AAConLam1 x₂)       = AAZipLam xin (AAConLam1 x₂)
+  -- lem2 xin (AAConLam2 x₂ x₃)    = AAZipLam xin (AAConLam2 x₂ x₃)
+  -- lem2 xin (AAConNumlit x₁)     = AAZipLam xin (AAConNumlit x₁)
+  -- lem2 xin (AAFinish x₁)        = AAZipLam xin (AAFinish x₁)
+  -- lem2 xin (AAZipLam x₂ d)      = AAZipLam xin (AAZipLam x₂ d)
 
   mutual
     actdet2 : {Γ : ·ctx} {e e' e'' : ê} {t t' t'' : τ̇} {α : action} →
@@ -759,7 +760,7 @@ module Hazelnut where
     actdet3 D1 (AAFinish x) (AASubsume x₁ (SAFinish x₂) x₃) = refl
     actdet3 D1 (AAFinish x) (AAFinish x₁) = refl
 
-    actdet3 D1 (AAZipLam x₁ D2) D3 = {!actdet3 D1 (lem2 x₁ D2) D3!}
+    actdet3 D1 (AAZipLam x₁ D2) D3 = {!!}
 
 
 
