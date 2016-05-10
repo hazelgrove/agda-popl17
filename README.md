@@ -37,3 +37,12 @@ Assumptions and Represenatation Decisions
 
 - the sequence of conjunctions inte the antecedents of the theorems have
   been curried into a sequence of implications instead
+
+- in the proofs of determinism, there's a fair amount of redundancy. agda's
+  case exhaustiveness checking isn't sharp enough to know that two
+  arguments of the same type in adjacent positions can be treated up to
+  symmetry. in another language, we'd likely just write f x y => f y x as a
+  default case. this doesn't pass the termination checker, for obvious
+  reasons. so the cases that are particularly verbose (like the move /
+  synth case) are diked out into a lemma; the rest are more or less just
+  repeated.

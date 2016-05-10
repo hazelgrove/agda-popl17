@@ -685,7 +685,8 @@ module Hazelnut where
            (t1 ==> t2) ~ (<||> ==> <||>)
   lem1 (ASubsume SEHole TCHole1) = TCArr TCHole1 TCHole1
 
-  -- if a move action on a synthetic action makes a new form, it's unique
+  -- a lemma for actdet3. if a move action on a synthetic action makes a
+  -- new form, it's unique
   synthmovedet : {Γ : ·ctx} {e e' e'' : ê} {t' t'' : τ̇} {δ : direction} →
          (Γ ⊢ e => t' ~ move δ ~> e'' => t'') →
          (e + move δ +>e e') →
@@ -757,14 +758,13 @@ module Hazelnut where
     actdet3 D1 (AASubsume x x₁ x₂) (AASubsume x₃ x₄ x₅)
      with synthunicity x x₃
     ... | refl = π1 (actdet2 x x₁ x₄)
-    -- subsume / move cases; these are all a lot of pattern matching.
-    actdet3 D1 (AASubsume x y z) (AAMove w) = synthmovedet y w
-    actdet3 D1 (AASubsume x SADel x₂) AADel = refl
-    actdet3 D1 (AASubsume x SAConAsc x₂) AAConAsc = {!!} -- bad kind 1
+    actdet3 D1 (AASubsume _ y _) (AAMove w) = synthmovedet y w
+    actdet3 D1 (AASubsume _ SADel _) AADel = refl
+    actdet3 D1 (AASubsume x SAConAsc x₂) AAConAsc = {!!}                 -- bad kind 1
     actdet3 {Γ = G} (ASubsume x x₁) (AASubsume x₂ (SAConVar p) x₄) (AAConVar x₅ p₁)
      with ctxunicity {Γ = G} p p₁
     ... | refl = abort (x₅ x₄)
-    actdet3 D1 (AASubsume x₁ (SAConLam x₂) x₃) (AAConLam1 x₄) = {!!} -- bad kind 2
+    actdet3 D1 (AASubsume x₁ (SAConLam x₂) x₃) (AAConLam1 x₄) = {!!}     -- bad kind 2
     actdet3 D1 (AASubsume x₁ (SAConLam x₃) x₂) (AAConLam2 x₄ x₅) = abort (x₅ x₂)
     actdet3 D1 (AASubsume x SAConNumlit x₂) (AAConNumlit x₃) = abort (x₃ x₂)
     actdet3 D1 (AASubsume x (SAFinish x₁) x₂) (AAFinish x₃) = refl
@@ -778,7 +778,7 @@ module Hazelnut where
     actdet3 D1 AADel (AASubsume _ SADel _) = refl
     actdet3 D1 AADel AADel = refl
 
-    actdet3 D1 AAConAsc (AASubsume x SAConAsc x₂) = {!!} -- bad kind 1
+    actdet3 D1 AAConAsc (AASubsume x SAConAsc x₂) = {!!}                 -- bad kind 1
     actdet3 D1 AAConAsc AAConAsc = refl
 
     actdet3 {Γ = G} D1 (AAConVar x₁ p) (AASubsume x₂ (SAConVar p₁) x₄)
@@ -800,7 +800,7 @@ module Hazelnut where
     actdet3 D1 (AAFinish x) (AASubsume x₁ (SAFinish x₂) x₃) = refl
     actdet3 D1 (AAFinish x) (AAFinish x₁) = refl
 
-    actdet3 D1 (AAZipLam x₁ D2) D3 = {!!}
+    actdet3 D1 (AAZipLam x₃ D2) D3 = {!!}
 
 
 
