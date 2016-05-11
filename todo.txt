@@ -102,3 +102,5 @@ determinism for type synthesis
   --            ((Γ ⊢ e ~ α ~> e'' ⇐ t) + (Γ ⊢ e ~ α ~> e'' ⇐ t')) →
   --            (e' == e'')
   -- actdet2 Γ e e' e'' t t' α D1 D2 D3 D45 = {!D3!}
+
+- add ourselves to the agda wiki page?
