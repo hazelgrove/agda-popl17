@@ -145,6 +145,20 @@ module Hazelnut-deterministic where
     with synthunicity d1 d2
   ... | ()
 
+  lem5 : ∀ {Γ e eh} →
+        Γ ⊢ e => <||> →
+        Γ ⊢ e ∘ (eh ◆e) => <||> →
+        Γ ⊢ eh ◆e <= <||>
+  lem5 d1 (SAp d2 x) with synthunicity d1 d2
+  ... | ()
+  lem5 d1 (SApHole d2 x) = x
+
+  lem6 : ∀ {Γ e1 e2} →
+         Γ ⊢ e1 ·+ e2 => num →
+         Γ ⊢ e1 <= num × Γ ⊢ e2 <= num
+  lem6 (SPlus x x₁) = x , x₁
+
+
   mutual
     actdet2 : {Γ : ·ctx} {e e' e'' : ê} {t t' t'' : τ̇} {α : action} →
               (Γ ⊢ (e ◆e) => t) →
@@ -192,12 +206,12 @@ module Hazelnut-deterministic where
     actdet2 wt (SAConLam x₁) (SAConLam x₂) = refl , refl
 
     actdet2 wt SAConAp1 SAConAp1 = refl , refl
-    actdet2 wt SAConAp1 (SAConAp3 x) = {!!} -- not sure #1
+    actdet2 wt SAConAp1 (SAConAp3 x) = {!!} , {!!} -- not sure #1
 
     actdet2 wt SAConAp2 SAConAp2 = refl , refl
     actdet2 wt SAConAp2 (SAConAp3 x) = abort (x TCHole2)
 
-    actdet2 wt (SAConAp3 x) SAConAp1 = {!!} -- not sure #1 sym
+    actdet2 wt (SAConAp3 x) SAConAp1 = {!!} , {!!} -- not sure #1 sym
     actdet2 wt (SAConAp3 x) SAConAp2 = abort (x TCHole2)
     actdet2 wt (SAConAp3 x) (SAConAp3 x₁) = refl , refl
 
@@ -230,11 +244,11 @@ module Hazelnut-deterministic where
     actdet2 wt (SAZipAp1 x (SAMove ()) x₁) (SAMove EMApNextSib)
     actdet2 wt (SAZipAp1 x d1 x₁) (SAZipAp1 x₂ d2 x₃)
       with synthunicity x₂ x
-    ... | refl with actdet2 x d1 d2 -- todo: double-barrelded with should work here
+    ... | refl with actdet2 x d1 d2 -- todo: double-barrelded with here ..
     ... | p1 , refl = (ap1 (λ q → q ∘₁ _) p1) , refl
     actdet2 wt (SAZipAp1 x d1 x₁) (SAZipAp2 x₂ d2 x₃)
       with synthunicity x x₂
-    ... | refl with actdet2 x d1 d2 -- todo: and here
+    ... | refl with actdet2 x d1 d2 -- todo: .. and here
     actdet2 wt (SAZipAp1 _ _ _ ) (SAZipAp2 _ _ _) | refl | _ , ()
 
     actdet2 wt (SAZipAp2 x (SAMove ()) x₁) (SAMove EMApParent1)
@@ -249,7 +263,7 @@ module Hazelnut-deterministic where
 
     actdet2 wt (SAZipAp3 x (AASubsume x₁ (SAMove ()) x₃)) (SAMove EMApParent2)
     actdet2 wt (SAZipAp3 x (AAMove ())) (SAMove EMApParent2)
-    actdet2 wt (SAZipAp3 x x₁) (SAMove EMApPrevSib) = {!x₁!} -- p.g.p.
+    actdet2 wt (SAZipAp3 x x₁) (SAMove EMApPrevSib) = {!!} -- p.g.p.
     actdet2 wt (SAZipAp3 {eh = eh} x x₁) (SAZipAp3 x₂ x₃)
       with synthunicity x x₂
     ... | refl = ap1 (_∘₂_ _) (actdet3 (lem4 {eh = eh} wt x) x₁ x₃) , refl
@@ -259,18 +273,30 @@ module Hazelnut-deterministic where
 
     actdet2 wt (SAZipAp4 x (AASubsume x₁ (SAMove ()) x₃)) (SAMove EMApParent2)
     actdet2 wt (SAZipAp4 x (AAMove ())) (SAMove EMApParent2)
-    actdet2 wt (SAZipAp4 x (AASubsume x₁ x₂ x₃)) (SAMove EMApPrevSib) = {!x₂!} -- p.g.p.
+    actdet2 wt (SAZipAp4 x (AASubsume x₁ x₂ x₃)) (SAMove EMApPrevSib) = {!!} -- p.g.p.
     actdet2 wt (SAZipAp4 x (AAMove ())) (SAMove EMApPrevSib)
     actdet2 wt (SAZipAp4 x x₁) (SAZipAp3 x₂ x₃)
       with synthunicity x x₂
     ... | ()
-    actdet2 wt (SAZipAp4 x x₁) (SAZipAp4 x₂ x₃) = {!!}
+    actdet2 wt (SAZipAp4 {eh = eh} x x₁ ) (SAZipAp4 x₂ x₃)
+      with actdet3 (lem5 {eh = eh} x₂ wt) x₁ x₃
+    ... | refl = refl , refl
 
-    actdet2 wt (SAZipPlus1 x) d2 = {!!}
+    actdet2 wt (SAZipPlus1 (AASubsume x (SAMove ()) x₂)) (SAMove EMPlusParent1)
+    actdet2 wt (SAZipPlus1 (AAMove ())) (SAMove EMPlusParent1)
+    actdet2 wt (SAZipPlus1 x) (SAMove EMPlusNextSib) = {!!}
+    actdet2 wt (SAZipPlus1 x) (SAZipPlus1 x₁)
+      with actdet3 (π1 (lem6 wt)) x x₁ -- todo: not sure why this needs to be a lemma
+    ... | refl = refl , refl
 
-    actdet2 wt (SAZipPlus2 x) d2 = {!!}
+    actdet2 wt (SAZipPlus2 (AASubsume x (SAMove ()) x₂)) (SAMove EMPlusParent2)
+    actdet2 wt (SAZipPlus2 (AASubsume x x₁ x₂)) (SAMove EMPlusPrevSib) = {!!}
+    actdet2 wt (SAZipPlus2 (AAMove x)) (SAMove x₁) = {!!} , refl
+    actdet2 wt (SAZipPlus2 x) (SAZipPlus2 x₁)
+      with actdet3 (π2 (lem6 wt)) x x₁ -- .. or this one
+    ... | refl = refl , refl
 
-    actdet2 wt (SAZipHole1 x d1 x₁) (SAMove x₂) = {!!}
+    actdet2 wt (SAZipHole1 x d1 x₁) (SAMove x₂) = {! !}
     actdet2 wt (SAZipHole1 x d1 x₁) (SAZipHole1 x₂ d2 x₃) = {!!}
     actdet2 wt (SAZipHole1 x d1 x₁) (SAZipHole2 x₂ d2) = {!!}
 

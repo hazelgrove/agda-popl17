@@ -28,6 +28,7 @@ module Hazelnut-core where
   ·ctx : Set
   ·ctx = Nat → Maybe τ̇ -- todo: (Σ[ n : Nat ] (y : Nat) → y ∈ Γ → x > y)?
 
+  -- shorthand for the (unique up to funext) empty context
   ∅ : ·ctx
   ∅ x = None
 
