@@ -57,15 +57,7 @@ module Hazelnut-deterministic where
   movedet EMFHoleFirstChild EMFHoleFirstChild = refl
   movedet EMFHoleParent EMFHoleParent = refl
 
-  -- a lemma for actdet3. an arrow type given to a hole might as well be
-  -- holes itself.
-  lem1 : {Γ : ·ctx} {t1 t2 : τ̇} →
-           Γ ⊢ <||> <= (t1 ==> t2) →
-           (t1 ==> t2) ~ (<||> ==> <||>)
-  lem1 (ASubsume SEHole TCHole1) = TCArr TCHole1 TCHole1
-
-  -- a lemma for actdet3. if a move action on a synthetic action makes a
-  -- new form, it's unique
+  -- if a move action on a synthetic action makes a new form, it's unique
   synthmovedet : {Γ : ·ctx} {e e' e'' : ê} {t' t'' : τ̇} {δ : direction} →
          (Γ ⊢ e => t' ~ move δ ~> e'' => t'') →
          (e + move δ +>e e') →
@@ -121,6 +113,11 @@ module Hazelnut-deterministic where
   synthmovedet (SAZipHole2 _ (SAMove ())) EMFHoleParent
 
   -- these are all a bunch of small techincal lemmas for the cases below.
+  lem1 : {Γ : ·ctx} {t1 t2 : τ̇} →
+           Γ ⊢ <||> <= (t1 ==> t2) →
+           (t1 ==> t2) ~ (<||> ==> <||>)
+  lem1 (ASubsume SEHole TCHole1) = TCArr TCHole1 TCHole1
+
   lem3 : ∀{ Γ e t } → Γ ⊢ (e ·: t) <= t → Γ ⊢ e <= t
   lem3 (ASubsume (SAsc x) x₁) = x
 
@@ -365,7 +362,8 @@ module Hazelnut-deterministic where
     actdet3 D1 (AASubsume x₁ (SAConLam x₃) x₂) (AAConLam2 x₄ x₅) = abort (x₅ x₂)
     actdet3 D1 (AASubsume x SAConNumlit x₂) (AAConNumlit x₃) = abort (x₃ x₂)
     actdet3 D1 (AASubsume x (SAFinish x₁) x₂) (AAFinish x₃) = refl
-    actdet3 D1 (AASubsume x₁ x₃ x₂) (AAZipLam x₄ D3) = {!!}
+    actdet3 D1 (AASubsume x₁ (SAMove EMLamParent) x₂) (AAZipLam x₄ (AASubsume x₃ (SAMove ()) x₆))
+    actdet3 D1 (AASubsume x₁ (SAMove EMLamParent) x₂) (AAZipLam x₄ (AAMove ()))
 
     actdet3 D1 (AAMove x) (AASubsume x₁ x₂ x₃) =  ! (synthmovedet x₂ x)
     actdet3 D1 (AAMove x) (AAMove x₁) = movedet x x₁
@@ -397,4 +395,6 @@ module Hazelnut-deterministic where
     actdet3 D1 (AAFinish x) (AASubsume x₁ (SAFinish x₂) x₃) = refl
     actdet3 D1 (AAFinish x) (AAFinish x₁) = refl
 
-    actdet3 D1 (AAZipLam x₃ D2) D3 = {!!}
+    actdet3 D1 (AAZipLam {x = x} x₃ D2) D3 with natEQ x x
+    ... | Inl refl = {! !}
+    ... | Inr qq = abort (qq refl)
