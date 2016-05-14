@@ -484,6 +484,7 @@ module Hazelnut-core where
                  (Γ ⊢ e <= t) →
                  Γ ⊢ ▹ <| e |> ◃ ~ finish ~> ▹ e ◃ ⇐ t
       AAZipLam : {Γ : ·ctx} {x : Nat} {t1 t2 : τ̇} {e e' : ê} {α : action} →
-                 ((x , t1) ∈ Γ) → -- todo: check this move
-                 (Γ ⊢ e ~ α ~> e' ⇐ t2) →
-                 (Γ / x) ⊢ (·λ x e) ~ α ~> (·λ x e') ⇐ (t1 ==> t2)
+                 -- ((x , t1) ∈ Γ) → -- todo: check this move
+                 (x # Γ) →
+                 ((Γ ,, (x , t1)) ⊢ e ~ α ~> e' ⇐ t2) →
+                 Γ ⊢ (·λ x e) ~ α ~> (·λ x e') ⇐ (t1 ==> t2)

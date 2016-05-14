@@ -180,6 +180,18 @@ module Hazelnut-deterministic where
         Γ ⊢ ▹ e ◃ => t ~ move prevSib ~> e' => t' → ⊥
   lem9s (SAMove ())
 
+  lem10 : ∀{Γ x t1 t2 e} →
+          Γ ⊢ ·λ x (e ◆e) <= (t1 ==> t2) →
+          (Γ ,, (x , t1)) ⊢ e ◆e <= t2
+  lem10 (ASubsume () x₂)
+  lem10 (ALam x₁ d1) = d1
+
+  lem11 : ∀ {Γ e e' t} →
+        Γ ⊢ ▹ e ◃ ~ move parent ~> e' ⇐ t → ⊥
+  lem11 (AASubsume x (SAMove ()) x₂)
+  lem11 (AAMove ())
+
+
 
   mutual
     actdet2 : {Γ : ·ctx} {e e' e'' : ê} {t t' t'' : τ̇} {α : action} →
@@ -395,6 +407,9 @@ module Hazelnut-deterministic where
     actdet3 D1 (AAFinish x) (AASubsume x₁ (SAFinish x₂) x₃) = refl
     actdet3 D1 (AAFinish x) (AAFinish x₁) = refl
 
-    actdet3 D1 (AAZipLam {x = x} x₃ D2) D3 with natEQ x x
-    ... | Inl refl = {! !}
-    ... | Inr qq = abort (qq refl)
+    actdet3 D1 (AAZipLam x₃ D2) (AASubsume x₁ (SAMove EMLamParent) x₄) = abort (lem11 D2)
+    actdet3 D1 (AAZipLam x₃ (AASubsume x₁ (SAMove ()) x₄)) (AAMove EMLamParent)
+    actdet3 D1 (AAZipLam x₃ (AAMove ())) (AAMove EMLamParent)
+    actdet3 D1 (AAZipLam {e = e} x₃ D2) (AAZipLam x₁ D3)
+      with actdet3 (lem10 {e = e} D1) D2 D3
+    ... | refl = refl

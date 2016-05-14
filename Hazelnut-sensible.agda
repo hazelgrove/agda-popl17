@@ -58,29 +58,6 @@ module Hazelnut-sensible where
   anamovelem EMFHoleFirstChild d2 = d2
   anamovelem EMFHoleParent d2 = d2
 
-
-  -- actions don't change under weakening the context. TODO: better name
-  weaken : {Γ : ·ctx} {e e' : ê} {t1 t2 : τ̇} {α : action} {x : Nat} →
-           ((x , t1) ∈ Γ) →
-           (Γ ⊢ e ~ α ~> e' ⇐ t2) →
-           (((Γ / x) ,, (x , t1)) ⊢ e ~ α ~> e' ⇐ t2)
-  weaken {_} {e} {e'} {t1} {t2} {α} xin =
-             tr (λ g → g ⊢ e ~ α ~> e' ⇐ t2) (funext (ctxeq _ _ _ xin))
-   where
-      -- todo: this is messy and i don't 100% know why it has to be
-      lem : (x y : Nat) → (Γ : ·ctx) → (x == y → ⊥) → Γ y == ((Γ / x) y)
-      lem x y G neq with natEQ x y
-      lem x₂ .x₂ G neq | Inl refl = abort (neq refl)
-      lem x₂ y₁ G neq  | Inr x₃ = refl
-
-      ctxeq : (Γ : ·ctx) (t : τ̇) (x : Nat) →
-               (x , t) ∈ Γ →
-               (y : Nat) → Γ y == ((Γ / x) ,, (x , t)) y
-      ctxeq Γ t x xin y with natEQ x y
-      ctxeq Γ t x xin .x | Inl refl = xin
-      ctxeq Γ t x xin y  | Inr x₁ = lem x y Γ x₁
-
-
   mutual
     -- if an action transforms an zexp in a synthetic posistion to another
     -- zexp, they have the same type up erasure of focus.
@@ -136,4 +113,17 @@ module Hazelnut-sensible where
     actsense2 (AAConNumlit _) _ = ASubsume (SFHole SNum) TCHole1
     actsense2 (AAFinish x) _ = x
     actsense2 (AAZipLam _ _ ) (ASubsume () _)
-    actsense2 (AAZipLam x₁ D1) (ALam x₂ D2) = ALam x₂ (actsense2 (weaken x₁ D1) D2)
+
+    actsense2 (AAZipLam x₁ (AASubsume x₂ x₃ x₄)) (ALam x₅ D2) = ALam x₅ (actsense2 (AASubsume x₂ x₃ x₄) D2)
+    actsense2 (AAZipLam x₁ (AAMove x₂)) (ALam x₃ D2) = ALam x₃ (anamovelem x₂ D2)
+    actsense2 (AAZipLam x₁ AADel) (ALam x₂ D2) = ALam x₂ (ASubsume SEHole TCHole1)
+    actsense2 (AAZipLam x₁ AAConAsc) (ALam x₂ (ASubsume x₃ x₄)) = ALam x₂ (ASubsume (SAsc (ASubsume x₃ x₄)) TCRefl)
+    actsense2 (AAZipLam x₁ AAConAsc) (ALam x₂ (ALam x₃ D2)) = ALam x₂ (ASubsume (SAsc (ALam x₃ D2)) TCRefl)
+    actsense2 (AAZipLam x₁ (AAConVar x₃ p)) (ALam x₄ D2) = ALam x₄ (ASubsume (SFHole (SVar p)) TCHole1)
+    actsense2 (AAZipLam x₁ (AAConLam1 x₃)) (ALam x₄ D2) = ALam x₄ (ALam x₃ (ASubsume SEHole TCHole1))
+    actsense2 (AAZipLam x₁ (AAConLam2 x₃ x₄)) (ALam x₅ D2) = ALam x₅ (ASubsume (SFHole (SAsc (ALam x₃ (ASubsume SEHole TCRefl))))
+                                                                        TCHole1)
+    actsense2 (AAZipLam x₁ (AAConNumlit x₂)) (ALam x₃ D2) = ALam x₃ (ASubsume (SFHole SNum) TCHole1)
+    actsense2 (AAZipLam x₁ (AAFinish x₂)) (ALam x₃ D2) = ALam x₃ x₂
+    actsense2 (AAZipLam x₁ (AAZipLam x₃ D1)) (ALam x₄ (ASubsume () x₆))
+    actsense2 (AAZipLam x₁ (AAZipLam x₃ D1)) (ALam x₄ (ALam x₅ D2)) = ALam x₄ (ALam x₃ (actsense2 D1 D2))
