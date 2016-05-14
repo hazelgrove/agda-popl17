@@ -120,6 +120,7 @@ module Hazelnut-deterministic where
   synthmovedet (SAZipHole1 _ (SAMove ()) x) EMFHoleParent
   synthmovedet (SAZipHole2 _ (SAMove ())) EMFHoleParent
 
+  -- these are all a bunch of small techincal lemmas for the cases below.
   lem3 : ∀{ Γ e t } → Γ ⊢ (e ·: t) <= t → Γ ⊢ e <= t
   lem3 (ASubsume (SAsc x) x₁) = x
 
@@ -158,6 +159,30 @@ module Hazelnut-deterministic where
          Γ ⊢ e1 <= num × Γ ⊢ e2 <= num
   lem6 (SPlus x x₁) = x , x₁
 
+  lem7 : ∀{Γ e t e' t'} →
+         Γ ⊢ <| e |> => <||> →
+         Γ ⊢ ▹ e ◃ => t ~ move parent ~> e' => t' →
+         ⊥
+  lem7 (SFHole _) (SAMove ())
+
+  lem8a : ∀ {Γ e e' t} →
+        Γ ⊢ ▹ e ◃ ~ move nextSib ~> e' ⇐ t → ⊥
+  lem8a (AASubsume x (SAMove ()) x₂)
+  lem8a (AAMove ())
+
+  lem8s : ∀ {Γ e e' t t'} →
+        Γ ⊢ ▹ e ◃ => t ~ move nextSib ~> e' => t' → ⊥
+  lem8s (SAMove ())
+
+  lem9a : ∀ {Γ e e' t} →
+        Γ ⊢ ▹ e ◃ ~ move prevSib ~> e' ⇐ t → ⊥
+  lem9a (AASubsume x (SAMove ()) x₂)
+  lem9a (AAMove ())
+
+  lem9s : ∀ {Γ e e' t t'} →
+        Γ ⊢ ▹ e ◃ => t ~ move prevSib ~> e' => t' → ⊥
+  lem9s (SAMove ())
+
 
   mutual
     actdet2 : {Γ : ·ctx} {e e' e'' : ê} {t t' t'' : τ̇} {α : action} →
@@ -166,6 +191,8 @@ module Hazelnut-deterministic where
               (Γ ⊢ e => t ~ α ~> e'' => t'') →
               (e' == e'' × t' == t'')
     actdet2 wt (SAMove x) (SAMove x₁) = movedet x x₁ , refl
+      -- every other case of move in the left is an absurdity after a
+      -- couple of levels
     actdet2 wt (SAMove EMAscParent1) (SAZipAsc1 (AASubsume _ (SAMove ()) _))
     actdet2 wt (SAMove EMAscParent1) (SAZipAsc1 (AAMove ()))
     actdet2 wt (SAMove EMAscNextSib) (SAZipAsc1 (AASubsume _ (SAMove ()) _))
@@ -206,12 +233,12 @@ module Hazelnut-deterministic where
     actdet2 wt (SAConLam x₁) (SAConLam x₂) = refl , refl
 
     actdet2 wt SAConAp1 SAConAp1 = refl , refl
-    actdet2 wt SAConAp1 (SAConAp3 x) = {!!} , {!!} -- not sure #1
+    actdet2 wt SAConAp1 (SAConAp3 x) = {!!} -- not sure #1
 
     actdet2 wt SAConAp2 SAConAp2 = refl , refl
     actdet2 wt SAConAp2 (SAConAp3 x) = abort (x TCHole2)
 
-    actdet2 wt (SAConAp3 x) SAConAp1 = {!!} , {!!} -- not sure #1 sym
+    actdet2 wt (SAConAp3 x) SAConAp1 = {!!} -- not sure #1 sym
     actdet2 wt (SAConAp3 x) SAConAp2 = abort (x TCHole2)
     actdet2 wt (SAConAp3 x) (SAConAp3 x₁) = refl , refl
 
@@ -231,7 +258,7 @@ module Hazelnut-deterministic where
 
     actdet2 wt (SAZipAsc1 (AASubsume _ (SAMove ()) _)) (SAMove EMAscParent1)
     actdet2 wt (SAZipAsc1 (AAMove ())) (SAMove EMAscParent1)
-    actdet2 wt (SAZipAsc1 x) (SAMove EMAscNextSib) = {!!} -- pattern gen problem
+    actdet2 wt (SAZipAsc1 x) (SAMove EMAscNextSib) = abort (lem8a x)
     actdet2 {t = t} wt (SAZipAsc1 x) (SAZipAsc1 x₁) =
          ap1 (λ q → q ·:₁ t) (actdet3 (lem3 (ASubsume wt TCRefl)) x x₁) , refl
 
@@ -263,7 +290,7 @@ module Hazelnut-deterministic where
 
     actdet2 wt (SAZipAp3 x (AASubsume x₁ (SAMove ()) x₃)) (SAMove EMApParent2)
     actdet2 wt (SAZipAp3 x (AAMove ())) (SAMove EMApParent2)
-    actdet2 wt (SAZipAp3 x x₁) (SAMove EMApPrevSib) = {!!} -- p.g.p.
+    actdet2 wt (SAZipAp3 x x₁) (SAMove EMApPrevSib) = abort (lem9a x₁)
     actdet2 wt (SAZipAp3 {eh = eh} x x₁) (SAZipAp3 x₂ x₃)
       with synthunicity x x₂
     ... | refl = ap1 (_∘₂_ _) (actdet3 (lem4 {eh = eh} wt x) x₁ x₃) , refl
@@ -273,7 +300,7 @@ module Hazelnut-deterministic where
 
     actdet2 wt (SAZipAp4 x (AASubsume x₁ (SAMove ()) x₃)) (SAMove EMApParent2)
     actdet2 wt (SAZipAp4 x (AAMove ())) (SAMove EMApParent2)
-    actdet2 wt (SAZipAp4 x (AASubsume x₁ x₂ x₃)) (SAMove EMApPrevSib) = {!!} -- p.g.p.
+    actdet2 wt (SAZipAp4 x (AASubsume x₁ x₂ x₃)) (SAMove EMApPrevSib) = abort (lem9s x₂)
     actdet2 wt (SAZipAp4 x (AAMove ())) (SAMove EMApPrevSib)
     actdet2 wt (SAZipAp4 x x₁) (SAZipAp3 x₂ x₃)
       with synthunicity x x₂
@@ -284,23 +311,39 @@ module Hazelnut-deterministic where
 
     actdet2 wt (SAZipPlus1 (AASubsume x (SAMove ()) x₂)) (SAMove EMPlusParent1)
     actdet2 wt (SAZipPlus1 (AAMove ())) (SAMove EMPlusParent1)
-    actdet2 wt (SAZipPlus1 x) (SAMove EMPlusNextSib) = {!!}
+    actdet2 wt (SAZipPlus1 (AASubsume x x₁ x₂)) (SAMove EMPlusNextSib) = abort (lem8s x₁)
+    actdet2 wt (SAZipPlus1 (AAMove ())) (SAMove EMPlusNextSib)
     actdet2 wt (SAZipPlus1 x) (SAZipPlus1 x₁)
       with actdet3 (π1 (lem6 wt)) x x₁ -- todo: not sure why this needs to be a lemma
     ... | refl = refl , refl
 
     actdet2 wt (SAZipPlus2 (AASubsume x (SAMove ()) x₂)) (SAMove EMPlusParent2)
-    actdet2 wt (SAZipPlus2 (AASubsume x x₁ x₂)) (SAMove EMPlusPrevSib) = {!!}
-    actdet2 wt (SAZipPlus2 (AAMove x)) (SAMove x₁) = {!!} , refl
+    actdet2 wt (SAZipPlus2 (AASubsume x x₁ x₂)) (SAMove EMPlusPrevSib) = abort (lem9s x₁)
+    actdet2 wt (SAZipPlus2 (AAMove ())) (SAMove EMPlusParent2)
+    actdet2 wt (SAZipPlus2 (AAMove ())) (SAMove EMPlusPrevSib)
     actdet2 wt (SAZipPlus2 x) (SAZipPlus2 x₁)
       with actdet3 (π2 (lem6 wt)) x x₁ -- .. or this one
     ... | refl = refl , refl
 
-    actdet2 wt (SAZipHole1 x d1 x₁) (SAMove x₂) = {! !}
-    actdet2 wt (SAZipHole1 x d1 x₁) (SAZipHole1 x₂ d2 x₃) = {!!}
-    actdet2 wt (SAZipHole1 x d1 x₁) (SAZipHole2 x₂ d2) = {!!}
+    actdet2 wt (SAZipHole1 x d1 x₁) (SAMove EMFHoleParent) = abort (lem7 wt d1)
+    actdet2 wt (SAZipHole1 x d1 x₁) (SAZipHole1 x₂ d2 x₃)
+      with synthunicity x x₂
+    ... | refl with actdet2 x d1 d2
+    ... | refl , refl = refl , refl
+    actdet2 wt (SAZipHole1 x d1 x₁) (SAZipHole2 x₂ d2)
+      with synthunicity x x₂
+    ... | refl with actdet2 x d1 d2
+    ... | p , _ = abort (x₁ p)
 
-    actdet2 wt (SAZipHole2 x d1) d2 = {!!}
+    actdet2 wt (SAZipHole2 x d1) (SAMove EMFHoleParent) = abort (lem7 wt d1)
+    actdet2 wt (SAZipHole2 x d1) (SAZipHole1 x₁ d2 x₂)
+      with synthunicity x x₁
+    ... | refl with actdet2 x d1 d2
+    ... | p , q  = abort (x₂ (! p))
+    actdet2 wt (SAZipHole2 x d1) (SAZipHole2 x₁ d2)
+      with synthunicity x x₁
+    ... | refl with actdet2 x d1 d2
+    ... | refl , refl = refl , refl
 
     -- actions on analytic expressions produce the same expression
     actdet3 : {Γ : ·ctx} {e e' e'' : ê} {t : τ̇} {α : action} →
