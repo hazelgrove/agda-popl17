@@ -112,7 +112,8 @@ module Hazelnut-deterministic where
   synthmovedet (SAZipHole1 _ (SAMove ()) x) EMFHoleParent
   synthmovedet (SAZipHole2 _ (SAMove ())) EMFHoleParent
 
-  -- these are all a bunch of small techincal lemmas for the cases below.
+  -- these are all a bunch of small techincal lemmas for the cases below. i
+  -- don't understand why some of them can't be inlined.
   lem1 : {Γ : ·ctx} {t1 t2 : τ̇} →
            Γ ⊢ <||> <= (t1 ==> t2) →
            (t1 ==> t2) ~ (<||> ==> <||>)
@@ -167,15 +168,18 @@ module Hazelnut-deterministic where
   lem8a (AASubsume x (SAMove ()) x₂)
   lem8a (AAMove ())
 
+  -- expressions in focus don't move to next sib
   lem8s : ∀ {Γ e e' t t'} →
         Γ ⊢ ▹ e ◃ => t ~ move nextSib ~> e' => t' → ⊥
   lem8s (SAMove ())
 
+    -- expressions in focus don't move to prev sib
   lem9a : ∀ {Γ e e' t} →
         Γ ⊢ ▹ e ◃ ~ move prevSib ~> e' ⇐ t → ⊥
   lem9a (AASubsume x (SAMove ()) x₂)
   lem9a (AAMove ())
 
+  -- expressions in focus don't move to prev sib
   lem9s : ∀ {Γ e e' t t'} →
         Γ ⊢ ▹ e ◃ => t ~ move prevSib ~> e' => t' → ⊥
   lem9s (SAMove ())
@@ -186,6 +190,7 @@ module Hazelnut-deterministic where
   lem10 (ASubsume () x₂)
   lem10 (ALam x₁ d1) = d1
 
+    -- expressions in focus don't move to parent
   lem11 : ∀ {Γ e e' t} →
         Γ ⊢ ▹ e ◃ ~ move parent ~> e' ⇐ t → ⊥
   lem11 (AASubsume x (SAMove ()) x₂)
@@ -199,6 +204,8 @@ module Hazelnut-deterministic where
   lem12 {(t ==> t')} p t1 t2 x = p (TCArr TCHole1 TCHole1)
 
   mutual
+    -- an action on an expression in a synthetic position produces one
+    -- resultant expression and type.
     actdet2 : {Γ : ·ctx} {e e' e'' : ê} {t t' t'' : τ̇} {α : action} →
               (Γ ⊢ (e ◆e) => t) →
               (Γ ⊢ e => t ~ α ~> e'  => t') →
@@ -359,7 +366,8 @@ module Hazelnut-deterministic where
     ... | refl with actdet2 x d1 d2
     ... | refl , refl = refl , refl
 
-    -- actions on analytic expressions produce the same expression
+    -- an action on an expression in an analytic position produces one
+    -- resultant expression and type.
     actdet3 : {Γ : ·ctx} {e e' e'' : ê} {t : τ̇} {α : action} →
               (Γ ⊢ (e ◆e) <= t) →
               (Γ ⊢ e ~ α ~> e' ⇐ t) →
@@ -390,7 +398,7 @@ module Hazelnut-deterministic where
     actdet3 D1 AADel (AASubsume _ SADel _) = refl
     actdet3 D1 AADel AADel = refl
 
-    actdet3 D1 AAConAsc (AASubsume {p = p} x SAConAsc x₂) = abort (p refl)  -- bad kind 1
+    actdet3 D1 AAConAsc (AASubsume {p = p} x SAConAsc x₂) = abort (p refl) -- bad kind 1
     actdet3 D1 AAConAsc AAConAsc = refl
 
     actdet3 {Γ = G} D1 (AAConVar x₁ p) (AASubsume x₂ (SAConVar p₁) x₄)
