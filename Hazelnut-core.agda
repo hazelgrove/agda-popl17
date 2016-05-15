@@ -452,10 +452,10 @@ module Hazelnut-core where
     data _⊢_~_~>_⇐_ : (Γ : ·ctx) → (e : ê) → (α : action) →
                       (e' : ê) → (t : τ̇) → Set where
       AASubsume : {Γ : ·ctx} {e e' : ê} {t t' t'' : τ̇} {α : action} → -- troublemaker
+                  {p : α == construct asc → ⊥} → -- cyrus's proposed fix for two cases
                   (Γ ⊢ (e ◆e) => t') →
                   (Γ ⊢ e => t' ~ α ~> e' => t'') →
                   (t ~ t'') →
-                  -- (α == construct asc → ⊥) →
                   Γ ⊢ e ~ α ~> e' ⇐ t
       AAMove : {e e' : ê} {δ : direction} {Γ : ·ctx} {t : τ̇} →
                   (e + move δ +>e e') →

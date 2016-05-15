@@ -114,7 +114,7 @@ module Hazelnut-sensible where
     actsense2 (AAFinish x) _ = x
     actsense2 (AAZipLam _ _ ) (ASubsume () _)
 
-    actsense2 (AAZipLam x₁ (AASubsume x₂ x₃ x₄)) (ALam x₅ D2) = ALam x₅ (actsense2 (AASubsume x₂ x₃ x₄) D2)
+    actsense2 (AAZipLam x₁ (AASubsume {p = p} x₂ x₃ x₄)) (ALam x₅ D2) = ALam x₅ (actsense2 (AASubsume {p = p} x₂ x₃ x₄) D2)
     actsense2 (AAZipLam x₁ (AAMove x₂)) (ALam x₃ D2) = ALam x₃ (anamovelem x₂ D2)
     actsense2 (AAZipLam x₁ AADel) (ALam x₂ D2) = ALam x₂ (ASubsume SEHole TCHole1)
     actsense2 (AAZipLam x₁ AAConAsc) (ALam x₂ (ASubsume x₃ x₄)) = ALam x₂ (ASubsume (SAsc (ASubsume x₃ x₄)) TCRefl)
