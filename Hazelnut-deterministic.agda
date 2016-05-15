@@ -191,7 +191,12 @@ module Hazelnut-deterministic where
   lem11 (AASubsume x (SAMove ()) x₂)
   lem11 (AAMove ())
 
-
+  -- if a type isn't compatible with hole to hole, it isn't compatible with
+  -- any function type at all.
+  lem12 : {t : τ̇} → (t ~̸ (<||> ==> <||>)) → ((t1 t2 : τ̇) → t ~̸ (t1 ==> t2))
+  lem12 {num} p t1 t2 ()
+  lem12 {<||>} p t1 t2 TCHole2 = p TCHole2
+  lem12 {(t ==> t')} p t1 t2 x = p (TCArr TCHole1 TCHole1)
 
   mutual
     actdet2 : {Γ : ·ctx} {e e' e'' : ê} {t t' t'' : τ̇} {α : action} →
@@ -242,12 +247,12 @@ module Hazelnut-deterministic where
     actdet2 wt (SAConLam x₁) (SAConLam x₂) = refl , refl
 
     actdet2 wt SAConAp1 SAConAp1 = refl , refl
-    actdet2 wt SAConAp1 (SAConAp3 x) = {!!} -- not sure #1
+    actdet2 wt SAConAp1 (SAConAp3 x) = abort (lem12 x _ _ TCRefl)
 
     actdet2 wt SAConAp2 SAConAp2 = refl , refl
     actdet2 wt SAConAp2 (SAConAp3 x) = abort (x TCHole2)
 
-    actdet2 wt (SAConAp3 x) SAConAp1 = {!!} -- not sure #1 sym
+    actdet2 wt (SAConAp3 x) SAConAp1 = abort (lem12 x _ _ TCRefl)
     actdet2 wt (SAConAp3 x) SAConAp2 = abort (x TCHole2)
     actdet2 wt (SAConAp3 x) (SAConAp3 x₁) = refl , refl
 
