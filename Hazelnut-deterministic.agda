@@ -379,11 +379,11 @@ module Hazelnut-deterministic where
 
     actdet3 D1 (AASubsume _ y _) (AAMove w) = synthmovedet y w
     actdet3 D1 (AASubsume _ SADel _) AADel = refl
-    actdet3 D1 (AASubsume {p = p} x SAConAsc x₂) AAConAsc = abort (p refl) -- bad kind 1
+    actdet3 D1 (AASubsume {p = p} x SAConAsc x₂) AAConAsc = abort (π1 p refl)
     actdet3 {Γ = G} (ASubsume x x₁) (AASubsume x₂ (SAConVar p) x₄) (AAConVar x₅ p₁)
      with ctxunicity {Γ = G} p p₁
     ... | refl = abort (x₅ x₄)
-    actdet3 D1 (AASubsume x₁ (SAConLam x₂) x₃) (AAConLam1 x₄) = {!!}     -- bad kind 2
+    actdet3 D1 (AASubsume {p = p} x₁ (SAConLam x₂) x₃) (AAConLam1 x₄) = abort (π2 p _ refl)
     actdet3 D1 (AASubsume x₁ (SAConLam x₃) x₂) (AAConLam2 x₄ x₅) = abort (x₅ x₂)
     actdet3 D1 (AASubsume x SAConNumlit x₂) (AAConNumlit x₃) = abort (x₃ x₂)
     actdet3 D1 (AASubsume x (SAFinish x₁) x₂) (AAFinish x₃) = refl
@@ -398,7 +398,7 @@ module Hazelnut-deterministic where
     actdet3 D1 AADel (AASubsume _ SADel _) = refl
     actdet3 D1 AADel AADel = refl
 
-    actdet3 D1 AAConAsc (AASubsume {p = p} x SAConAsc x₂) = abort (p refl) -- bad kind 1
+    actdet3 D1 AAConAsc (AASubsume {p = p} x SAConAsc x₂) = abort (π1 p refl)
     actdet3 D1 AAConAsc AAConAsc = refl
 
     actdet3 {Γ = G} D1 (AAConVar x₁ p) (AASubsume x₂ (SAConVar p₁) x₄)
@@ -406,7 +406,7 @@ module Hazelnut-deterministic where
     ... | refl = abort (x₁ x₄)
     actdet3 D1 (AAConVar x₁ p) (AAConVar x₂ p₁) = refl
 
-    actdet3 D1 (AAConLam1 x₃) (AASubsume SEHole (SAConLam x₅) x₆) = {!!} -- bad kind 2
+    actdet3 D1 (AAConLam1 x₃) (AASubsume {p = p} SEHole (SAConLam x₅) x₆) = abort (π2 p _ refl)
     actdet3 D1 (AAConLam1 x₁) (AAConLam1 x₂) = refl
     actdet3 D1 (AAConLam1 x₃) (AAConLam2 x₄ x₅) = abort (x₅ (lem1 D1))
 

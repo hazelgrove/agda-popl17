@@ -30,7 +30,7 @@ module Hazelnut-core where
 
   -- shorthand for the (unique up to funext) empty context
   ∅ : ·ctx
-  ∅ x = None
+  ∅ _ = None
 
   -- apartness for contexts, so that we can follow barendregt's convention
   _#_ : (n : Nat) → (Γ : ·ctx) → Set
@@ -452,7 +452,8 @@ module Hazelnut-core where
     data _⊢_~_~>_⇐_ : (Γ : ·ctx) → (e : ê) → (α : action) →
                       (e' : ê) → (t : τ̇) → Set where
       AASubsume : {Γ : ·ctx} {e e' : ê} {t t' t'' : τ̇} {α : action} → -- troublemaker
-                  {p : α == construct asc → ⊥} → -- cyrus's proposed fix for two cases
+                  {p : (α == construct asc → ⊥) × -- cyrus's proposed fix for two cases
+                       ((x : Nat) → (α == construct (lam x) → ⊥))} →
                   (Γ ⊢ (e ◆e) => t') →
                   (Γ ⊢ e => t' ~ α ~> e' => t'') →
                   (t ~ t'') →
@@ -484,7 +485,7 @@ module Hazelnut-core where
                  (Γ ⊢ e <= t) →
                  Γ ⊢ ▹ <| e |> ◃ ~ finish ~> ▹ e ◃ ⇐ t
       AAZipLam : {Γ : ·ctx} {x : Nat} {t1 t2 : τ̇} {e e' : ê} {α : action} →
-                 -- ((x , t1) ∈ Γ) → -- todo: check this move
+                 -- todo: check this rule, it caused trouble and i rewrote it.
                  (x # Γ) →
                  ((Γ ,, (x , t1)) ⊢ e ~ α ~> e' ⇐ t2) →
                  Γ ⊢ (·λ x e) ~ α ~> (·λ x e') ⇐ (t1 ==> t2)
