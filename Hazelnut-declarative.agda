@@ -42,13 +42,22 @@ module Hazelnut-declarative where
   ... | Inl synth = Inl (SAsc (ASubsume synth TCRefl))
   ... | Inr ana = Inl (SAsc ana)
   decbidir (DVar x) = Inl (SVar x)
-  decbidir (DAp d1 d2) = Inl (SAp {!!} {!!})
+  decbidir (DAp d1 d2) with decbidir d1 | decbidir d2
+  ... | Inl s1 | Inl s2 = Inl (SAp s1 (ASubsume s2 TCRefl))
+  ... | Inl s1 | Inr a2 = Inl (SAp s1 a2)
+  ... | Inr a1 | Inl s1 = Inl (SAp {!!} {!!})
+  ... | Inr a1 | Inr a2 = Inl (SAp {!!} {!!})
   decbidir DNum = Inl SNum
-  decbidir (DPlus d1 d2) = Inl (SPlus {!!} {!!})
+  decbidir (DPlus d1 d2) with decbidir d1 | decbidir d2
+  ... | Inl s1 | Inl s2 = Inl (SPlus (ASubsume s1 TCRefl) (ASubsume s2 TCRefl))
+  ... | Inl s1 | Inr a2 = Inl (SPlus (ASubsume s1 TCRefl) a2)
+  ... | Inr a1 | Inl s1 = Inl (SPlus a1                   (ASubsume s1 TCRefl))
+  ... | Inr a1 | Inr a2 = Inl (SPlus a1                   a2)
   decbidir DEHole = Inl SEHole
   decbidir (DFHole d) with decbidir d
   ... | Inl synth = Inl (SFHole synth)
-  ... | Inr ana = {!!}
+  ... | Inr (ASubsume d' _) = Inl (SFHole d')
+  ... | Inr (ALam x ana) = {!!}
   decbidir (DApHole d1 d2) = Inl (SApHole {!!} {!!})
     -- analysis case
   decbidir (DLam x d) = Inr (ALam {!!} {!!})
