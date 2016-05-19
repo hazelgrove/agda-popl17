@@ -20,7 +20,7 @@ module Hazelnut-core where
     <|_|> : ė → ė
     _∘_   : ė → ė → ė
 
-  -- contexts, and some operations on them
+  ---- contexts and some operations on them
 
   -- variables are named with naturals in ė. therefore we represent
   -- contexts as functions from names for variables (nats) to possible
@@ -28,48 +28,33 @@ module Hazelnut-core where
   ·ctx : Set
   ·ctx = Nat → Maybe τ̇ -- todo: (Σ[ n : Nat ] (y : Nat) → y ∈ Γ → x > y)?
 
-  -- shorthand for the (unique up to funext) empty context
+  -- convenient shorthand for the (unique up to fun. ext.) empty context
   ∅ : ·ctx
   ∅ _ = None
 
-  -- apartness for contexts, so that we can follow barendregt's convention
-  _#_ : (n : Nat) → (Γ : ·ctx) → Set
-  x # Γ = (Γ x) == None
-
-  -- not sure if this should take a pair
-  _∈_ : (p : Nat × τ̇) → (Γ : ·ctx) → Set
-  (x , t) ∈ Γ = (Γ x) == Some t
-
-  -- remove possibly multiple copies of a variable from a context
-  _/_ : ·ctx → Nat → ·ctx
-  (Γ / x) y with natEQ x y
-  (Γ / x) .x | Inl refl = None
-  (Γ / x) y  | Inr neq  = Γ y
-
-  -- a variable is apart from a context from which it is removed
-  aar : (Γ : ·ctx) (x : Nat) → x # (Γ / x)
-  aar Γ x with natEQ x x
-  aar Γ x | Inl refl = refl
-  aar Γ x | Inr x≠x  = abort (x≠x refl)
-
-  -- contexts give only one binding for each variable that they
-  -- include. this is needed for unicity.
-  ctxunicity : {Γ : ·ctx} {n : Nat} {t t' : τ̇} →
-               (n , t) ∈ Γ →
-               (n , t') ∈ Γ →
-               t == t'
-  ctxunicity {n = n} p q with natEQ n n
-  ctxunicity p q | Inl refl = someinj (! p · q)
-  ctxunicity _ _ | Inr x≠x = abort (x≠x refl)
-
-  -- this adds a new binding to the context, clobbering anything that might
-  -- have been there before.
+  -- add a new binding to the context, clobbering anything that might have
+  -- been there before.
   _,,_ : ·ctx → (Nat × τ̇) → ·ctx
   (Γ ,, (x , t)) y with natEQ x y
   (Γ ,, (x , t)) .x | Inl refl = Some t
   (Γ ,, (x , t)) y  | Inr neq  = Γ y
 
-  -- type compatability
+  -- membership, or presence, in a context
+    -- todo: not sure if this should take a pair
+  _∈_ : (p : Nat × τ̇) → (Γ : ·ctx) → Set
+  (x , t) ∈ Γ = (Γ x) == Some t
+
+  -- apartness for contexts, so that we can follow barendregt's convention
+  _#_ : (n : Nat) → (Γ : ·ctx) → Set
+  x # Γ = (Γ x) == None
+
+  -- without: remove a variable from a context
+  _/_ : ·ctx → Nat → ·ctx
+  (Γ / x) y with natEQ x y
+  (Γ / x) .x | Inl refl = None
+  (Γ / x) y  | Inr neq  = Γ y
+
+  -- the type compatability judgement
   data _~_ : (t1 : τ̇) → (t2 : τ̇) → Set where
     TCRefl : {t : τ̇} → t ~ t
     TCHole1 : {t : τ̇} → t ~ <||>
@@ -79,18 +64,116 @@ module Hazelnut-core where
                t2 ~ t2' →
                (t1 ==> t2) ~ (t1' ==> t2')
 
-  -- type incompatability; using this encoding rather than explicit
-  -- constructors is equivalent to the one in the text but more convenient
+  -- type incompatability. rather than enumerate the types which aren't
+  -- compatible, we encode this judgement immediately as the complement of
+  -- compatability. this simplifies a few proofs later.
   _~̸_ : τ̇ → τ̇ → Set
   t1 ~̸ t2 = (t1 ~ t2) → ⊥
 
-  -- theorem: type compatablity is symmetric
+  -- bidirectional type checking judgements for ė
+  mutual
+    -- synthesis
+    data _⊢_=>_ : (Γ : ·ctx) → (e : ė) → (t : τ̇) → Set where
+      SAsc    : {Γ : ·ctx} {e : ė} {t : τ̇} →
+                 Γ ⊢ e <= t →
+                 Γ ⊢ (e ·: t) => t
+      SVar    : {Γ : ·ctx} {t : τ̇} {n : Nat} →
+                 (n , t) ∈ Γ →
+                 Γ ⊢ X n => t
+      SAp     : {Γ : ·ctx} {e1 e2 : ė} {t t2 : τ̇} →
+                 Γ ⊢ e1 => (t2 ==> t) →
+                 Γ ⊢ e2 <= t2 →
+                 Γ ⊢ (e1 ∘ e2) => t
+      SNum    :  {Γ : ·ctx} {n : Nat} →
+                 Γ ⊢ N n => num
+      SPlus   : {Γ : ·ctx} {e1 e2 : ė}  →
+                 Γ ⊢ e1 <= num →
+                 Γ ⊢ e2 <= num →
+                 Γ ⊢ (e1 ·+ e2) => num
+      SEHole  : {Γ : ·ctx} → Γ ⊢ <||> => <||>
+      SFHole  : {Γ : ·ctx} {e : ė} {t : τ̇} →
+                 Γ ⊢ e => t →
+                 Γ ⊢ <| e |> => <||>
+      SApHole : {Γ : ·ctx} {e1 e2 : ė} →
+                 Γ ⊢ e1 => <||> →
+                 Γ ⊢ e2 <= <||> →
+                 Γ ⊢ (e1 ∘ e2) => <||>
+
+    -- analysis
+    data _⊢_<=_ : (Γ : ·ctx) → (e : ė) → (t : τ̇) → Set where
+      ASubsume : {Γ : ·ctx} {e : ė} {t t' : τ̇} →
+                 Γ ⊢ e => t' →
+                 t ~ t' →
+                 Γ ⊢ e <= t
+      ALam : {Γ : ·ctx} {e : ė} {t1 t2 : τ̇} {n : Nat} →
+                 n # Γ →
+                 (Γ ,, (n , t1)) ⊢ e <= t2 →
+                 Γ ⊢ (·λ n e) <= (t1 ==> t2)
+
+  ----- a couple of exmaples to demonstrate how the encoding above works
+
+  -- the function (λx. x + 0) where x is named "0".
+  add0 : ė
+  add0 = ·λ 0 (X 0 ·+ N 0)
+
+  -- this is the derivation that fn has type num ==> num
+  ex1 : ∅ ⊢ ·λ 0 (X 0 ·+ N 0) <= (num ==> num)
+  ex1 = ALam refl
+         (ASubsume
+          (SPlus (ASubsume (SVar refl) TCRefl) (ASubsume SNum TCRefl))
+          TCRefl)
+
+  -- the derivation that when applied to the numeric argument 10 add0
+  -- produces a num.
+  ex2 : ∅ ⊢ (add0 ·: (num ==> num)) ∘ (N 10) => num
+  ex2 = SAp (SAsc ex1) (ASubsume SNum TCRefl)
+
+  -- the slightly longer derivation that argues that add0 applied to a
+  -- variable that's known to be a num produces a num
+  ex2b : (∅ ,, (1 , num)) ⊢ (add0 ·: (num ==> num)) ∘ (X 1) => num
+  ex2b = SAp (SAsc
+                (ALam refl
+                 (ASubsume
+                  (SPlus (ASubsume (SVar refl) TCRefl) (ASubsume SNum TCRefl))
+                  TCRefl)))
+              (ASubsume (SVar refl) TCRefl)
+
+  -- eta-expanding addition to curry it gets num → num → num
+  ex3 : ∅ ⊢ ·λ 0 ( (·λ 1 (X 0 ·+ X 1)) ·: (num ==> num)  )
+               <= (num ==> (num ==> num))
+  ex3 = ALam refl (ASubsume (SAsc (ALam refl
+                                    (ASubsume
+                                      (SPlus (ASubsume (SVar refl) TCRefl)
+                                             (ASubsume (SVar refl) TCRefl))
+                                          TCRefl))) TCRefl)
+
+
+  ----- some theorems about the rules and judgement presented so far.
+
+  -- thrm: a variable is apart from any context from which it is removed
+  aar : (Γ : ·ctx) (x : Nat) → x # (Γ / x)
+  aar Γ x with natEQ x x
+  aar Γ x | Inl refl = refl
+  aar Γ x | Inr x≠x  = abort (x≠x refl)
+
+  -- contexts give at most one binding for each variable
+  ctxunicity : {Γ : ·ctx} {n : Nat} {t t' : τ̇} →
+               (n , t) ∈ Γ →
+               (n , t') ∈ Γ →
+               t == t'
+  ctxunicity {n = n} p q with natEQ n n
+  ctxunicity p q | Inl refl = someinj (! p · q)
+  ctxunicity _ _ | Inr x≠x = abort (x≠x refl)
+
+  -- type compatablity is symmetric
   ~sym : {t1 t2 : τ̇} → t1 ~ t2 → t2 ~ t1
   ~sym TCRefl = TCRefl
   ~sym TCHole1 = TCHole2
   ~sym TCHole2 = TCHole1
   ~sym (TCArr p1 p2) = TCArr (~sym p1) (~sym p2)
 
+  -- if the domain or codomain of a pair of arrows isn't compatable, the
+  -- whole arrow isn't compatible.
   lemarr1 : {t1 t2 t3 t4 : τ̇} → (t1 ~ t3 → ⊥) → (t1 ==> t2) ~ (t3 ==> t4)  → ⊥
   lemarr1 v TCRefl = v TCRefl
   lemarr1 v (TCArr p _) = v p
@@ -99,7 +182,7 @@ module Hazelnut-core where
   lemarr2 v TCRefl = v TCRefl
   lemarr2 v (TCArr _ p) = v p
 
-  -- theorem: every pair of types is either compatable or not compatable
+  --  every pair of types is either compatable or not compatable
   ~dec : (t1 t2 : τ̇) → ((t1 ~ t2) + (t1 ~̸ t2))
     -- this takes care of all hole cases, so we don't consider them below
   ~dec _ <||> = Inl TCHole1
@@ -116,81 +199,13 @@ module Hazelnut-core where
 
   -- theorem: no pair of types is both compatable and not compatable. this
   -- is immediate from our encoding of the ~̸ judgement in the formalism
-  -- here; in the mathematics presented in the paper, this would require
-  -- induction to relate the two judgements.
+  -- here; in the exact mathematics presented in the paper, this would
+  -- require induction to relate the two judgements.
   ~apart : {t1 t2 : τ̇} → (t1 ~̸ t2) → (t1 ~ t2) → ⊥
   ~apart v p = v p
 
-  -- type checking for ė
-  mutual
-    -- synthesis
-    data _⊢_=>_ : (Γ : ·ctx) → (e : ė) → (t : τ̇) → Set where
-      SAsc : {Γ : ·ctx} {e : ė} {t : τ̇} →
-                (Γ ⊢ e <= t) →
-                Γ ⊢ (e ·: t) => t
-      SVar : {Γ : ·ctx} {t : τ̇} {n : Nat} →
-                ((n , t) ∈ Γ) →
-                Γ ⊢ X n => t
-      SAp  : {Γ : ·ctx} {e1 e2 : ė} {t t2 : τ̇} →
-                Γ ⊢ e1 => (t2 ==> t) →
-                Γ ⊢ e2 <= t2 →
-                Γ ⊢ (e1 ∘ e2) => t
-      SNum :  {Γ : ·ctx} {n : Nat} →
-                Γ ⊢ N n => num
-      SPlus : {Γ : ·ctx} {e1 e2 : ė}  →
-                Γ ⊢ e1 <= num →
-                Γ ⊢ e2 <= num →
-                Γ ⊢ (e1 ·+ e2) => num
-      SEHole : {Γ : ·ctx} → Γ ⊢ <||> => <||>
-      SFHole : {Γ : ·ctx} {e : ė} {t : τ̇} →
-                  Γ ⊢ e => t →
-                  Γ ⊢ <| e |> => <||>
-      SApHole : {Γ : ·ctx} {e1 e2 : ė} →
-                Γ ⊢ e1 => <||> →
-                Γ ⊢ e2 <= <||> →
-                Γ ⊢ (e1 ∘ e2) => <||>
-
-    -- analysis
-    data _⊢_<=_ : (Γ : ·ctx) → (e : ė) → (t : τ̇) → Set where
-      ASubsume : {Γ : ·ctx} {e : ė} {t t' : τ̇} →
-                    (Γ ⊢ e => t') →
-                    (t ~ t') →
-                    (Γ ⊢ e <= t)
-      ALam : {Γ : ·ctx} {e : ė} {t1 t2 : τ̇} {n : Nat} →
-                -- todo: double check that this correctly implements
-                -- barendregt's convention
-                    (n # Γ) →
-                    (Γ ,, (n , t1)) ⊢ e <= t2 →
-                    Γ ⊢ (·λ n e) <= (t1 ==> t2)
-
-  -- a small exmaple to demonstrate how the encoding above works
-  -- this is the encoding of the function (λx. x + 0).
-  fn : ė
-  fn = ·λ 0 (X 0 ·+ N 0)
-
-  -- this is the derivation that it has type num ==> num
-  ex1 : ∅ ⊢ ·λ 0 (X 0 ·+ N 0) <= (num ==> num)
-  ex1 = ALam refl
-         (ASubsume
-          (SPlus (ASubsume (SVar refl) TCRefl) (ASubsume SNum TCRefl))
-          TCRefl)
-
-  -- and the derivation that when applied to a numeric argument it produces
-  -- a num.
-  ex2 : ∅ ⊢ (fn ·: (num ==> num)) ∘ (N 10) => num
-  ex2 = SAp (SAsc ex1) (ASubsume SNum TCRefl)
-
-  -- eta-expanded curried addition
-  ex3 : ∅ ⊢ ·λ 0 ( (·λ 1 (X 0 ·+ X 1)) ·: (num ==> num)  )
-               <= (num ==> (num ==> num))
-  ex3 = ALam refl (ASubsume (SAsc (ALam refl
-                                    (ASubsume
-                                      (SPlus (ASubsume (SVar refl) TCRefl)
-                                             (ASubsume (SVar refl) TCRefl))
-                                          TCRefl))) TCRefl)
-
   -- synthesis only produces equal types. note that there is no need for an
-  -- analagous theorem for analytic posititions, just because we think of
+  -- analagous theorem for analytic positions because we think of
   -- the type as an input
   synthunicity : {Γ : ·ctx} {e : ė} {t t' : τ̇} →
                   (Γ ⊢ e => t)
@@ -209,6 +224,9 @@ module Hazelnut-core where
   synthunicity (SApHole D1 _) (SAp D2 _) with synthunicity D1 D2
   ... | ()
   synthunicity (SApHole _ _) (SApHole _ _) = refl
+
+
+  ----- the zippered form of the forms above and the rules for actions on them
 
   -- those types without holes anywhere
   tcomplete : τ̇ → Set
@@ -251,8 +269,6 @@ module Hazelnut-core where
   (t1 ==>₁ t2) ◆t = (t1 ◆t) ==> t2
   (t1 ==>₂ t2) ◆t = t1 ==> (t2 ◆t)
 
-  -- (mapreduce τ̂) (\x → x) ??
-
   --focus erasure for expressions
   _◆e : ê → ė
   ▹ x ◃ ◆e       = x
@@ -264,8 +280,6 @@ module Hazelnut-core where
   (e1 ·+₁ e2) ◆e = (e1 ◆e) ·+ e2
   (e1 ·+₂ e2) ◆e = e1      ·+ (e2 ◆e)
   <| e |> ◆e     = <| e ◆e |>
-
-  -- (mapreduce ê) (\x → x) ??
 
   -- the three grammars that define actions
   data direction : Set where

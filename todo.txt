@@ -1,15 +1,15 @@
-after meeting with cyrus on 14 april
+-------
 - get rid of post-fix diamonds
+
 - adding condition for n in the lambda analysis rule
-- rename form to shape
+
 - move ap up
+
 - think about whether second clause of thm 2 is a thm 3
 
-http://www.personal.psu.edu/ejp10/blogs/gotunicode/2008/11/glyph-du-jour-thermodynamic-q-.html
+-------
 
-from talking to ed:
-- reflection?
-- am i using the barendregt variable convention
+- am i using the barendregt variable convention correctly?
 
 - double check with Cyrus if this is how this how action determinism
   parenthesizes. why do we really need both if t ~ t'?
@@ -63,15 +63,7 @@ from talking to ed:
    cohere : (Cl == zap1 and Cr == zap2) or (Cl == zplus1 and Cr == zplus2)
    	  (just list out the pairs)
 
-
-
-
-
----> talk to ed about reflection
----> talk to frank about frank things
-
-determinism for type synthesis
-
+- determinism for type synthesis
 
   iter : List action → ê → ê
   iter [] e = e
@@ -84,7 +76,7 @@ determinism for type synthesis
                Σ[ αs ∈ List action ] (iter αs e1 == e2)
   reachable = {!!}
 
-  -- constructable : (e : ê)
+  constructable : (e : ê)
 
 - reflection: generate mapreduces, so that makes tcomplete and ecomplete
   effectively just
@@ -95,12 +87,20 @@ determinism for type synthesis
   generate e^ and t^ from e and t, both erasure erasure functions, matched
   for both. what else?
 
-  -- actdet2 : (Γ : ·ctx) (e e' e'' : ê) (t t' : τ̇) (α : action) →
-  --            (Γ ⊢ (e ◆e) => t) →
-  --            (Γ ⊢ e => t ~ α ~> e' => t') →
-  --            (t ~ t') →
-  --            ((Γ ⊢ e ~ α ~> e'' ⇐ t) + (Γ ⊢ e ~ α ~> e'' ⇐ t')) →
-  --            (e' == e'')
-  -- actdet2 Γ e e' e'' t t' α D1 D2 D3 D45 = {!D3!}
+  need newer version of agda to do reflection.
 
-- add ourselves to the agda wiki page?
+-----------------
+
+- fix todos in agda
+- try to knock down some cases / use more lemmas
+- prune down .. this document ..
+- constructable
+- reachable
+- declarative system + iso -> progress and preservation
+- dynamics
+- why can't i abstract over the rules? (branch)
+- add ourselves to the agda wiki page
+- make sure rules in text and agda cohere, including changes.
+- extend with other types? (branch)
+- update todo file
+- merge concrete branch back into master; maybe make an abstracted branch?
