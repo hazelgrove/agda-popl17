@@ -37,13 +37,13 @@ module Hazelnut-checks where
   moveerase EMFHoleParent = refl
 
   -- there exists a sequence of actions that builds any W.T. e from <||>
-  constructable : Set
-  constructable = ⊤
+  constructable : {e : ê} {t : τ̂} → Set
+  constructable = {!!}
 
-  -- there exists a sequence of actions that transforms any term into any
+  -- there exists a sequence of movements that transforms any term into any
   -- other that differs only in focus.
-  reachable : Set
-  reachable = ⊤
+  reachable : {e e' : ê} (p : (e ◆e) == (e' ◆e)) → Set
+  reachable = {!!}
 
   -- iter : List action → ê → ê
   -- iter [] e = e
@@ -55,5 +55,3 @@ module Hazelnut-checks where
   -- reachable : (e1 e2 : ê) (t : {!!}) (same : (e1 ◆e) == (e2 ◆e)) →
   --              Σ[ αs ∈ List action ] (iter αs e1 == e2)
   -- reachable = {!!}
-
-  -- constructable : (e : ê)
