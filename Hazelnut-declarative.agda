@@ -1,0 +1,85 @@
+open import Nat
+open import Prelude
+open import Hazelnut-core
+
+module Hazelnut-declarative where
+   -- declarative type checking judgement for ė
+  data _⊢_::_ : (Γ : ·ctx) → (e : ė) → (t : τ̇) → Set where
+     DAsc    : {Γ : ·ctx} {e : ė} {t : τ̇} →
+                Γ ⊢ e :: t →
+                Γ ⊢ (e ·: t) :: t
+     DVar    : {Γ : ·ctx} {t : τ̇} {n : Nat} →
+                (n , t) ∈ Γ →
+                Γ ⊢ X n :: t
+     DAp     : {Γ : ·ctx} {e1 e2 : ė} {t t2 : τ̇} →
+                Γ ⊢ e1 :: (t2 ==> t) →
+                Γ ⊢ e2 :: t2 →
+                Γ ⊢ (e1 ∘ e2) :: t
+     DNum    :  {Γ : ·ctx} {n : Nat} →
+                Γ ⊢ N n :: num
+     DPlus   : {Γ : ·ctx} {e1 e2 : ė}  →
+                Γ ⊢ e1 :: num →
+                Γ ⊢ e2 :: num →
+                Γ ⊢ (e1 ·+ e2) :: num
+     DEHole  : {Γ : ·ctx} → Γ ⊢ <||> :: <||>
+     DFHole  : {Γ : ·ctx} {e : ė} {t : τ̇} →
+                Γ ⊢ e :: t →
+                Γ ⊢ <| e |> :: <||>
+     DApHole : {Γ : ·ctx} {e1 e2 : ė} →
+                Γ ⊢ e1 :: <||> →
+                Γ ⊢ e2 :: <||> →
+                Γ ⊢ (e1 ∘ e2) :: <||>
+     DLam : {Γ : ·ctx} {e : ė} {t1 t2 : τ̇} {n : Nat} →
+                n # Γ →
+                (Γ ,, (n , t1)) ⊢ e :: t2 →
+                Γ ⊢ (·λ n e) :: (t1 ==> t2)
+
+  decbidir : {Γ : ·ctx} {e : ė} {t : τ̇}
+                → Γ ⊢ e :: t
+               → (Γ ⊢ e => t) + (Γ ⊢ e <= t)
+    -- synthesis cases
+  decbidir (DAsc d) with decbidir d
+  ... | Inl synth = Inl (SAsc (ASubsume synth TCRefl))
+  ... | Inr ana = Inl (SAsc ana)
+  decbidir (DVar x) = Inl (SVar x)
+  decbidir (DAp d1 d2) = Inl (SAp {!!} {!!})
+  decbidir DNum = Inl SNum
+  decbidir (DPlus d1 d2) = Inl (SPlus {!!} {!!})
+  decbidir DEHole = Inl SEHole
+  decbidir (DFHole d) with decbidir d
+  ... | Inl synth = Inl (SFHole synth)
+  ... | Inr ana = {!!}
+  decbidir (DApHole d1 d2) = Inl (SApHole {!!} {!!})
+    -- analysis case
+  decbidir (DLam x d) = Inr (ALam {!!} {!!})
+
+-- with decbidir dwt
+--  ... | Inl synth = ?
+--  ... | Inr ana = ?
+
+  bidirdec : {Γ : ·ctx} {e : ė} {t : τ̇}
+                → (Γ ⊢ e => t) + (Γ ⊢ e <= t)
+                → Γ ⊢ e :: t
+    -- synthesis cases
+  bidirdec (Inl (SAsc d)) = DAsc (bidirdec (Inr d))
+  bidirdec (Inl (SVar x)) = DVar x
+  bidirdec (Inl (SAp d1 d2)) = DAp (bidirdec (Inl d1)) (bidirdec (Inr d2))
+  bidirdec (Inl SNum) = DNum
+  bidirdec (Inl (SPlus d1 d2)) = DPlus (bidirdec (Inr d1)) (bidirdec (Inr d2))
+  bidirdec (Inl SEHole) = DEHole
+  bidirdec (Inl (SFHole d)) = DFHole (bidirdec (Inl d))
+  bidirdec (Inl (SApHole d1 d2)) = DApHole (bidirdec (Inl d1)) (bidirdec (Inr d2))
+    --analysis cases
+  bidirdec (Inr (ASubsume x x₁)) = {!synthunicity!}
+  bidirdec (Inr (ALam x d)) = DLam x (bidirdec (Inr d))
+
+  -- to be an isomoprhism you have to preserve structure.
+  to : {Γ : ·ctx} {e : ė} {t : τ̇} →
+         (d : Γ ⊢ e :: t) →
+         (bidirdec (decbidir d)) == d
+  to d = {!!}
+
+  from : {Γ : ·ctx} {e : ė} {t : τ̇} →
+         (dd : (Γ ⊢ e => t) + (Γ ⊢ e <= t)) →
+         (decbidir (bidirdec dd)) == dd
+  from dd = {!!}
