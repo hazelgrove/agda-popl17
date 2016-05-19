@@ -44,3 +44,16 @@ module Hazelnut-checks where
   -- other that differs only in focus.
   reachable : Set
   reachable = ⊤
+
+  -- iter : List action → ê → ê
+  -- iter [] e = e
+  -- iter (move x :: l) e = {!!}
+  -- iter (del :: l) e = {!!}
+  -- iter (construct x :: l) e = {!!}
+  -- iter (finish :: l) e = {!!}
+
+  -- reachable : (e1 e2 : ê) (t : {!!}) (same : (e1 ◆e) == (e2 ◆e)) →
+  --              Σ[ αs ∈ List action ] (iter αs e1 == e2)
+  -- reachable = {!!}
+
+  -- constructable : (e : ê)
