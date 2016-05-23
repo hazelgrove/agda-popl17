@@ -94,3 +94,10 @@
 - merge concrete branch back into master
 
 - readme file
+
+- i think the specific definition of focus erasure is breaking pattern
+  matching in a bunch of places. you can't pattern match on the result of a
+  function call. this happens also in defining the obvious ||_|| for
+  erasure of ascriptions to relate the bidirectional system to a
+  declarative one. i guess i need a new grammar, so i have constructors to
+  break down?
