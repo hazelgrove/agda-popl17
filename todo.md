@@ -80,7 +80,7 @@
 
 - constructable
 
-- reachable
+- reachable (amounts to lowest common ancestor)
 
 - declarative system + iso -> progress and preservation
 
