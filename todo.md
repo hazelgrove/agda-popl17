@@ -1,6 +1,3 @@
-- none of the theorems say anything about type movement. slightly odd,
-  that.
-
 - reflection: generate mapreduces, so that makes tcomplete and ecomplete
   effectively just
     ```agda
