@@ -1,5 +1,6 @@
 open import Nat
 open import Prelude
+open import List
 open import Hazelnut-core
 
 module Hazelnut-checks where
@@ -36,22 +37,22 @@ module Hazelnut-checks where
   moveerase EMFHoleFirstChild = refl
   moveerase EMFHoleParent = refl
 
+  iter : List action → ê → ê
+  iter = {!!}
+
   -- there exists a sequence of actions that builds any W.T. e from <||>
-  constructable : {e : ê} {t : τ̂} → Set
-  constructable = {!!}
+  mutual
+    constructable : {e : ê} {t : τ̇} →
+                    (wt : ∅ ⊢ (e ◆e) <= t) →
+                    Σ[ αs ∈ List action ] (iter αs (▹ <||> ◃) == e)
+    constructable = {!!}
 
   -- there exists a sequence of movements that transforms any term into any
-  -- other that differs only in focus.
-  reachable : {e e' : ê} (p : (e ◆e) == (e' ◆e)) → Set
-  reachable = {!!}
-
-  -- iter : List action → ê → ê
-  -- iter [] e = e
-  -- iter (move x :: l) e = {!!}
-  -- iter (del :: l) e = {!!}
-  -- iter (construct x :: l) e = {!!}
-  -- iter (finish :: l) e = {!!}
-
-  -- reachable : (e1 e2 : ê) (t : {!!}) (same : (e1 ◆e) == (e2 ◆e)) →
-  --              Σ[ αs ∈ List action ] (iter αs e1 == e2)
-  -- reachable = {!!}
+  -- other that diff ers only in focus.
+  mutual
+    reachable : {e e' : ê} {t : τ̇}
+                (wt  : ∅ ⊢ (e ◆e) <= t) →
+                (wt' : ∅ ⊢ (e' ◆e) <= t) →
+                (p : (e ◆e) == (e' ◆e)) →
+                Σ[ αs ∈ List action ] (iter αs e == e')
+    reachable wt wt' p = {!!}

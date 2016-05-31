@@ -71,6 +71,9 @@
   fine because there's really a fragment that's machine-writable, and you
   get the lemmas you need about them for free anyway.
 
+  ---> the problem with all of these is that they're higher order
+       constructors and that breaks things.
+
 - fix todos in agda (am i using the barendregt variable convention correctly?)
 
 - try to knock down some cases / use more lemmas
@@ -83,13 +86,9 @@
 
 - dynamics
 
-- why can't i abstract over the rules?
-
 - add ourselves to the agda wiki page, after arXive i guess
 
-- make sure rules in text and agda cohere, including changes.
-
-- extend with other types (branch)
+- extend with other types (sums, products) (branch)
 
 - merge concrete branch back into master
 
@@ -101,3 +100,10 @@
   erasure of ascriptions to relate the bidirectional system to a
   declarative one. i guess i need a new grammar, so i have constructors to
   break down?
+
+- add let
+
+- think of a better way to encode expression and type erasure. you can't
+  pattern match on function calls, only things given by data
+  declarations. that might make these proofs a lot easier. (as shown by
+  working on the iso stuff.)

@@ -434,7 +434,6 @@ module Hazelnut-core where
                  (Γ ⊢ (eh ◆e) => t2) →
                  (Γ ⊢ eh => t2 ~ α ~> eh' => <||>) →
                  (Γ ⊢ e <= <||>) →
-                 -- todo: this differs from the text
                  Γ ⊢ (eh ∘₁ e) => t1 ~ α ~> (eh' ∘₁ e) => <||>
       SAZipAp3 : {Γ : ·ctx} {t2 t : τ̇} {e : ė} {eh eh' : ê} {α : action} →
                  (Γ ⊢ e => (t2 ==> t)) →
@@ -453,8 +452,6 @@ module Hazelnut-core where
       SAZipHole1 : {Γ : ·ctx} {e e' : ê} {t t' : τ̇} {α : action} →
                    (Γ ⊢ (e ◆e) => t) →
                    (Γ ⊢ e => t ~ α ~> e' => t') →
-                   -- todo: *no* idea if this is right. what if it's an
-                   -- η-expanded form or something?
                    ((e' == ▹ <||> ◃) → ⊥) →
                    Γ ⊢ <| e |> => <||> ~ α ~>  <| e' |> => <||>
       SAZipHole2 : {Γ : ·ctx} {e : ê} {t : τ̇} {α : action} →
@@ -499,7 +496,6 @@ module Hazelnut-core where
                  (Γ ⊢ e <= t) →
                  Γ ⊢ ▹ <| e |> ◃ ~ finish ~> ▹ e ◃ ⇐ t
       AAZipLam : {Γ : ·ctx} {x : Nat} {t1 t2 : τ̇} {e e' : ê} {α : action} →
-                 -- todo: check this rule, it caused trouble and i rewrote it.
                  (x # Γ) →
                  ((Γ ,, (x , t1)) ⊢ e ~ α ~> e' ⇐ t2) →
                  Γ ⊢ (·λ x e) ~ α ~> (·λ x e') ⇐ (t1 ==> t2)
