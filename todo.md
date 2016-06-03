@@ -104,3 +104,7 @@
   pattern match on function calls, only things given by data
   declarations. that might make these proofs a lot easier. (as shown by
   working on the iso stuff.)
+
+- abstract over movments somehow. moving between arguments is a little hard
+  coded; what if everything had a list of arguments instead of specific
+  forms? or is that the slippery slope to writing a full ABT library?
