@@ -54,6 +54,12 @@ langauge extensions
 longer term ideas
 -----------------
 
+- a richer notion of actions that allows for derived action forms. so if
+  you can prove that a new action you have is admissible with respect to
+  existing ones, you should be able to use it freely without needing to
+  change the core proofs. like prevsib can be expressed with nextsib,
+  parent, and first child.
+
 - reflection: generate mapreduces, so that makes tcomplete and ecomplete
   effectively just
     ```agda
