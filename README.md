@@ -6,35 +6,38 @@ metatheory.
 Agda File Descriptions
 ======================
 
-- [List.agda](List.agda), *Nat.agda*, and *Prelude.agda* describe some
-   standard data structures, helpful types, a notion of equality, and
-   related lemmas.
+- [List.agda](List.agda), [Nat.agda](Nat.agda), and
+   [Prelude.agda](Prelude.agda) describe some standard data structures,
+   helpful types, a notion of equality, and related lemmas.
 
-- *Hazelnut-core.agda* defines the basic syntax of Hazelnut, the static
-   semantics, and the action semantics judgements.
+- [Hazelnut-core.agda](Hazelnut-core.agda) defines the basic syntax of
+   Hazelnut, the static semantics, and the action semantics judgements.
 
-- *Hazelnut-deterministic.agda* and *Hazelnut-sensible.agda* prove the
-   theorems from the TFP draft paper arguing that actions preserve
-   well-typedness and are deterministic.
+- [Hazelnut-deterministic.agda and
+   Hazelnut-sensible.agda](Hazelnut-deterministic.agda and
+   Hazelnut-sensible.agda) prove the theorems from the TFP draft paper
+   arguing that actions preserve well-typedness and are deterministic.
 
-- *Hazelnut-declarative.agda* defines a declarative typing judgement for
-   Hazelnut terms, rather than the main bidirectional one, and relates the
-   two. This allows us to state type safety with respect to possible
-   dynamic semantics.
+- [Hazelnut-declarative.agda](Hazelnut-declarative.agda) defines a
+   declarative typing judgement for Hazelnut terms, rather than the main
+   bidirectional one, and relates the two. This allows us to state type
+   safety with respect to possible dynamic semantics.
 
-- *Hazelnut-complete-dynamics.agda* defines the standard dynamic semantics
-   on complete terms -- i.e. ones with no holes in them.
+- [Hazelnut-complete-dynamics.agda](Hazelnut-complete-dynamics.agda)
+   defines the standard dynamic semantics on complete terms -- i.e. ones
+   with no holes in them.
 
-- *Hazelnut-checks.agda* is a collection of theorems that amount to sanity
-   checking the rules from the judgements -- the fact that they are true is
-   not surprising, but does demonstrate that rules haven't been
-   omitted. This is part of the effort to make the core calculus easy to
-   extend with confidence.
+- [Hazelnut-checks.agda](Hazelnut-checks.agda) is a collection of theorems
+   that amount to sanity checking the rules from the judgements -- the fact
+   that they are true is not surprising, but does demonstrate that rules
+   haven't been omitted. This is part of the effort to make the core
+   calculus easy to extend with confidence.
 
-- *todo.md* is the short-hand todo list for this formalization effort.
+- [todo.md](todo.md) is the short-hand todo list for this formalization
+  effort.
 
-- *keys.md* is a list of agda-mode emacs key chords that enter the odder
-   bits of unicode that we use in the Agda files
+- [keys.md](keys.md) is a list of agda-mode emacs key chords that enter the
+   odder bits of unicode that we use in the Agda files
 
 Assumptions and Represenatation Decisions
 =========================================
