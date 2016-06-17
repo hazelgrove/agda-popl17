@@ -1,3 +1,59 @@
+technical complaints about the proof text
+-----------------------------------------
+
+- fix todos in agda
+
+- am i using the barendregt variable convention correctly?
+
+- try to knock down some cases / use more lemmas
+
+- i think the specific definition of focus erasure is breaking pattern
+  matching in a bunch of places. you can't pattern match on the result of a
+  function call. this happens also in defining the obvious ||_|| for
+  erasure of ascriptions to relate the bidirectional system to a
+  declarative one. i guess i need a new grammar, so i have constructors to
+  break down?
+
+- think of a better way to encode expression and type erasure. you can't
+  pattern match on function calls, only things given by data
+  declarations. that might make these proofs a lot easier. (as shown by
+  working on the iso stuff.)
+
+- abstract over movments somehow. moving between arguments is a little hard
+  coded; what if everything had a list of arguments instead of specific
+  forms? is that the slippery slope to writing a full ABT library, or the
+  one to lvars?
+
+more metatheory
+---------------
+
+- constructable & reachable (amounts to lowest common ancestor)
+
+dynamics
+--------
+
+- finish a dynamics on the complete system so we can sanity check holey
+  ones
+
+- write out the declarative type rules and injection from one to the other,
+  per Frank's notes
+
+- prove progress and preservation through the declarative system
+
+
+langauge extensions
+-------------------
+
+- extend with other types (sums, products)
+
+- let
+
+- ifz
+
+
+longer term ideas
+-----------------
+
 - reflection: generate mapreduces, so that makes tcomplete and ecomplete
   effectively just
     ```agda
@@ -7,22 +63,28 @@
   generate e^ and t^ from e and t, both erasure erasure functions, matched
   for both. what else? probably the movement rules.
 
-   (need newer version of agda to do reflection.)
+  need newer version of agda to do reflection, which will probably break
+  other proofs we've done so far because of backwards compatiblity issues.
 
+- abstract over constructor pairs in the expression movement stuff and
+  write it up. the problem with all of the ideas below is that, while they
+  work, it's all through higher order constructors and that breaks pattern
+  generation and matching.
 
-- [make a new branch to work this out]
+  i can prove sensibility with the higher order constructors formulation,
+  but not determinism.
 
-  abstract over constructor pairs in the expression movement stuff and
-  write it up. i don't think this works. the idea is that for constructors
-  (of either types or exps) that have the same arity, a lot of rules get
-  repeated because of the zipper structure. so you want to be able to write
-  stuff like
+  the idea is that for constructors (of either types or exps) that have the
+  same arity, a lot of rules get repeated because of the zipper
+  structure. so you want to be able to write stuff like
+
     ```agda
     Test : {tl tr : τ̇}
            (_Cl_ : τ̂ → τ̇ → τ̂)
            (_Cr_ : τ̇ → τ̂ → τ̂) →
            (▹ tl ◃ Cl tr ) + move nextSib +> (tl Cr ▹ tr ◃ )
     ```
+
   so that "any thing that forms a type out of two types moves the same
   way". the problem is that there's a coherence condition between Cl and Cr
   that i don't know how to express. specifically we intend this to be for
@@ -59,52 +121,14 @@
      cohere : (Cl == zap1 and Cr == zap2) or (Cl == zplus1 and Cr == zplus2)
      	  (just list out the pairs)
     ```
+
   the problem with these, so far, is that they're not a form that allows
   agda to generate the cases for determinism, or show that the cases that
   would be right if you wrote them out by hand are exhaustive. so it's a
-  good idea but needs more work. maybe there's a better way to state them
-  that doesn't cause this problem with this specific tool? maybe reflection
-  is the right way to think about it; where the repetition in the rules is
-  fine because there's really a fragment that's machine-writable, and you
-  get the lemmas you need about them for free anyway.
+  good idea but needs more work.
 
-  ---> the problem with all of these is that they're higher order
-       constructors and that breaks things.
-
-- fix todos in agda (am i using the barendregt variable convention correctly?)
-
-- try to knock down some cases / use more lemmas
-
-- constructable
-
-- reachable (amounts to lowest common ancestor)
-
-- declarative system + iso -> progress and preservation
-
-- dynamics
-
-- add ourselves to the agda wiki page, after arXive i guess
-
-- extend with other types (sums, products) (branch)
-
-- merge concrete branch back into master
-
-- readme file
-
-- i think the specific definition of focus erasure is breaking pattern
-  matching in a bunch of places. you can't pattern match on the result of a
-  function call. this happens also in defining the obvious ||_|| for
-  erasure of ascriptions to relate the bidirectional system to a
-  declarative one. i guess i need a new grammar, so i have constructors to
-  break down?
-
-- add let
-
-- think of a better way to encode expression and type erasure. you can't
-  pattern match on function calls, only things given by data
-  declarations. that might make these proofs a lot easier. (as shown by
-  working on the iso stuff.)
-
-- abstract over movments somehow. moving between arguments is a little hard
-  coded; what if everything had a list of arguments instead of specific
-  forms? or is that the slippery slope to writing a full ABT library?
+  maybe there's a better way to state them that doesn't cause this problem
+  with this specific tool? maybe reflection is the right way to think about
+  it; where the repetition in the rules is fine because there's really a
+  fragment that's machine-writable, and you get the lemmas you need about
+  them for free anyway.

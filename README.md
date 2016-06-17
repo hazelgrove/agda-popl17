@@ -30,6 +30,8 @@ Agda File Descriptions
    omitted. This is part of the effort to make the core calculus easy to
    extend with confidence.
 
+- *todo.md* is the short-hand todo list for this formalization effort.
+
 Assumptions and Represenatation Decisions
 =========================================
 
