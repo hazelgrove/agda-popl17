@@ -13,10 +13,10 @@ Agda File Descriptions
 - [Hazelnut-core.agda](Hazelnut-core.agda) defines the basic syntax of
    Hazelnut, the static semantics, and the action semantics judgements.
 
-- [Hazelnut-deterministic.agda and
-   Hazelnut-sensible.agda](Hazelnut-deterministic.agda and
-   Hazelnut-sensible.agda) prove the theorems from the TFP draft paper
-   arguing that actions preserve well-typedness and are deterministic.
+- [Hazelnut-deterministic.agda](Hazelnut-deterministic.agda) and
+   [Hazelnut-sensible.agda](Hazelnut-sensible.agda) prove the theorems
+   from the TFP draft paper arguing that actions preserve well-typedness
+   and are deterministic.
 
 - [Hazelnut-declarative.agda](Hazelnut-declarative.agda) defines a
    declarative typing judgement for Hazelnut terms, rather than the main
