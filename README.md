@@ -32,6 +32,9 @@ Agda File Descriptions
 
 - *todo.md* is the short-hand todo list for this formalization effort.
 
+- *keys.md* is a list of agda-mode emacs key chords that enter the odder
+   bits of unicode that we use in the Agda files
+
 Assumptions and Represenatation Decisions
 =========================================
 

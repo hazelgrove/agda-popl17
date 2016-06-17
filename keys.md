@@ -1,9 +1,10 @@
 Agda Mode Entry Cheatsheet
 ==========================
+
 We have tried to stay as close to the on-paper notation as possible In
-formalizing the metatheory of Hazelnut. Among other things, this means
-using some special characters in the souce code here to match the
-mathematical description in the write up of the paper.
+formalizing the metatheory of Hazelnut. This means using some special
+characters in the souce code here to match the mathematical description in
+the write up of the paper.
 
 This file describes how to use the emacs agda input mode to enter each of
 those special characters, in roughly the order that they appear in
