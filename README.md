@@ -6,8 +6,9 @@ metatheory.
 Agda File Descriptions
 ======================
 
-- *List.agda*, *Nat.agda*, and *Prelude.agda* describe some standard data
-   structures, helpful types, a notion of equality, and related lemmas.
+- [List.agda](List.agda), *Nat.agda*, and *Prelude.agda* describe some
+   standard data structures, helpful types, a notion of equality, and
+   related lemmas.
 
 - *Hazelnut-core.agda* defines the basic syntax of Hazelnut, the static
    semantics, and the action semantics judgements.
