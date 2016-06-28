@@ -37,22 +37,40 @@ module Hazelnut-checks where
   moveerase EMFHoleFirstChild = refl
   moveerase EMFHoleParent = refl
 
-  iter : List action → ê → ê
-  iter = {!!}
+  -- describes lists of action whose semantics are composable
+  data iterok : Set where
 
-  -- there exists a sequence of actions that builds any W.T. e from <||>
-  mutual
-    constructable : {e : ê} {t : τ̇} →
-                    (wt : ∅ ⊢ (e ◆e) <= t) →
-                    Σ[ αs ∈ List action ] (iter αs (▹ <||> ◃) == e)
-    constructable = {!!}
+  -- iterates a list of actions that can be composed
+  data iterate : iterok → ê → ê → Set where
 
-  -- there exists a sequence of movements that transforms any term into any
-  -- other that diff ers only in focus.
+  --constructability
   mutual
-    reachable : {e e' : ê} {t : τ̇}
-                (wt  : ∅ ⊢ (e ◆e) <= t) →
-                (wt' : ∅ ⊢ (e' ◆e) <= t) →
-                (p : (e ◆e) == (e' ◆e)) →
-                Σ[ αs ∈ List action ] (iter αs e == e')
-    reachable wt wt' p = {!!}
+    constructable1 : {Γ : ·ctx} {e : ê} {t : τ̇} →
+                     (wt : Γ ⊢ (e ◆e) => t) →
+                      Σ[ αs ∈ iterok ]
+                        (Σ[ e' ∈ ê ] ((iterate αs (▹ <||> ◃) e') ×
+                                       ((e ◆e) == (e' ◆e))))
+    constructable1 = {!!}
+
+    constructable2 : {Γ : ·ctx} {e : ê} {t : τ̇} →
+                     (wt : Γ ⊢ (e ◆e) <= t) →
+                      Σ[ αs ∈ iterok ]
+                        (Σ[ e' ∈ ê ] ((iterate αs (▹ <||> ◃) e') ×
+                                       ((e ◆e) == (e' ◆e))))
+    constructable2 = {!!}
+
+  --reachability
+  mutual
+    reachable1 : {Γ : ·ctx} {e e' : ê} {t : τ̇}
+                 (wt  : Γ ⊢ (e ◆e) <= t) →
+                 (wt' : Γ ⊢ (e' ◆e) <= t) →
+                 (p : (e ◆e) == (e' ◆e)) →
+                 Σ[ αs ∈ iterok ] (iterate αs e e')
+    reachable1 = {!!}
+
+    reachable2 : {Γ : ·ctx} {e e' : ê} {t : τ̇}
+                 (wt  : Γ ⊢ (e ◆e) => t) →
+                 (wt' : Γ ⊢ (e' ◆e) => t) →
+                 (p : (e ◆e) == (e' ◆e)) →
+                 Σ[ αs ∈ iterok ] (iterate αs e e')
+    reachable2 = {!!}
