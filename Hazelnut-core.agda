@@ -289,7 +289,6 @@ module Hazelnut-core where
     firstChild : direction
     parent : direction
     nextSib : direction
-    prevSib : direction
 
   data shape : Set where
     arrow : shape
@@ -318,8 +317,6 @@ module Hazelnut-core where
                (t1 ==>₂ ▹ t2 ◃) + move parent +> ▹ t1 ==> t2 ◃
     TMNextSib : {t1 t2 : τ̇} →
                (▹ t1 ◃ ==>₁ t2) + move nextSib +> (t1 ==>₂ ▹ t2 ◃)
-    TMPrevSib : {t1 t2 : τ̇} →
-               (t1 ==>₂ ▹ t2 ◃) + move prevSib +> (▹ t1 ◃ ==>₁ t2)
     TMDel     : {t : τ̇} →
                 (▹ t ◃) + del +> (▹ <||> ◃)
     TMConArrow  : {t : τ̇} →
@@ -344,8 +341,6 @@ module Hazelnut-core where
               (e ·:₂ ▹ t ◃) + move parent +>e (▹ e ·: t ◃)
     EMAscNextSib : {e : ė} {t : τ̇} →
               (▹ e ◃ ·:₁ t) + move nextSib +>e (e ·:₂ ▹ t ◃)
-    EMAscPrevSib : {e : ė} {t : τ̇} →
-              (e ·:₂ ▹ t ◃) + move prevSib +>e (▹ e ◃ ·:₁ t)
     -- rules for lambdas
     EMLamFirstChild : {e : ė} {x : Nat} →
               ▹ (·λ x e) ◃ + move firstChild +>e ·λ x (▹ e ◃)
@@ -360,8 +355,6 @@ module Hazelnut-core where
                (e1 ·+₂ ▹ e2 ◃) + move parent +>e (▹ e1 ·+ e2 ◃)
     EMPlusNextSib : {e1 e2 : ė} →
                (▹ e1 ◃ ·+₁ e2) + move nextSib +>e (e1 ·+₂ ▹ e2 ◃)
-    EMPlusPrevSib : {e1 e2 : ė} →
-               (e1 ·+₂ ▹ e2 ◃) + move prevSib +>e (▹ e1 ◃ ·+₁ e2)
 
     EMApFirstChild : {e1 e2 : ė} →
                (▹ e1 ∘ e2 ◃) + move firstChild +>e (▹ e1 ◃ ∘₁ e2)
@@ -371,8 +364,6 @@ module Hazelnut-core where
                (e1 ∘₂ ▹ e2 ◃) + move parent +>e (▹ e1 ∘ e2 ◃)
     EMApNextSib : {e1 e2 : ė} →
                (▹ e1 ◃ ∘₁ e2) + move nextSib +>e (e1 ∘₂ ▹ e2 ◃)
-    EMApPrevSib : {e1 e2 : ė} →
-               (e1 ∘₂ ▹ e2 ◃) + move prevSib +>e (▹ e1 ◃ ∘₁ e2)
 
     -- rules for non-empty holes
     EMFHoleFirstChild : {e : ė} →

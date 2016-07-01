@@ -21,19 +21,16 @@ module Hazelnut-checks where
   moveerase EMAscParent1 = refl
   moveerase EMAscParent2 = refl
   moveerase EMAscNextSib = refl
-  moveerase EMAscPrevSib = refl
   moveerase EMLamFirstChild = refl
   moveerase EMLamParent = refl
   moveerase EMPlusFirstChild = refl
   moveerase EMPlusParent1 = refl
   moveerase EMPlusParent2 = refl
   moveerase EMPlusNextSib = refl
-  moveerase EMPlusPrevSib = refl
   moveerase EMApFirstChild = refl
   moveerase EMApParent1 = refl
   moveerase EMApParent2 = refl
   moveerase EMApNextSib = refl
-  moveerase EMApPrevSib = refl
   moveerase EMFHoleFirstChild = refl
   moveerase EMFHoleParent = refl
 

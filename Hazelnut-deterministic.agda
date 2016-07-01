@@ -18,8 +18,6 @@ module Hazelnut-deterministic where
   actdet1 TMParent2 (TMZip2 ())
   actdet1 TMNextSib TMNextSib = refl
   actdet1 TMNextSib (TMZip1 ())
-  actdet1 TMPrevSib TMPrevSib = refl
-  actdet1 TMPrevSib (TMZip2 ())
   actdet1 TMDel TMDel = refl
   actdet1 TMConArrow TMConArrow = refl
   actdet1 TMConNum TMConNum = refl
@@ -28,7 +26,6 @@ module Hazelnut-deterministic where
   actdet1 (TMZip1 p1) (TMZip1 p2) with actdet1 p1 p2
   ... | refl = refl
   actdet1 (TMZip2 ()) TMParent2
-  actdet1 (TMZip2 ()) TMPrevSib
   actdet1 (TMZip2 p1) (TMZip2 p2) with actdet1 p1 p2
   ... | refl = refl
 
@@ -41,19 +38,16 @@ module Hazelnut-deterministic where
   movedet EMAscParent1 EMAscParent1 = refl
   movedet EMAscParent2 EMAscParent2 = refl
   movedet EMAscNextSib EMAscNextSib = refl
-  movedet EMAscPrevSib EMAscPrevSib = refl
   movedet EMLamFirstChild EMLamFirstChild = refl
   movedet EMLamParent EMLamParent = refl
   movedet EMPlusFirstChild EMPlusFirstChild = refl
   movedet EMPlusParent1 EMPlusParent1 = refl
   movedet EMPlusParent2 EMPlusParent2 = refl
   movedet EMPlusNextSib EMPlusNextSib = refl
-  movedet EMPlusPrevSib EMPlusPrevSib = refl
   movedet EMApFirstChild EMApFirstChild = refl
   movedet EMApParent1 EMApParent1 = refl
   movedet EMApParent2 EMApParent2 = refl
   movedet EMApNextSib EMApNextSib = refl
-  movedet EMApPrevSib EMApPrevSib = refl
   movedet EMFHoleFirstChild EMFHoleFirstChild = refl
   movedet EMFHoleParent EMFHoleParent = refl
 
@@ -66,19 +60,16 @@ module Hazelnut-deterministic where
   synthmovedet (SAMove EMAscParent1) EMAscParent1 = refl
   synthmovedet (SAMove EMAscParent2) EMAscParent2 = refl
   synthmovedet (SAMove EMAscNextSib) EMAscNextSib = refl
-  synthmovedet (SAMove EMAscPrevSib) EMAscPrevSib = refl
   synthmovedet (SAMove EMLamFirstChild) EMLamFirstChild = refl
   synthmovedet (SAMove EMLamParent) EMLamParent = refl
   synthmovedet (SAMove EMPlusFirstChild) EMPlusFirstChild = refl
   synthmovedet (SAMove EMPlusParent1) EMPlusParent1 = refl
   synthmovedet (SAMove EMPlusParent2) EMPlusParent2 = refl
   synthmovedet (SAMove EMPlusNextSib) EMPlusNextSib = refl
-  synthmovedet (SAMove EMPlusPrevSib) EMPlusPrevSib = refl
   synthmovedet (SAMove EMApFirstChild) EMApFirstChild = refl
   synthmovedet (SAMove EMApParent1) EMApParent1 = refl
   synthmovedet (SAMove EMApParent2) EMApParent2 = refl
   synthmovedet (SAMove EMApNextSib) EMApNextSib = refl
-  synthmovedet (SAMove EMApPrevSib) EMApPrevSib = refl
   synthmovedet (SAMove EMFHoleFirstChild) EMFHoleFirstChild = refl
   synthmovedet (SAMove EMFHoleParent) EMFHoleParent = refl
   -- all these cases lead to absurdities after a few levels
@@ -87,7 +78,6 @@ module Hazelnut-deterministic where
   synthmovedet (SAZipAsc1 (AASubsume _ (SAMove ()) _)) EMAscNextSib
   synthmovedet (SAZipAsc1 (AAMove ())) EMAscNextSib
   synthmovedet (SAZipAsc2 () _) EMAscParent2
-  synthmovedet (SAZipAsc2 () _) EMAscPrevSib
   synthmovedet (SAZipAp1 _ (SAMove ()) (ASubsume _ _)) EMApParent1
   synthmovedet (SAZipAp1 _ (SAMove ()) (ALam _ _)) EMApParent1
   synthmovedet (SAZipAp1 _ (SAMove ()) _) EMApNextSib
@@ -95,20 +85,14 @@ module Hazelnut-deterministic where
   synthmovedet (SAZipAp2 _ (SAMove ()) _) EMApNextSib
   synthmovedet (SAZipAp3 _ (AASubsume _ (SAMove ()) _)) EMApParent2
   synthmovedet (SAZipAp3 _ (AAMove ())) EMApParent2
-  synthmovedet (SAZipAp3 _ (AASubsume _ (SAMove ()) _)) EMApPrevSib
-  synthmovedet (SAZipAp3 _ (AAMove ())) EMApPrevSib
   synthmovedet (SAZipAp4 _ (AASubsume _ (SAMove ()) _)) EMApParent2
   synthmovedet (SAZipAp4 _ (AAMove ())) EMApParent2
-  synthmovedet (SAZipAp4 _ (AASubsume _ (SAMove ()) _)) EMApPrevSib
-  synthmovedet (SAZipAp4 _ (AAMove ())) EMApPrevSib
   synthmovedet (SAZipPlus1 (AASubsume _ (SAMove ()) _)) EMPlusParent1
   synthmovedet (SAZipPlus1 (AAMove ())) EMPlusParent1
   synthmovedet (SAZipPlus1 (AASubsume _ (SAMove ()) _)) EMPlusNextSib
   synthmovedet (SAZipPlus1 (AAMove ())) EMPlusNextSib
   synthmovedet (SAZipPlus2 (AASubsume _ (SAMove ()) _)) EMPlusParent2
   synthmovedet (SAZipPlus2 (AAMove ())) EMPlusParent2
-  synthmovedet (SAZipPlus2 (AASubsume _ (SAMove ()) _)) EMPlusPrevSib
-  synthmovedet (SAZipPlus2 (AAMove ())) EMPlusPrevSib
   synthmovedet (SAZipHole1 _ (SAMove ()) x) EMFHoleParent
   synthmovedet (SAZipHole2 _ (SAMove ())) EMFHoleParent
 
@@ -173,17 +157,6 @@ module Hazelnut-deterministic where
         Γ ⊢ ▹ e ◃ => t ~ move nextSib ~> e' => t' → ⊥
   lem8s (SAMove ())
 
-    -- expressions in focus don't move to prev sib
-  lem9a : ∀ {Γ e e' t} →
-        Γ ⊢ ▹ e ◃ ~ move prevSib ~> e' ⇐ t → ⊥
-  lem9a (AASubsume x (SAMove ()) x₂)
-  lem9a (AAMove ())
-
-  -- expressions in focus don't move to prev sib
-  lem9s : ∀ {Γ e e' t t'} →
-        Γ ⊢ ▹ e ◃ => t ~ move prevSib ~> e' => t' → ⊥
-  lem9s (SAMove ())
-
   lem10 : ∀{Γ x t1 t2 e} →
           Γ ⊢ ·λ x (e ◆e) <= (t1 ==> t2) →
           (Γ ,, (x , t1)) ⊢ e ◆e <= t2
@@ -219,27 +192,20 @@ module Hazelnut-deterministic where
     actdet2 wt (SAMove EMAscNextSib) (SAZipAsc1 (AASubsume _ (SAMove ()) _))
     actdet2 wt (SAMove EMAscNextSib) (SAZipAsc1 (AAMove ()))
     actdet2 wt (SAMove EMAscParent2) (SAZipAsc2 () x₂)
-    actdet2 wt (SAMove EMAscPrevSib) (SAZipAsc2 () x₂)
     actdet2 wt (SAMove EMApParent1) (SAZipAp1 x₁ (SAMove ()) x₂)
     actdet2 wt (SAMove EMApNextSib) (SAZipAp1 x₁ (SAMove ()) x₂)
     actdet2 wt (SAMove EMApParent1) (SAZipAp2 x₁ (SAMove ()) x₂)
     actdet2 wt (SAMove EMApNextSib) (SAZipAp2 x₁ (SAMove ()) x₂)
     actdet2 wt (SAMove EMApParent2) (SAZipAp3 x₁ (AASubsume x (SAMove ()) x₃))
     actdet2 wt (SAMove EMApParent2) (SAZipAp3 x₁ (AAMove ()))
-    actdet2 wt (SAMove EMApPrevSib) (SAZipAp3 x₁ (AASubsume x (SAMove ()) x₃))
-    actdet2 wt (SAMove EMApPrevSib) (SAZipAp3 x₁ (AAMove ()))
     actdet2 wt (SAMove EMApParent2) (SAZipAp4 x₁ (AASubsume x (SAMove ()) x₃))
     actdet2 wt (SAMove EMApParent2) (SAZipAp4 x₁ (AAMove ()))
-    actdet2 wt (SAMove EMApPrevSib) (SAZipAp4 x₁ (AASubsume x (SAMove ()) x₃))
-    actdet2 wt (SAMove EMApPrevSib) (SAZipAp4 x₁ (AAMove ()))
     actdet2 wt (SAMove EMPlusParent1) (SAZipPlus1 (AASubsume x (SAMove ()) x₂))
     actdet2 wt (SAMove EMPlusParent1) (SAZipPlus1 (AAMove ()))
     actdet2 wt (SAMove EMPlusNextSib) (SAZipPlus1 (AASubsume x (SAMove ()) x₂))
     actdet2 wt (SAMove EMPlusNextSib) (SAZipPlus1 (AAMove ()))
     actdet2 wt (SAMove EMPlusParent2) (SAZipPlus2 (AASubsume x (SAMove ()) x₂))
     actdet2 wt (SAMove EMPlusParent2) (SAZipPlus2 (AAMove ()))
-    actdet2 wt (SAMove EMPlusPrevSib) (SAZipPlus2 (AASubsume x (SAMove ()) x₂))
-    actdet2 wt (SAMove EMPlusPrevSib) (SAZipPlus2 (AAMove ()))
     actdet2 wt (SAMove EMFHoleParent) (SAZipHole1 x₁ (SAMove ()) x₂)
     actdet2 wt (SAMove EMFHoleParent) (SAZipHole2 x₁ (SAMove ()))
 
@@ -284,7 +250,6 @@ module Hazelnut-deterministic where
          ap1 (λ q → q ·:₁ t) (actdet3 (lem3 (ASubsume wt TCRefl)) x x₁) , refl
 
     actdet2 wt (SAZipAsc2 () x₁) (SAMove EMAscParent2)
-    actdet2 wt (SAZipAsc2 () x₁) (SAMove EMAscPrevSib)
     actdet2 wt (SAZipAsc2 x x₁) (SAZipAsc2 x₂ x₃) with actdet1 x x₂
     ... | refl = refl , refl
 
@@ -311,7 +276,6 @@ module Hazelnut-deterministic where
 
     actdet2 wt (SAZipAp3 x (AASubsume x₁ (SAMove ()) x₃)) (SAMove EMApParent2)
     actdet2 wt (SAZipAp3 x (AAMove ())) (SAMove EMApParent2)
-    actdet2 wt (SAZipAp3 x x₁) (SAMove EMApPrevSib) = abort (lem9a x₁)
     actdet2 wt (SAZipAp3 {eh = eh} x x₁) (SAZipAp3 x₂ x₃)
       with synthunicity x x₂
     ... | refl = ap1 (_∘₂_ _) (actdet3 (lem4 {eh = eh} wt x) x₁ x₃) , refl
@@ -321,8 +285,6 @@ module Hazelnut-deterministic where
 
     actdet2 wt (SAZipAp4 x (AASubsume x₁ (SAMove ()) x₃)) (SAMove EMApParent2)
     actdet2 wt (SAZipAp4 x (AAMove ())) (SAMove EMApParent2)
-    actdet2 wt (SAZipAp4 x (AASubsume x₁ x₂ x₃)) (SAMove EMApPrevSib) = abort (lem9s x₂)
-    actdet2 wt (SAZipAp4 x (AAMove ())) (SAMove EMApPrevSib)
     actdet2 wt (SAZipAp4 x x₁) (SAZipAp3 x₂ x₃)
       with synthunicity x x₂
     ... | ()
@@ -339,9 +301,7 @@ module Hazelnut-deterministic where
     ... | refl = refl , refl
 
     actdet2 wt (SAZipPlus2 (AASubsume x (SAMove ()) x₂)) (SAMove EMPlusParent2)
-    actdet2 wt (SAZipPlus2 (AASubsume x x₁ x₂)) (SAMove EMPlusPrevSib) = abort (lem9s x₁)
     actdet2 wt (SAZipPlus2 (AAMove ())) (SAMove EMPlusParent2)
-    actdet2 wt (SAZipPlus2 (AAMove ())) (SAMove EMPlusPrevSib)
     actdet2 wt (SAZipPlus2 x) (SAZipPlus2 x₁)
       with actdet3 (π2 (lem6 wt)) x x₁ -- .. or this one
     ... | refl = refl , refl
