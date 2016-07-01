@@ -1,7 +1,9 @@
-# agda-tfp16
+# agda-popl17
 
 This repository contains the formalization of Hazelnut and the associated
 metatheory.
+
+**This readme file is currently in an inconsistent state.**
 
 Agda File Descriptions
 ======================
