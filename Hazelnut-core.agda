@@ -148,6 +148,9 @@ module Hazelnut-core where
                                           TCRefl))) TCRefl)
 
 
+  ex4 : ∅ ⊢ ((N 3) ·: <||>) ∘ (N 4) => <||>
+  ex4 = SApHole (SAsc (ASubsume SNum TCHole2)) (ASubsume SNum TCHole2)
+
   ----- some theorems about the rules and judgement presented so far.
 
   -- thrm: a variable is apart from any context from which it is removed
@@ -305,7 +308,7 @@ module Hazelnut-core where
     construct : shape → action
     finish : action
 
-  -- type movement
+  -- type actions
   data _+_+>_ : (t : τ̂) → (α : action) → (t' : τ̂) → Set where
     TMFirstChild : {t1 t2 : τ̇} →
                ▹ t1 ==> t2 ◃ + move firstChild +> (▹ t1 ◃ ==>₁ t2)

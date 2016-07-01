@@ -6,6 +6,17 @@ module List where
     [] : List A
     _::_ : A → List A → List A
 
+  [_] : {A : Set} → A → List A
+  [ x ] = x :: []
+
+  -- lets us omit a bunch of parens
+  infixr 9 _++_
+
+  _++_ : {A : Set} → List A → List A → List A
+  [] ++ l2 = l2
+  x :: l1 ++ l2 = x :: (l1 ++ l2)
+
+
   map : {A B : Set} → (A → B) → (List A) → List B
   map f [] = []
   map f (x :: L) = (f x) :: map f L
