@@ -1,9 +1,9 @@
 open import Nat
 open import Prelude
-open import Hazelnut-core
+open import core
 
 -- the obvious small step dynamics for complete expressions.
-module Hazelnut-complete-dynamics where
+module complete-dynamics where
   value : (e : ė) (p : ecomplete e) (t : τ̇) (q : ∅ ⊢ e => t) → Set
   value ._ _ _ (SAsc _) = ⊥
   value ._ _ _ (SVar x) with x

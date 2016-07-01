@@ -1,8 +1,8 @@
 open import Nat
 open import Prelude
-open import Hazelnut-core
+open import core
 
-module Hazelnut-declarative where
+module declarative where
    -- declarative type checking judgement for ė
   data _⊢_::_ : (Γ : ·ctx) → (e : ė) → (t : τ̇) → Set where
      DVar    : {Γ : ·ctx} {t : τ̇} {n : Nat} →

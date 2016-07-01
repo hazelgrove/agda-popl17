@@ -1,18 +1,9 @@
 open import Nat
 open import Prelude
 open import List
-open import Hazelnut-core
+open import core
 
-module Hazelnut-checks where
-  -----------------------------------------------------------------------------
-
-  -- these theorems aren't listed in the draft, but have been discussed
-  -- since submission. broadly speaking, they act as sanity checks on the
-  -- rules. if these properties can't be proven for any extensions to the
-  -- language, then the rules are not good.
-
-  -----------------------------------------------------------------------------
-
+module checks where
   -- movement doesn't change the term other than moving the focus around.
   moveerase : {e e' : ê} {δ : direction} {t : τ̇} →
             (e + move δ +>e e') →

@@ -1,7 +1,7 @@
 open import Nat
 open import Prelude
 
-module Hazelnut-core where
+module core where
   -- types
   data τ̇ : Set where
     num  : τ̇

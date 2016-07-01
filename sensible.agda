@@ -1,9 +1,9 @@
 open import Nat
 open import Prelude
-open import Hazelnut-core
+open import core
 
-module Hazelnut-sensible where
-  -- theorem 1: action sensibility
+module sensible where
+  -- theorem: action sensibility
   synthmovelem : {Γ : ·ctx} {e e' : ê} {t : τ̇} {δ : direction} →
                  (e + move δ +>e e') →
                  (Γ ⊢ e ◆e => t) →
@@ -12,19 +12,16 @@ module Hazelnut-sensible where
   synthmovelem EMAscParent1 d2 = d2
   synthmovelem EMAscParent2 d2 = d2
   synthmovelem EMAscNextSib d2 = d2
-  synthmovelem EMAscPrevSib d2 = d2
   synthmovelem EMLamFirstChild d2 = d2
   synthmovelem EMLamParent d2 = d2
   synthmovelem EMPlusFirstChild d2 = d2
   synthmovelem EMPlusParent1 d2 = d2
   synthmovelem EMPlusParent2 d2 = d2
   synthmovelem EMPlusNextSib d2 = d2
-  synthmovelem EMPlusPrevSib d2 = d2
   synthmovelem EMApFirstChild d2 = d2
   synthmovelem EMApParent1 d2 = d2
   synthmovelem EMApParent2 d2 = d2
   synthmovelem EMApNextSib d2 = d2
-  synthmovelem EMApPrevSib d2 = d2
   synthmovelem EMFHoleFirstChild d2 = d2
   synthmovelem EMFHoleParent d2 = d2
 
@@ -42,19 +39,16 @@ module Hazelnut-sensible where
   anamovelem EMAscParent1 d2 = d2
   anamovelem EMAscParent2 d2 = d2
   anamovelem EMAscNextSib d2 = d2
-  anamovelem EMAscPrevSib d2 = d2
   anamovelem EMLamFirstChild d2 = d2
   anamovelem EMLamParent d2 = d2
   anamovelem EMPlusFirstChild d2 = d2
   anamovelem EMPlusParent1 d2 = d2
   anamovelem EMPlusParent2 d2 = d2
   anamovelem EMPlusNextSib d2 = d2
-  anamovelem EMPlusPrevSib d2 = d2
   anamovelem EMApFirstChild d2 = d2
   anamovelem EMApParent1 d2 = d2
   anamovelem EMApParent2 d2 = d2
   anamovelem EMApNextSib d2 = d2
-  anamovelem EMApPrevSib d2 = d2
   anamovelem EMFHoleFirstChild d2 = d2
   anamovelem EMFHoleParent d2 = d2
 

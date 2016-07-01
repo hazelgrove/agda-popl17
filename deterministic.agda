@@ -1,8 +1,8 @@
 open import Nat
 open import Prelude
-open import Hazelnut-core
+open import core
 
-module Hazelnut-deterministic where
+module deterministic where
   -- theorem 2
 
   -- the same action applied to the same type makes the same resultant
@@ -184,147 +184,148 @@ module Hazelnut-deterministic where
               (Γ ⊢ e => t ~ α ~> e'  => t') →
               (Γ ⊢ e => t ~ α ~> e'' => t'') →
               (e' == e'' × t' == t'')
-    actdet2 wt (SAMove x) (SAMove x₁) = movedet x x₁ , refl
-      -- every other case of move in the left is an absurdity after a
-      -- couple of levels
-    actdet2 wt (SAMove EMAscParent1) (SAZipAsc1 (AASubsume _ (SAMove ()) _))
-    actdet2 wt (SAMove EMAscParent1) (SAZipAsc1 (AAMove ()))
-    actdet2 wt (SAMove EMAscNextSib) (SAZipAsc1 (AASubsume _ (SAMove ()) _))
-    actdet2 wt (SAMove EMAscNextSib) (SAZipAsc1 (AAMove ()))
-    actdet2 wt (SAMove EMAscParent2) (SAZipAsc2 () x₂)
-    actdet2 wt (SAMove EMApParent1) (SAZipAp1 x₁ (SAMove ()) x₂)
-    actdet2 wt (SAMove EMApNextSib) (SAZipAp1 x₁ (SAMove ()) x₂)
-    actdet2 wt (SAMove EMApParent1) (SAZipAp2 x₁ (SAMove ()) x₂)
-    actdet2 wt (SAMove EMApNextSib) (SAZipAp2 x₁ (SAMove ()) x₂)
-    actdet2 wt (SAMove EMApParent2) (SAZipAp3 x₁ (AASubsume x (SAMove ()) x₃))
-    actdet2 wt (SAMove EMApParent2) (SAZipAp3 x₁ (AAMove ()))
-    actdet2 wt (SAMove EMApParent2) (SAZipAp4 x₁ (AASubsume x (SAMove ()) x₃))
-    actdet2 wt (SAMove EMApParent2) (SAZipAp4 x₁ (AAMove ()))
-    actdet2 wt (SAMove EMPlusParent1) (SAZipPlus1 (AASubsume x (SAMove ()) x₂))
-    actdet2 wt (SAMove EMPlusParent1) (SAZipPlus1 (AAMove ()))
-    actdet2 wt (SAMove EMPlusNextSib) (SAZipPlus1 (AASubsume x (SAMove ()) x₂))
-    actdet2 wt (SAMove EMPlusNextSib) (SAZipPlus1 (AAMove ()))
-    actdet2 wt (SAMove EMPlusParent2) (SAZipPlus2 (AASubsume x (SAMove ()) x₂))
-    actdet2 wt (SAMove EMPlusParent2) (SAZipPlus2 (AAMove ()))
-    actdet2 wt (SAMove EMFHoleParent) (SAZipHole1 x₁ (SAMove ()) x₂)
-    actdet2 wt (SAMove EMFHoleParent) (SAZipHole2 x₁ (SAMove ()))
+    actdet2 = {!!}
+    -- actdet2 wt (SAMove x) (SAMove x₁) = movedet x x₁ , refl
+    --   -- every other case of move in the left is an absurdity after a
+    --   -- couple of levels
+    -- actdet2 wt (SAMove EMAscParent1) (SAZipAsc1 (AASubsume _ (SAMove ()) _))
+    -- actdet2 wt (SAMove EMAscParent1) (SAZipAsc1 (AAMove ()))
+    -- actdet2 wt (SAMove EMAscNextSib) (SAZipAsc1 (AASubsume _ (SAMove ()) _))
+    -- actdet2 wt (SAMove EMAscNextSib) (SAZipAsc1 (AAMove ()))
+    -- actdet2 wt (SAMove EMAscParent2) (SAZipAsc2 () x₂)
+    -- actdet2 wt (SAMove EMApParent1) (SAZipAp1 x₁ (SAMove ()) x₂)
+    -- actdet2 wt (SAMove EMApNextSib) (SAZipAp1 x₁ (SAMove ()) x₂)
+    -- actdet2 wt (SAMove EMApParent1) (SAZipAp2 x₁ (SAMove ()) x₂)
+    -- actdet2 wt (SAMove EMApNextSib) (SAZipAp2 x₁ (SAMove ()) x₂)
+    -- actdet2 wt (SAMove EMApParent2) (SAZipAp3 x₁ (AASubsume x (SAMove ()) x₃))
+    -- actdet2 wt (SAMove EMApParent2) (SAZipAp3 x₁ (AAMove ()))
+    -- actdet2 wt (SAMove EMApParent2) (SAZipAp4 x₁ (AASubsume x (SAMove ()) x₃))
+    -- actdet2 wt (SAMove EMApParent2) (SAZipAp4 x₁ (AAMove ()))
+    -- actdet2 wt (SAMove EMPlusParent1) (SAZipPlus1 (AASubsume x (SAMove ()) x₂))
+    -- actdet2 wt (SAMove EMPlusParent1) (SAZipPlus1 (AAMove ()))
+    -- actdet2 wt (SAMove EMPlusNextSib) (SAZipPlus1 (AASubsume x (SAMove ()) x₂))
+    -- actdet2 wt (SAMove EMPlusNextSib) (SAZipPlus1 (AAMove ()))
+    -- actdet2 wt (SAMove EMPlusParent2) (SAZipPlus2 (AASubsume x (SAMove ()) x₂))
+    -- actdet2 wt (SAMove EMPlusParent2) (SAZipPlus2 (AAMove ()))
+    -- actdet2 wt (SAMove EMFHoleParent) (SAZipHole1 x₁ (SAMove ()) x₂)
+    -- actdet2 wt (SAMove EMFHoleParent) (SAZipHole2 x₁ (SAMove ()))
 
-    actdet2 wt SADel SADel = refl , refl
+    -- actdet2 wt SADel SADel = refl , refl
 
-    actdet2 wt SAConAsc SAConAsc = refl , refl
+    -- actdet2 wt SAConAsc SAConAsc = refl , refl
 
-    actdet2 {Γ = G} wt (SAConVar p) (SAConVar p₁)
-      with ctxunicity {Γ = G} p p₁
-    ... | refl = refl , refl
+    -- actdet2 {Γ = G} wt (SAConVar p) (SAConVar p₁)
+    --   with ctxunicity {Γ = G} p p₁
+    -- ... | refl = refl , refl
 
-    actdet2 wt (SAConLam x₁) (SAConLam x₂) = refl , refl
+    -- actdet2 wt (SAConLam x₁) (SAConLam x₂) = refl , refl
 
-    actdet2 wt SAConAp1 SAConAp1 = refl , refl
-    actdet2 wt SAConAp1 (SAConAp3 x) = abort (lem12 x _ _ TCRefl)
+    -- actdet2 wt SAConAp1 SAConAp1 = refl , refl
+    -- actdet2 wt SAConAp1 (SAConAp3 x) = abort (lem12 x _ _ TCRefl)
 
-    actdet2 wt SAConAp2 SAConAp2 = refl , refl
-    actdet2 wt SAConAp2 (SAConAp3 x) = abort (x TCHole2)
+    -- actdet2 wt SAConAp2 SAConAp2 = refl , refl
+    -- actdet2 wt SAConAp2 (SAConAp3 x) = abort (x TCHole2)
 
-    actdet2 wt (SAConAp3 x) SAConAp1 = abort (lem12 x _ _ TCRefl)
-    actdet2 wt (SAConAp3 x) SAConAp2 = abort (x TCHole2)
-    actdet2 wt (SAConAp3 x) (SAConAp3 x₁) = refl , refl
+    -- actdet2 wt (SAConAp3 x) SAConAp1 = abort (lem12 x _ _ TCRefl)
+    -- actdet2 wt (SAConAp3 x) SAConAp2 = abort (x TCHole2)
+    -- actdet2 wt (SAConAp3 x) (SAConAp3 x₁) = refl , refl
 
-    actdet2 wt SAConArg SAConArg = refl , refl
+    -- actdet2 wt SAConArg SAConArg = refl , refl
 
-    actdet2 wt SAConNumlit SAConNumlit = refl , refl
+    -- actdet2 wt SAConNumlit SAConNumlit = refl , refl
 
-    actdet2 wt (SAConPlus1 x) (SAConPlus1 x₁) = refl , refl
-    actdet2 wt (SAConPlus1 x) (SAConPlus2 x₁) = abort (x₁ x)
+    -- actdet2 wt (SAConPlus1 x) (SAConPlus1 x₁) = refl , refl
+    -- actdet2 wt (SAConPlus1 x) (SAConPlus2 x₁) = abort (x₁ x)
 
-    actdet2 wt (SAConPlus2 x) (SAConPlus1 x₁) = abort (x x₁)
-    actdet2 wt (SAConPlus2 x) (SAConPlus2 x₁) = refl , refl
+    -- actdet2 wt (SAConPlus2 x) (SAConPlus1 x₁) = abort (x x₁)
+    -- actdet2 wt (SAConPlus2 x) (SAConPlus2 x₁) = refl , refl
 
-    actdet2 wt (SAFinish x) (SAFinish x₁)
-      with synthunicity x x₁
-    ... | refl = refl , refl
+    -- actdet2 wt (SAFinish x) (SAFinish x₁)
+    --   with synthunicity x x₁
+    -- ... | refl = refl , refl
 
-    actdet2 wt (SAZipAsc1 (AASubsume _ (SAMove ()) _)) (SAMove EMAscParent1)
-    actdet2 wt (SAZipAsc1 (AAMove ())) (SAMove EMAscParent1)
-    actdet2 wt (SAZipAsc1 x) (SAMove EMAscNextSib) = abort (lem8a x)
-    actdet2 {t = t} wt (SAZipAsc1 x) (SAZipAsc1 x₁) =
-         ap1 (λ q → q ·:₁ t) (actdet3 (lem3 (ASubsume wt TCRefl)) x x₁) , refl
+    -- actdet2 wt (SAZipAsc1 (AASubsume _ (SAMove ()) _)) (SAMove EMAscParent1)
+    -- actdet2 wt (SAZipAsc1 (AAMove ())) (SAMove EMAscParent1)
+    -- actdet2 wt (SAZipAsc1 x) (SAMove EMAscNextSib) = abort (lem8a x)
+    -- actdet2 {t = t} wt (SAZipAsc1 x) (SAZipAsc1 x₁) =
+    --      ap1 (λ q → q ·:₁ t) (actdet3 (lem3 (ASubsume wt TCRefl)) x x₁) , refl
 
-    actdet2 wt (SAZipAsc2 () x₁) (SAMove EMAscParent2)
-    actdet2 wt (SAZipAsc2 x x₁) (SAZipAsc2 x₂ x₃) with actdet1 x x₂
-    ... | refl = refl , refl
+    -- actdet2 wt (SAZipAsc2 () x₁) (SAMove EMAscParent2)
+    -- actdet2 wt (SAZipAsc2 x x₁) (SAZipAsc2 x₂ x₃) with actdet1 x x₂
+    -- ... | refl = refl , refl
 
-    actdet2 wt (SAZipAp1 x (SAMove ()) x₁) (SAMove EMApParent1)
-    actdet2 wt (SAZipAp1 x (SAMove ()) x₁) (SAMove EMApNextSib)
-    actdet2 wt (SAZipAp1 x d1 x₁) (SAZipAp1 x₂ d2 x₃)
-      with synthunicity x₂ x
-    ... | refl with actdet2 x d1 d2 -- todo: double-barrelded with here ..
-    ... | p1 , refl = (ap1 (λ q → q ∘₁ _) p1) , refl
-    actdet2 wt (SAZipAp1 x d1 x₁) (SAZipAp2 x₂ d2 x₃)
-      with synthunicity x x₂
-    ... | refl with actdet2 x d1 d2 -- todo: .. and here
-    actdet2 wt (SAZipAp1 _ _ _ ) (SAZipAp2 _ _ _) | refl | _ , ()
+    -- actdet2 wt (SAZipAp1 x (SAMove ()) x₁) (SAMove EMApParent1)
+    -- actdet2 wt (SAZipAp1 x (SAMove ()) x₁) (SAMove EMApNextSib)
+    -- actdet2 wt (SAZipAp1 x d1 x₁) (SAZipAp1 x₂ d2 x₃)
+    --   with synthunicity x₂ x
+    -- ... | refl with actdet2 x d1 d2 -- todo: double-barrelded with here ..
+    -- ... | p1 , refl = (ap1 (λ q → q ∘₁ _) p1) , refl
+    -- actdet2 wt (SAZipAp1 x d1 x₁) (SAZipAp2 x₂ d2 x₃)
+    --   with synthunicity x x₂
+    -- ... | refl with actdet2 x d1 d2 -- todo: .. and here
+    -- actdet2 wt (SAZipAp1 _ _ _ ) (SAZipAp2 _ _ _) | refl | _ , ()
 
-    actdet2 wt (SAZipAp2 x (SAMove ()) x₁) (SAMove EMApParent1)
-    actdet2 wt (SAZipAp2 x (SAMove ()) x₁) (SAMove EMApNextSib)
-    actdet2 wt (SAZipAp2 x d1 x₁) (SAZipAp1 x₂ d2 x₃)
-      with synthunicity x x₂
-    ... | refl with actdet2 x d1 d2
-    actdet2 wt (SAZipAp2 x d1 x₁) (SAZipAp1 x₂ d2 x₃) | refl | p1 , ()
-    actdet2 wt (SAZipAp2 x d1 _) (SAZipAp2 x₂ d2 _)
-      with synthunicity x x₂
-    ... | refl = (ap1 (λ q → q ∘₁ _) (π1 (actdet2 x₂ d1 d2))) , refl
+    -- actdet2 wt (SAZipAp2 x (SAMove ()) x₁) (SAMove EMApParent1)
+    -- actdet2 wt (SAZipAp2 x (SAMove ()) x₁) (SAMove EMApNextSib)
+    -- actdet2 wt (SAZipAp2 x d1 x₁) (SAZipAp1 x₂ d2 x₃)
+    --   with synthunicity x x₂
+    -- ... | refl with actdet2 x d1 d2
+    -- actdet2 wt (SAZipAp2 x d1 x₁) (SAZipAp1 x₂ d2 x₃) | refl | p1 , ()
+    -- actdet2 wt (SAZipAp2 x d1 _) (SAZipAp2 x₂ d2 _)
+    --   with synthunicity x x₂
+    -- ... | refl = (ap1 (λ q → q ∘₁ _) (π1 (actdet2 x₂ d1 d2))) , refl
 
-    actdet2 wt (SAZipAp3 x (AASubsume x₁ (SAMove ()) x₃)) (SAMove EMApParent2)
-    actdet2 wt (SAZipAp3 x (AAMove ())) (SAMove EMApParent2)
-    actdet2 wt (SAZipAp3 {eh = eh} x x₁) (SAZipAp3 x₂ x₃)
-      with synthunicity x x₂
-    ... | refl = ap1 (_∘₂_ _) (actdet3 (lem4 {eh = eh} wt x) x₁ x₃) , refl
-    actdet2 wt (SAZipAp3 x x₁) (SAZipAp4 x₂ x₃)
-      with synthunicity x x₂
-    ... | ()
+    -- actdet2 wt (SAZipAp3 x (AASubsume x₁ (SAMove ()) x₃)) (SAMove EMApParent2)
+    -- actdet2 wt (SAZipAp3 x (AAMove ())) (SAMove EMApParent2)
+    -- actdet2 wt (SAZipAp3 {eh = eh} x x₁) (SAZipAp3 x₂ x₃)
+    --   with synthunicity x x₂
+    -- ... | refl = ap1 (_∘₂_ _) (actdet3 (lem4 {eh = eh} wt x) x₁ x₃) , refl
+    -- actdet2 wt (SAZipAp3 x x₁) (SAZipAp4 x₂ x₃)
+    --   with synthunicity x x₂
+    -- ... | ()
 
-    actdet2 wt (SAZipAp4 x (AASubsume x₁ (SAMove ()) x₃)) (SAMove EMApParent2)
-    actdet2 wt (SAZipAp4 x (AAMove ())) (SAMove EMApParent2)
-    actdet2 wt (SAZipAp4 x x₁) (SAZipAp3 x₂ x₃)
-      with synthunicity x x₂
-    ... | ()
-    actdet2 wt (SAZipAp4 {eh = eh} x x₁ ) (SAZipAp4 x₂ x₃)
-      with actdet3 (lem5 {eh = eh} x₂ wt) x₁ x₃
-    ... | refl = refl , refl
+    -- actdet2 wt (SAZipAp4 x (AASubsume x₁ (SAMove ()) x₃)) (SAMove EMApParent2)
+    -- actdet2 wt (SAZipAp4 x (AAMove ())) (SAMove EMApParent2)
+    -- actdet2 wt (SAZipAp4 x x₁) (SAZipAp3 x₂ x₃)
+    --   with synthunicity x x₂
+    -- ... | ()
+    -- actdet2 wt (SAZipAp4 {eh = eh} x x₁ ) (SAZipAp4 x₂ x₃)
+    --   with actdet3 (lem5 {eh = eh} x₂ wt) x₁ x₃
+    -- ... | refl = refl , refl
 
-    actdet2 wt (SAZipPlus1 (AASubsume x (SAMove ()) x₂)) (SAMove EMPlusParent1)
-    actdet2 wt (SAZipPlus1 (AAMove ())) (SAMove EMPlusParent1)
-    actdet2 wt (SAZipPlus1 (AASubsume x x₁ x₂)) (SAMove EMPlusNextSib) = abort (lem8s x₁)
-    actdet2 wt (SAZipPlus1 (AAMove ())) (SAMove EMPlusNextSib)
-    actdet2 wt (SAZipPlus1 x) (SAZipPlus1 x₁)
-      with actdet3 (π1 (lem6 wt)) x x₁ -- todo: not sure why this needs to be a lemma
-    ... | refl = refl , refl
+    -- actdet2 wt (SAZipPlus1 (AASubsume x (SAMove ()) x₂)) (SAMove EMPlusParent1)
+    -- actdet2 wt (SAZipPlus1 (AAMove ())) (SAMove EMPlusParent1)
+    -- actdet2 wt (SAZipPlus1 (AASubsume x x₁ x₂)) (SAMove EMPlusNextSib) = abort (lem8s x₁)
+    -- actdet2 wt (SAZipPlus1 (AAMove ())) (SAMove EMPlusNextSib)
+    -- actdet2 wt (SAZipPlus1 x) (SAZipPlus1 x₁)
+    --   with actdet3 (π1 (lem6 wt)) x x₁ -- todo: not sure why this needs to be a lemma
+    -- ... | refl = refl , refl
 
-    actdet2 wt (SAZipPlus2 (AASubsume x (SAMove ()) x₂)) (SAMove EMPlusParent2)
-    actdet2 wt (SAZipPlus2 (AAMove ())) (SAMove EMPlusParent2)
-    actdet2 wt (SAZipPlus2 x) (SAZipPlus2 x₁)
-      with actdet3 (π2 (lem6 wt)) x x₁ -- .. or this one
-    ... | refl = refl , refl
+    -- actdet2 wt (SAZipPlus2 (AASubsume x (SAMove ()) x₂)) (SAMove EMPlusParent2)
+    -- actdet2 wt (SAZipPlus2 (AAMove ())) (SAMove EMPlusParent2)
+    -- actdet2 wt (SAZipPlus2 x) (SAZipPlus2 x₁)
+    --   with actdet3 (π2 (lem6 wt)) x x₁ -- .. or this one
+    -- ... | refl = refl , refl
 
-    actdet2 wt (SAZipHole1 x d1 x₁) (SAMove EMFHoleParent) = abort (lem7 wt d1)
-    actdet2 wt (SAZipHole1 x d1 x₁) (SAZipHole1 x₂ d2 x₃)
-      with synthunicity x x₂
-    ... | refl with actdet2 x d1 d2
-    ... | refl , refl = refl , refl
-    actdet2 wt (SAZipHole1 x d1 x₁) (SAZipHole2 x₂ d2)
-      with synthunicity x x₂
-    ... | refl with actdet2 x d1 d2
-    ... | p , _ = abort (x₁ p)
+    -- actdet2 wt (SAZipHole1 x d1 x₁) (SAMove EMFHoleParent) = abort (lem7 wt d1)
+    -- actdet2 wt (SAZipHole1 x d1 x₁) (SAZipHole1 x₂ d2 x₃)
+    --   with synthunicity x x₂
+    -- ... | refl with actdet2 x d1 d2
+    -- ... | refl , refl = refl , refl
+    -- actdet2 wt (SAZipHole1 x d1 x₁) (SAZipHole2 x₂ d2)
+    --   with synthunicity x x₂
+    -- ... | refl with actdet2 x d1 d2
+    -- ... | p , _ = abort (x₁ p)
 
-    actdet2 wt (SAZipHole2 x d1) (SAMove EMFHoleParent) = abort (lem7 wt d1)
-    actdet2 wt (SAZipHole2 x d1) (SAZipHole1 x₁ d2 x₂)
-      with synthunicity x x₁
-    ... | refl with actdet2 x d1 d2
-    ... | p , q  = abort (x₂ (! p))
-    actdet2 wt (SAZipHole2 x d1) (SAZipHole2 x₁ d2)
-      with synthunicity x x₁
-    ... | refl with actdet2 x d1 d2
-    ... | refl , refl = refl , refl
+    -- actdet2 wt (SAZipHole2 x d1) (SAMove EMFHoleParent) = abort (lem7 wt d1)
+    -- actdet2 wt (SAZipHole2 x d1) (SAZipHole1 x₁ d2 x₂)
+    --   with synthunicity x x₁
+    -- ... | refl with actdet2 x d1 d2
+    -- ... | p , q  = abort (x₂ (! p))
+    -- actdet2 wt (SAZipHole2 x d1) (SAZipHole2 x₁ d2)
+    --   with synthunicity x x₁
+    -- ... | refl with actdet2 x d1 d2
+    -- ... | refl , refl = refl , refl
 
     -- an action on an expression in an analytic position produces one
     -- resultant expression and type.
