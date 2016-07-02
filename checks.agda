@@ -2,9 +2,10 @@ open import Nat
 open import Prelude
 open import List
 open import core
+open import judgemental-erase
 
 module checks where
-  -- movement doesn't change the term other than moving the focus around.
+  -- theorem: movement doesn't change the term other than moving the focus around.
   moveerase : {e e' : ê} {δ : direction} {t : τ̇} →
             (e + move δ +>e e') →
             (e ◆e) == (e' ◆e)
@@ -47,8 +48,6 @@ module checks where
   bt-ex = construct num :: construct arrow :: del :: move parent :: [] ,
          BuildArr num <||> (construct num :: []) (del :: []) BuildNum
          BuildTHole
-
-
 
   -- todo: it's not clear if i can get away with not knowing the typing
   -- information here. the same action makes different expressions
@@ -158,27 +157,36 @@ module checks where
 
   -- if there is a list of actions that builds a type, running that list
   -- from the empty hole in focus really does produce the target type.
-  constructτ : (t : τ̇) (L : List action) →
+  constructτ : {t : τ̇} {L : List action} →
                         buildtype ▹ t ◃ L →
                         runtype (▹ <||> ◃) L (▹ t ◃)
-  constructτ .num .(construct num :: []) BuildNum = DoType ▹ <||> ◃ (construct num) ▹ num ◃ ▹ num ◃ [] TMConNum DoRefl
-  constructτ .<||> .(del :: []) BuildTHole = DoType ▹ <||> ◃ del ▹ <||> ◃ ▹ <||> ◃ [] TMDel DoRefl
-  constructτ .(t1 ==> t2) .(l1 ++ construct arrow :: (l2 ++ move parent :: [])) (BuildArr t1 t2 l1 l2 bt bt₁) = {!!}
+  constructτ  BuildNum = DoType ▹ <||> ◃ (construct num) ▹ num ◃ ▹ num ◃ [] TMConNum DoRefl
+  constructτ  BuildTHole = DoType ▹ <||> ◃ del ▹ <||> ◃ ▹ <||> ◃ [] TMDel DoRefl
+  constructτ  (BuildArr t1 t2 l1 l2 bt1 bt2) with constructτ bt1  | constructτ bt2
+  constructτ (BuildArr .<||> .<||> [] [] bt1 bt2) | DoRefl | DoRefl = DoType ▹ <||> ◃ (construct arrow) (<||> ==>₂ ▹ <||> ◃)
+                                                                        ▹ <||> ==> <||> ◃ (move parent :: []) TMConArrow
+                                                                        (DoType (<||> ==>₂ ▹ <||> ◃) (move parent) ▹ <||> ==> <||> ◃
+                                                                         ▹ <||> ==> <||> ◃ [] TMParent2 DoRefl)
+  constructτ (BuildArr .<||> t2 [] (x :: l2) bt1 bt2) | DoRefl | DoType .(▹ <||> ◃) .x t' .(▹ t2 ◃) .l2 x₁ ih2 = DoType ▹ <||> ◃ (construct arrow) (<||> ==>₂ ▹ <||> ◃) ▹ <||> ==> t2 ◃ (x :: (l2 ++ move parent :: [])) TMConArrow {!!}
+  constructτ (BuildArr t1 .<||> (x :: l1) [] bt1 bt2) | DoType .(▹ <||> ◃) .x t' .(▹ t1 ◃) .l1 x₁ ih1 | DoRefl = DoType ▹ <||> ◃ x t' ▹ t1 ==> <||> ◃ (l1 ++ construct arrow :: move parent :: []) x₁ {!!}
+  constructτ (BuildArr t1 t2 (x :: l1) (x₁ :: l2) bt1 bt2) | DoType .(▹ <||> ◃) .x t' .(▹ t1 ◃) .l1 x₂ ih1 | DoType .(▹ <||> ◃) .x₁ t'' .(▹ t2 ◃) .l2 x₃ ih2 = {!!}
 
 
   -- tie together the mode theorem and the above to demonstrate that for
   -- any type there is a list of actions that builds it.
   type-constructability : (t : τ̇) → Σ[ L ∈ List action ] runtype (▹ <||> ◃) L (▹ t ◃)
   type-constructability t with buildτ t
-  ... | (L , pf) = L , constructτ t L pf
+  ... | (L , pf) = L , constructτ pf
 
   mutual
-    constructsynth : {Γ : ·ctx} {e : ė} {t : τ̇} {L : List action} (wt : Γ ⊢ e => t)
+    constructsynth : {Γ : ·ctx} {e : ė} {t : τ̇} {L : List action} →
+                       Γ ⊢ e => t
                      → buildexp ▹ e ◃ L
                      → runsynth Γ ▹ <||> ◃ t L ▹ e ◃ t
-    constructsynth wt b = {!wt b!}
+    constructsynth wt b = {!!}
 
-    constructana : {Γ : ·ctx} {e : ė} {t : τ̇} {L : List action} (wt : Γ ⊢ e <= t)
+    constructana : {Γ : ·ctx} {e : ė} {t : τ̇} {L : List action} →
+                       Γ ⊢ e <= t
                      → buildexp ▹ e ◃ L
                      → runana Γ ▹ <||> ◃ L ▹ e ◃ t
     constructana wt b = {!!}
@@ -213,39 +221,6 @@ module checks where
   movepar-e (e ·+₁ _) = move parent :: movepar-e e
   movepar-e (_ ·+₂ e) = move parent :: movepar-e e
   movepar-e <| e |>   = move parent :: movepar-e e
-
-  data erase-t : τ̂ → τ̇ → Set where
-    ETTop  : ∀{t} → erase-t (▹ t ◃) t
-    ETArrL : ∀{t1 t1' t2} → erase-t t1 t1' → erase-t (t1 ==>₁ t2) (t1' ==> t2)
-    ETArrR : ∀{t1 t2 t2'} → erase-t t2 t2' → erase-t (t1 ==>₂ t2) (t1 ==> t2')
-
-  data erase-e : ê → ė → Set where
-    EETop   : ∀{x} → erase-e (▹ x ◃) x
-    EEAscL  : ∀{e e' t} → erase-e e e' → erase-e (e ·:₁ t) (e' ·: t)
-    EEAscR  : ∀{e t t'} → erase-t t t' → erase-e (e ·:₂ t) (e ·: t')
-    EELam   : ∀{x e e'} → erase-e e e' → erase-e (·λ x e) (·λ x e')
-    EEApL   : ∀{e1 e1' e2} → erase-e e1 e1' → erase-e (e1 ∘₁ e2) (e1' ∘ e2)
-    EEApR   : ∀{e1 e2 e2'} → erase-e e2 e2' → erase-e (e1 ∘₂ e2) (e1 ∘ e2')
-    EEPlusL : ∀{e1 e1' e2} → erase-e e1 e1' → erase-e (e1 ·+₁ e2) (e1' ·+ e2)
-    EEPlusR : ∀{e1 e2 e2'} → erase-e e2 e2' → erase-e (e1 ·+₂ e2) (e1 ·+ e2')
-    EEFHole : ∀{e e'} → erase-e e e' → erase-e <| e |>  <| e' |>
-
-  -- this judgemental form really does agree with the function
-  erase-t◆ : {t : τ̂} {tr : τ̇} → (erase-t t tr) → (t ◆t == tr)
-  erase-t◆ ETTop       = refl
-  erase-t◆ (ETArrL p)  = ap1 (λ x → x ==> _) (erase-t◆ p)
-  erase-t◆ (ETArrR p)  = ap1 (λ x → _ ==> x) (erase-t◆ p)
-
-  erase-e◆ : {e : ê} {er : ė} → (erase-e e er) → (e ◆e == er)
-  erase-e◆ EETop       = refl
-  erase-e◆ (EEAscL p)  = ap1 (λ x → x ·: _)  (erase-e◆ p)
-  erase-e◆ (EEAscR p)  = ap1 (λ x → _ ·: x)  (erase-t◆ p)
-  erase-e◆ (EELam p)   = ap1 (λ e → ·λ _ e)  (erase-e◆ p)
-  erase-e◆ (EEApL p)   = ap1 (λ x → x ∘ _)   (erase-e◆ p)
-  erase-e◆ (EEApR p)   = ap1 (λ x → _ ∘ x)   (erase-e◆ p)
-  erase-e◆ (EEPlusL p) = ap1 (λ x → x ·+ _)  (erase-e◆ p)
-  erase-e◆ (EEPlusR p) = ap1 (λ x → _ ·+ x)  (erase-e◆ p)
-  erase-e◆ (EEFHole p) = ap1 (λ x → <| x |>) (erase-e◆ p)
 
   reachτ : {t : τ̂} {t' : τ̇} →
               erase-t t t' →

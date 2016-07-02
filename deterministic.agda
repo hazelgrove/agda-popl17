@@ -1,6 +1,7 @@
 open import Nat
 open import Prelude
 open import core
+open import judgemental-erase
 
 module deterministic where
   -- theorem 2
@@ -185,6 +186,14 @@ module deterministic where
               (Γ ⊢ e => t ~ α ~> e'' => t'') →
               (e' == e'' × t' == t'')
     actdet2 = {!!}
+
+    -- actdet2' : {Γ : ·ctx} {e e' e'' : ê} {er : ė} {t t' t'' : τ̇} {α : action} →
+    --           (E : erase-e e er) →
+    --           (Γ ⊢ er => t) →
+    --           (Γ ⊢ e => t ~ α ~> e'  => t') →
+    --           (Γ ⊢ e => t ~ α ~> e'' => t'') →
+    --           (e' == e'' × t' == t'')
+
     -- actdet2 wt (SAMove x) (SAMove x₁) = movedet x x₁ , refl
     --   -- every other case of move in the left is an absurdity after a
     --   -- couple of levels
