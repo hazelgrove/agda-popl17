@@ -170,7 +170,7 @@ module deterministic where
   lem11 (AASubsume x (SAMove ()) x₂)
   lem11 (AAMove ())
 
-  -- if a type isn't compatible with hole to hole, it isn't compatible with
+  -- if a type isn't consistent with hole to hole, it isn't compatible with
   -- any function type at all.
   lem12 : {t : τ̇} → (t ~̸ (<||> ==> <||>)) → ((t1 t2 : τ̇) → t ~̸ (t1 ==> t2))
   lem12 {num} p t1 t2 ()

@@ -54,7 +54,7 @@ module core where
   (Γ / x) .x | Inl refl = None
   (Γ / x) y  | Inr neq  = Γ y
 
-  -- the type compatability judgement
+  -- the type consistency judgement
   data _~_ : (t1 : τ̇) → (t2 : τ̇) → Set where
     TCRefl : {t : τ̇} → t ~ t
     TCHole1 : {t : τ̇} → t ~ <||>
@@ -64,9 +64,9 @@ module core where
                t2 ~ t2' →
                (t1 ==> t2) ~ (t1' ==> t2')
 
-  -- type incompatability. rather than enumerate the types which aren't
-  -- compatible, we encode this judgement immediately as the complement of
-  -- compatability. this simplifies a few proofs later.
+  -- type inconsistency. rather than enumerate the types which aren't
+  -- consistent, we encode this judgement immediately as the complement of
+  -- consistency.
   _~̸_ : τ̇ → τ̇ → Set
   t1 ~̸ t2 = (t1 ~ t2) → ⊥
 
@@ -168,15 +168,15 @@ module core where
   ctxunicity p q | Inl refl = someinj (! p · q)
   ctxunicity _ _ | Inr x≠x = abort (x≠x refl)
 
-  -- type compatablity is symmetric
+  -- type consistency is symmetric
   ~sym : {t1 t2 : τ̇} → t1 ~ t2 → t2 ~ t1
   ~sym TCRefl = TCRefl
   ~sym TCHole1 = TCHole2
   ~sym TCHole2 = TCHole1
   ~sym (TCArr p1 p2) = TCArr (~sym p1) (~sym p2)
 
-  -- if the domain or codomain of a pair of arrows isn't compatable, the
-  -- whole arrow isn't compatible.
+  -- if the domain or codomain of a pair of arrows isn't consistent, the
+  -- whole arrow isn't consistent.
   lemarr1 : {t1 t2 t3 t4 : τ̇} → (t1 ~ t3 → ⊥) → (t1 ==> t2) ~ (t3 ==> t4)  → ⊥
   lemarr1 v TCRefl = v TCRefl
   lemarr1 v (TCArr p _) = v p
@@ -185,7 +185,7 @@ module core where
   lemarr2 v TCRefl = v TCRefl
   lemarr2 v (TCArr _ p) = v p
 
-  --  every pair of types is either compatable or not compatable
+  --  every pair of types is either consistent or not consistent
   ~dec : (t1 t2 : τ̇) → ((t1 ~ t2) + (t1 ~̸ t2))
     -- this takes care of all hole cases, so we don't consider them below
   ~dec _ <||> = Inl TCHole1
@@ -200,7 +200,7 @@ module core where
   ... | Inl _ | Inr y = Inr (lemarr2 y)
   ... | Inr x | _     = Inr (lemarr1 x)
 
-  -- theorem: no pair of types is both compatable and not compatable. this
+  -- theorem: no pair of types is both consistent and not consistent. this
   -- is immediate from our encoding of the ~̸ judgement in the formalism
   -- here; in the exact mathematics presented in the paper, this would
   -- require induction to relate the two judgements.
