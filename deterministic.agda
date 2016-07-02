@@ -97,8 +97,7 @@ module deterministic where
   synthmovedet (SAZipHole1 _ (SAMove ()) x) EMFHoleParent
   synthmovedet (SAZipHole2 _ (SAMove ())) EMFHoleParent
 
-  -- these are all a bunch of small techincal lemmas for the cases below. i
-  -- don't understand why some of them can't be inlined.
+  -- these are all techincal lemmas for the cases of the main theorem
   lem1 : {Γ : ·ctx} {t1 t2 : τ̇} →
            Γ ⊢ <||> <= (t1 ==> t2) →
            (t1 ==> t2) ~ (<||> ==> <||>)
@@ -267,11 +266,11 @@ module deterministic where
     -- actdet2 wt (SAZipAp1 x (SAMove ()) x₁) (SAMove EMApNextSib)
     -- actdet2 wt (SAZipAp1 x d1 x₁) (SAZipAp1 x₂ d2 x₃)
     --   with synthunicity x₂ x
-    -- ... | refl with actdet2 x d1 d2 -- todo: double-barrelded with here ..
+    -- ... | refl with actdet2 x d1 d2
     -- ... | p1 , refl = (ap1 (λ q → q ∘₁ _) p1) , refl
     -- actdet2 wt (SAZipAp1 x d1 x₁) (SAZipAp2 x₂ d2 x₃)
     --   with synthunicity x x₂
-    -- ... | refl with actdet2 x d1 d2 -- todo: .. and here
+    -- ... | refl with actdet2 x d1 d2
     -- actdet2 wt (SAZipAp1 _ _ _ ) (SAZipAp2 _ _ _) | refl | _ , ()
 
     -- actdet2 wt (SAZipAp2 x (SAMove ()) x₁) (SAMove EMApParent1)
@@ -307,13 +306,13 @@ module deterministic where
     -- actdet2 wt (SAZipPlus1 (AASubsume x x₁ x₂)) (SAMove EMPlusNextSib) = abort (lem8s x₁)
     -- actdet2 wt (SAZipPlus1 (AAMove ())) (SAMove EMPlusNextSib)
     -- actdet2 wt (SAZipPlus1 x) (SAZipPlus1 x₁)
-    --   with actdet3 (π1 (lem6 wt)) x x₁ -- todo: not sure why this needs to be a lemma
+    --   with actdet3 (π1 (lem6 wt)) x x₁
     -- ... | refl = refl , refl
 
     -- actdet2 wt (SAZipPlus2 (AASubsume x (SAMove ()) x₂)) (SAMove EMPlusParent2)
     -- actdet2 wt (SAZipPlus2 (AAMove ())) (SAMove EMPlusParent2)
     -- actdet2 wt (SAZipPlus2 x) (SAZipPlus2 x₁)
-    --   with actdet3 (π2 (lem6 wt)) x x₁ -- .. or this one
+    --   with actdet3 (π2 (lem6 wt)) x x₁
     -- ... | refl = refl , refl
 
     -- actdet2 wt (SAZipHole1 x d1 x₁) (SAMove EMFHoleParent) = abort (lem7 wt d1)

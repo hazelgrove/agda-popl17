@@ -26,7 +26,7 @@ module core where
   -- contexts as functions from names for variables (nats) to possible
   -- bindings.
   ·ctx : Set
-  ·ctx = Nat → Maybe τ̇ -- todo: (Σ[ n : Nat ] (y : Nat) → y ∈ Γ → x > y)?
+  ·ctx = Nat → Maybe τ̇
 
   -- convenient shorthand for the (unique up to fun. ext.) empty context
   ∅ : ·ctx
@@ -40,7 +40,6 @@ module core where
   (Γ ,, (x , t)) y  | Inr neq  = Γ y
 
   -- membership, or presence, in a context
-    -- todo: not sure if this should take a pair
   _∈_ : (p : Nat × τ̇) → (Γ : ·ctx) → Set
   (x , t) ∈ Γ = (Γ x) == Some t
 
@@ -147,9 +146,12 @@ module core where
                                              (ASubsume (SVar refl) TCRefl))
                                           TCRefl))) TCRefl)
 
-
+  -- applying three to four has type hole -- but there is no action that
+  -- can fill the hole in the type so this term is forever incomplete.
   ex4 : ∅ ⊢ ((N 3) ·: <||>) ∘ (N 4) => <||>
   ex4 = SApHole (SAsc (ASubsume SNum TCHole2)) (ASubsume SNum TCHole2)
+
+
 
   ----- some theorems about the rules and judgement presented so far.
 
@@ -206,6 +208,7 @@ module core where
   -- require induction to relate the two judgements.
   ~apart : {t1 t2 : τ̇} → (t1 ~̸ t2) → (t1 ~ t2) → ⊥
   ~apart v p = v p
+
 
   -- synthesis only produces equal types. note that there is no need for an
   -- analagous theorem for analytic positions because we think of
@@ -330,7 +333,6 @@ module core where
                 ((t1 ==>₂ t2) + α +> (t1 ==>₂ t2'))
 
   -- expression movement
-  -- todo: want this action to be direction, since they're all move?
   data _+_+>e_ : (e : ê) → (α : action) → (e' : ê) → Set where
     -- rules for ascriptions
     EMAscFirstChild : {e : ė} {t : τ̇} →
@@ -383,10 +385,10 @@ module core where
       SAConAsc : {Γ : ·ctx} {e : ė} {t : τ̇} →
                 Γ ⊢ ▹ e ◃ => t ~ construct asc ~> (e ·:₂ ▹ t ◃ ) => t
       SAConVar : {Γ : ·ctx} {x : Nat} {t : τ̇} →
-                (p : (x , t) ∈ Γ) → -- todo: is this right?
+                (p : (x , t) ∈ Γ) →
                 Γ ⊢ ▹ <||> ◃ => <||> ~ construct (var x) ~> ▹ X x ◃ => t
       SAConLam : {Γ : ·ctx} {x : Nat} →
-               (x # Γ) → -- todo: i added this; it doesn't appear in the text
+               (x # Γ) →
                 Γ ⊢ ▹ <||> ◃ => <||> ~ construct (lam x) ~>
                    ((·λ x <||>) ·:₂ (▹ <||> ◃ ==>₁ <||>)) => (<||> ==> <||>)
       SAConAp1 : {Γ : ·ctx} {t1 t2 : τ̇} {e : ė} →
@@ -400,9 +402,6 @@ module core where
                 Γ ⊢ ▹ e ◃ => t ~ construct arg ~> ▹ <||> ◃ ∘₁ e => <||>
       SAConNumlit : {Γ : ·ctx} {e : ė} {n : Nat} →
                 Γ ⊢ ▹ <||> ◃ => <||> ~ construct (numlit n) ~> ▹ N n ◃ => num
-      -- todo: these ought to look like ap, no? why are there two here and
-      -- three there? probably because of the induced type
-      -- structure. otherwise i would try to abstract this..
       SAConPlus1 : {Γ : ·ctx} {e : ė} {t : τ̇} →
                 (t ~ num) →
                 Γ ⊢ ▹ e ◃ => t ~ construct plus ~> e ·+₂ ▹ <||> ◃  => num
@@ -417,7 +416,7 @@ module core where
                   Γ ⊢ (e ·:₁ t) => t ~ α ~> (e' ·:₁ t) => t
       SAZipAsc2 : {Γ : ·ctx} {e : ė} {α : action} {t t' : τ̂} →
                   (t + α +> t') →
-                  (Γ ⊢ e <= (t' ◆t)) → -- todo: this rule seems weirdly asymmetrical
+                  (Γ ⊢ e <= (t' ◆t)) →
                   Γ ⊢ (e ·:₂ t) => (t ◆t) ~ α ~> (e ·:₂ t') => (t' ◆t)
       SAZipAp1 : {Γ : ·ctx} {t1 t2 t3 t4 : τ̇} {α : action} {eh eh' : ê} {e : ė} →
                  (Γ ⊢ (eh ◆e) => t2) →
@@ -456,8 +455,8 @@ module core where
     -- analytic action expressions
     data _⊢_~_~>_⇐_ : (Γ : ·ctx) → (e : ê) → (α : action) →
                       (e' : ê) → (t : τ̇) → Set where
-      AASubsume : {Γ : ·ctx} {e e' : ê} {t t' t'' : τ̇} {α : action} → -- troublemaker
-                  {p : (α == construct asc → ⊥) × -- cyrus's proposed fix for two cases
+      AASubsume : {Γ : ·ctx} {e e' : ê} {t t' t'' : τ̇} {α : action} →
+                  {p : (α == construct asc → ⊥) ×
                        ((x : Nat) → (α == construct (lam x) → ⊥))} →
                   (Γ ⊢ (e ◆e) => t') →
                   (Γ ⊢ e => t' ~ α ~> e' => t'') →
@@ -471,15 +470,15 @@ module core where
       AAConAsc : {Γ : ·ctx} {e : ė} {t : τ̇} →
                  Γ ⊢ ▹ e ◃ ~ construct asc ~> (e ·:₂ ▹ t ◃) ⇐ t
       AAConVar : {Γ : ·ctx} {t t' : τ̇} {x : Nat} →
-                 (t ~̸ t') →           -- todo: i don't understand this
-                 (p : (x , t') ∈ Γ) → -- todo: is this right?
+                 (t ~̸ t') →
+                 (p : (x , t') ∈ Γ) →
                  Γ ⊢ ▹ <||> ◃ ~ construct (var x) ~> <| ▹ X x ◃ |> ⇐ t
       AAConLam1 : {Γ : ·ctx} {x : Nat} {t1 t2 : τ̇} →
-                  (x # Γ) → -- todo: i added this
+                  (x # Γ) →
                   Γ ⊢ ▹ <||> ◃ ~ construct (lam x) ~>
                       ·λ x (▹ <||> ◃) ⇐ (t1 ==> t2)
       AAConLam2 : {Γ : ·ctx} {x : Nat} {t : τ̇} →
-                  (x # Γ) → -- todo: i added this
+                  (x # Γ) →
                   (t ~̸ (<||> ==> <||>)) →
                   Γ ⊢ ▹ <||> ◃ ~ construct (lam x) ~>
                       <| ·λ x <||> ·:₂ (▹ <||> ◃ ==>₁ <||>) |> ⇐ t

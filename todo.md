@@ -1,11 +1,9 @@
 technical complaints about the proof text
 -----------------------------------------
 
-- fix todos in agda
-
-- am i using the barendregt variable convention correctly?
-
-- try to knock down some cases / use more lemmas
+- try proving actdet2 with judgmental erasure; that will let me induct on
+  the derivation of well-typedness, which should knock out most of the
+  irritating lemmas.
 
 more metatheory
 ---------------
@@ -45,8 +43,8 @@ longer term ideas
 - a richer notion of actions that allows for derived action forms. so if
   you can prove that a new action you have is admissible with respect to
   existing ones, you should be able to use it freely without needing to
-  change the core proofs. like prevsib can be expressed with nextsib,
-  parent, and first child.
+  change the core proofs. like prevsib from the TFP work can be expressed
+  with nextsib, parent, and first child.
 
 - reflection: generate mapreduces, so that makes tcomplete and ecomplete
   effectively just
