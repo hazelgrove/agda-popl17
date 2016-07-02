@@ -7,23 +7,6 @@ technical complaints about the proof text
 
 - try to knock down some cases / use more lemmas
 
-- i think the specific definition of focus erasure is breaking pattern
-  matching in a bunch of places. you can't pattern match on the result of a
-  function call. this happens also in defining the obvious ||_|| for
-  erasure of ascriptions to relate the bidirectional system to a
-  declarative one. i guess i need a new grammar, so i have constructors to
-  break down?
-
-- think of a better way to encode expression and type erasure. you can't
-  pattern match on function calls, only things given by data
-  declarations. that might make these proofs a lot easier. (as shown by
-  working on the iso stuff.)
-
-- abstract over movments somehow. moving between arguments is a little hard
-  coded; what if everything had a list of arguments instead of specific
-  forms? is that the slippery slope to writing a full ABT library, or the
-  one to lvars?
-
 more metatheory
 ---------------
 
@@ -53,6 +36,11 @@ langauge extensions
 
 longer term ideas
 -----------------
+
+- abstract over movments somehow. moving between arguments is a little hard
+  coded; what if everything had a list of arguments instead of specific
+  forms? is that the slippery slope to writing a full ABT library, or the
+  one to lvars?
 
 - a richer notion of actions that allows for derived action forms. so if
   you can prove that a new action you have is admissible with respect to

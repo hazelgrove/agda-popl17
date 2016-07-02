@@ -17,6 +17,11 @@ open import core
 --
 -- taken together, these proofs allow us to move between the judgemental
 -- form of erasure and the function form when it's convenient.
+--
+-- while we do not have it, the argument given here is sufficiently strong
+-- to produce an equality between these things in a system with the
+-- univalence axiom, as described in the homotopy type theory book and the
+-- associated work done in agda.
 module judgemental-erase where
 
   -- jugemental type erasure
@@ -74,6 +79,27 @@ module judgemental-erase where
   ◆erase-e (x ·+₂ e) .(x ·+ (e ◆e)) refl = EEPlusR (◆erase-e e (e ◆e) refl)
   ◆erase-e <| e |> .(<| e ◆e |>) refl = EEFHole (◆erase-e e (e ◆e) refl)
 
+  -- taken together, these two theorems demonstrate that the round-trip of
+  -- one of the pairings above is stable. as a consequence of the
+  -- properties of quasi-inverses, demonstrating either round trip is
+  -- sufficient to show that the whole thing is an isomorphism.
+  erase-trt : (t : τ̂) (tr : τ̇) → (x : t ◆t == tr)  → (erase-t◆ (◆erase-t t tr x)) == x
+  erase-trt ▹ .num ◃ num refl = refl
+  erase-trt ▹ .<||> ◃ <||> refl = refl
+  erase-trt ▹ .(tr ==> tr₁) ◃ (tr ==> tr₁) refl = refl
+  erase-trt (t ==>₁ x) (.(t ◆t) ==> .x) refl = ap1 (λ a → ap1 (λ x₁ → x₁ ==> x) a) (erase-trt t _ refl)
+  erase-trt (x ==>₂ t) (.x ==> .(t ◆t)) refl = ap1 (λ a → ap1 (_==>_ x) a) (erase-trt t _ refl)
+
+  erase-ert : (e : ê) (er : ė) → (x : e ◆e == er)  → (erase-e◆ (◆erase-e e er x)) == x
+  erase-ert ▹ x ◃ .x refl = refl
+  erase-ert (e ·:₁ x) .((e ◆e) ·: x) refl = ap1 (λ a → ap1 (λ x₁ → x₁ ·: x) a) (erase-ert e _ refl)
+  erase-ert (x ·:₂ t) .(x ·: (t ◆t)) refl =  ap1 (λ a → ap1 (_·:_ x) a) (erase-trt t _ refl)
+  erase-ert (·λ x e) .(·λ x (e ◆e)) refl = ap1 (λ a → ap1 (·λ x) a) (erase-ert e _ refl)
+  erase-ert (e ∘₁ x) .((e ◆e) ∘ x) refl =  ap1 (λ a → ap1 (λ x₁ → x₁ ∘ x) a) (erase-ert e _ refl)
+  erase-ert (x ∘₂ e) .(x ∘ (e ◆e)) refl = ap1 (λ a → ap1 (_∘_ x) a) (erase-ert e _ refl)
+  erase-ert (e ·+₁ x) .((e ◆e) ·+ x) refl = ap1 (λ a → ap1 (λ x₁ → x₁ ·+ x) a) (erase-ert e _ refl)
+  erase-ert (x ·+₂ e) .(x ·+ (e ◆e)) refl = ap1 (λ a → ap1 (_·+_ x) a) (erase-ert e _ refl)
+  erase-ert <| e |> .(<| e ◆e |>) refl = ap1 (λ a → ap1 <|_|> a) (erase-ert e _ refl)
 
   -- this isomorphism amounts to the argument that the judgement has mode
   -- (∀, !∃), where uniqueness comes from erase-e◆.
