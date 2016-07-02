@@ -105,3 +105,21 @@ module judgemental-erase where
   -- (∀, !∃), where uniqueness comes from erase-e◆.
   erase-e-mode : (e : ê) → Σ[ er ∈ ė ] (erase-e e er)
   erase-e-mode e = (e ◆e) , (◆erase-e e (e ◆e) refl)
+
+  -- even more specifically, the relation relates an expression to its
+  -- functional erasure.
+  rel◆t : (t : τ̂) → (erase-t t (t ◆t))
+  rel◆t ▹ x ◃ = ETTop
+  rel◆t (t ==>₁ x) = ETArrL (rel◆t t)
+  rel◆t (x ==>₂ t) = ETArrR (rel◆t t)
+
+  rel◆ : (e : ê) → (erase-e e (e ◆e))
+  rel◆ ▹ x ◃ = EETop
+  rel◆ (e ·:₁ x) = EEAscL (rel◆ e)
+  rel◆ (x ·:₂ x₁) = EEAscR (rel◆t x₁)
+  rel◆ (·λ x e) = EELam (rel◆ e)
+  rel◆ (e ∘₁ x) = EEApL (rel◆ e)
+  rel◆ (x ∘₂ e) = EEApR (rel◆ e)
+  rel◆ (e ·+₁ x) = EEPlusL (rel◆ e)
+  rel◆ (x ·+₂ e) = EEPlusR (rel◆ e)
+  rel◆ <| e |> = EEFHole (rel◆ e)

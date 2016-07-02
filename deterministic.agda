@@ -4,8 +4,6 @@ open import core
 open import judgemental-erase
 
 module deterministic where
-  -- theorem 2
-
   -- the same action applied to the same type makes the same resultant
   -- type.
   actdet1 : {t t' t'' : τ̂} {α : action} →
@@ -184,14 +182,41 @@ module deterministic where
               (Γ ⊢ e => t ~ α ~> e'  => t') →
               (Γ ⊢ e => t ~ α ~> e'' => t'') →
               (e' == e'' × t' == t'')
-    actdet2 = {!!}
+    actdet2 er d1 d2 = actdet2' (rel◆ _) er d1 d2
 
-    -- actdet2' : {Γ : ·ctx} {e e' e'' : ê} {er : ė} {t t' t'' : τ̇} {α : action} →
-    --           (E : erase-e e er) →
-    --           (Γ ⊢ er => t) →
-    --           (Γ ⊢ e => t ~ α ~> e'  => t') →
-    --           (Γ ⊢ e => t ~ α ~> e'' => t'') →
-    --           (e' == e'' × t' == t'')
+    -- exact same theorem as actdet2, but with the judgemental formulation
+    -- of erasure so that we can pattern match and induct on the typing
+    -- derivation
+    actdet2' : {Γ : ·ctx} {e e' e'' : ê} {er : ė} {t t' t'' : τ̇} {α : action} →
+              (E : erase-e e er) →
+              (Γ ⊢ er => t) →
+              (Γ ⊢ e => t ~ α ~> e'  => t') →
+              (Γ ⊢ e => t ~ α ~> e'' => t'') →
+              (e' == e'' × t' == t'')
+    actdet2' EETop (SAsc x) d1 d2 = {!!}
+    actdet2' (EEAscL E) (SAsc x) d1 d2 = {!!}
+    actdet2' (EEAscR x) (SAsc x₁) d1 d2 = {!!}
+
+    actdet2' EETop (SVar x) d1 d2 = {!!}
+
+    actdet2' EETop (SAp wt x) d1 d2 = {!!}
+    actdet2' (EEApL E) (SAp wt x) d1 d2 = {!!}
+    actdet2' (EEApR E) (SAp wt x) d1 d2 = {!!}
+
+    actdet2' EETop SNum d1 d2 = {!!}
+
+    actdet2' EETop (SPlus x x₁) d1 d2 = {!!}
+    actdet2' (EEPlusL E) (SPlus x x₁) d1 d2 = {!!}
+    actdet2' (EEPlusR E) (SPlus x x₁) d1 d2 = {!!}
+
+    actdet2' EETop SEHole d1 d2 = {!!}
+
+    actdet2' EETop (SFHole wt) d1 d2 = {!!}
+    actdet2' (EEFHole E) (SFHole wt) d1 d2 = {!!}
+
+    actdet2' EETop (SApHole wt x) d1 d2 = {!!}
+    actdet2' (EEApL E) (SApHole wt x) d1 d2 = {!!}
+    actdet2' (EEApR E) (SApHole wt x) d1 d2 = {!!}
 
     -- actdet2 wt (SAMove x) (SAMove x₁) = movedet x x₁ , refl
     --   -- every other case of move in the left is an absurdity after a
