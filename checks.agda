@@ -57,7 +57,7 @@ module checks where
   --  (Γ : ·ctx) (t : τ̇) (wt : (Γ ⊢ e => t) + (Γ ⊢ e <= t))
 
   -- there's a hidden invariant here, which is that we always leave the
-  -- cursor at the top of the expression. this lets us prove later that we
+  -- focus at the top of the expression. this lets us prove later that we
   -- can build a specifc thing starting at the expression that's just a
   -- hole in focus.
 
@@ -195,7 +195,7 @@ module checks where
   ------- reachability
 
   -- we break reachability into two halves: first you produce a list of
-  -- actions that are all "move parent" to pull the cursor to the very top
+  -- actions that are all "move parent" to pull the focus to the very top
   -- of the expression in question. then, you go back down into the
   -- expression with a sequence of move firstChild and move nextSibs as
   -- appropriate. the append of these two lists will reach from one
