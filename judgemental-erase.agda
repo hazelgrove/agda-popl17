@@ -3,12 +3,29 @@ open import Prelude
 open import List
 open import core
 
+-- erasure of focus in the types and expressions is defined in the paper,
+-- and in the core file, as a function on zexpressions. because of the
+-- particular encoding of all the judgments as datatypes and the agda
+-- semantics for pattern matching, it is sometimes also convenient to have
+-- a judgemental form of erasure.
+--
+-- this file describes the obvious encoding of the view this function as a
+-- jugement relating input and output as a datatype, and argues that this
+-- encoding is correct by showing a isomorphism with the function. we also
+-- show that as a correlary, the judgement is well moded at (∀, ∃!), which
+-- is unsurprising if the jugement is written correctly.
+--
+-- taken together, these proofs allow us to move between the judgemental
+-- form of erasure and the function form when it's convenient.
 module judgemental-erase where
+
+  -- jugemental type erasure
   data erase-t : τ̂ → τ̇ → Set where
     ETTop  : ∀{t} → erase-t (▹ t ◃) t
     ETArrL : ∀{t1 t1' t2} → erase-t t1 t1' → erase-t (t1 ==>₁ t2) (t1' ==> t2)
     ETArrR : ∀{t1 t2 t2'} → erase-t t2 t2' → erase-t (t1 ==>₂ t2) (t1 ==> t2')
 
+  -- judgemental expression erasure
   data erase-e : ê → ė → Set where
     EETop   : ∀{x}         → erase-e (▹ x ◃) x
     EEAscL  : ∀{e e' t}    → erase-e e e'   → erase-e (e ·:₁ t) (e' ·: t)
@@ -20,8 +37,8 @@ module judgemental-erase where
     EEPlusR : ∀{e1 e2 e2'} → erase-e e2 e2' → erase-e (e1 ·+₂ e2) (e1 ·+ e2')
     EEFHole : ∀{e e'}      → erase-e e e'   → erase-e <| e |>  <| e' |>
 
-  -- this judgemental form really does agree with the function, that is to
-  -- say that there's an isomorphism between them.
+
+  -- this pair of theorems moves from the judgmental form to the function form
   erase-t◆ : {t : τ̂} {tr : τ̇} → (erase-t t tr) → (t ◆t == tr)
   erase-t◆ ETTop       = refl
   erase-t◆ (ETArrL p)  = ap1 (λ x → x ==> _) (erase-t◆ p)
@@ -38,6 +55,7 @@ module judgemental-erase where
   erase-e◆ (EEPlusR p) = ap1 (λ x → _ ·+ x)  (erase-e◆ p)
   erase-e◆ (EEFHole p) = ap1 (λ x → <| x |>) (erase-e◆ p)
 
+  -- this pair of theorems moves back from judgmental form to the function form
   ◆erase-t : (t : τ̂) (tr : τ̇) → (t ◆t == tr) → (erase-t t tr)
   ◆erase-t ▹ .num ◃ num refl = ETTop
   ◆erase-t ▹ .<||> ◃ <||> refl = ETTop
@@ -56,7 +74,8 @@ module judgemental-erase where
   ◆erase-e (x ·+₂ e) .(x ·+ (e ◆e)) refl = EEPlusR (◆erase-e e (e ◆e) refl)
   ◆erase-e <| e |> .(<| e ◆e |>) refl = EEFHole (◆erase-e e (e ◆e) refl)
 
-  -- the isomorphism with a function implies that the judgement is
-  -- well-moded.
+
+  -- this isomorphism amounts to the argument that the judgement has mode
+  -- (∀, !∃), where uniqueness comes from erase-e◆.
   erase-e-mode : (e : ê) → Σ[ er ∈ ė ] (erase-e e er)
   erase-e-mode e = (e ◆e) , (◆erase-e e (e ◆e) refl)
