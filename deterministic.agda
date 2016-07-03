@@ -101,59 +101,59 @@ module deterministic where
            (t1 ==> t2) ~ (<||> ==> <||>)
   lem1 (ASubsume SEHole TCHole1) = TCArr TCHole1 TCHole1
 
-  lem3 : ∀{ Γ e t } → Γ ⊢ (e ·: t) <= t → Γ ⊢ e <= t
-  lem3 (ASubsume (SAsc x) x₁) = x
+  -- lem3 : ∀{ Γ e t } → Γ ⊢ (e ·: t) <= t → Γ ⊢ e <= t
+  -- lem3 (ASubsume (SAsc x) x₁) = x
 
-  lem4 : ∀{ Γ e eh t t2 } →
-         Γ ⊢ e ∘ (eh ◆e) => t →
-         Γ ⊢ e => (t2 ==> t) →
-         Γ ⊢ (eh ◆e) <= t2
-  lem4 (SAp (SAsc x₁) x) (SAsc x₂) = x
-  lem4 {Γ = G} (SAp (SVar x₁) x) (SVar x₂)
-    with ctxunicity {Γ = G}  x₁ x₂
-  ... | refl = x
-  lem4 (SAp (SAp d1 x₁) x) (SAp d2 x₂)
-    with synthunicity d1 d2
-  ... | refl = x
-  lem4 (SApHole () x) (SAsc x₁)
-  lem4 {Γ = G} (SApHole (SVar x₁) x) (SVar x₂)
-    with ctxunicity {Γ = G} x₁ x₂
-  ... | ()
-  lem4 (SApHole (SAp d1 x₁) x) (SAp d2 x₂)
-    with synthunicity d1 d2
-  ... | ()
-  lem4 (SApHole (SApHole d1 x₁) x) (SAp d2 x₂)
-    with synthunicity d1 d2
-  ... | ()
+  -- lem4 : ∀{ Γ e eh t t2 } →
+  --        Γ ⊢ e ∘ (eh ◆e) => t →
+  --        Γ ⊢ e => (t2 ==> t) →
+  --        Γ ⊢ (eh ◆e) <= t2
+  -- lem4 (SAp (SAsc x₁) x) (SAsc x₂) = x
+  -- lem4 {Γ = G} (SAp (SVar x₁) x) (SVar x₂)
+  --   with ctxunicity {Γ = G}  x₁ x₂
+  -- ... | refl = x
+  -- lem4 (SAp (SAp d1 x₁) x) (SAp d2 x₂)
+  --   with synthunicity d1 d2
+  -- ... | refl = x
+  -- lem4 (SApHole () x) (SAsc x₁)
+  -- lem4 {Γ = G} (SApHole (SVar x₁) x) (SVar x₂)
+  --   with ctxunicity {Γ = G} x₁ x₂
+  -- ... | ()
+  -- lem4 (SApHole (SAp d1 x₁) x) (SAp d2 x₂)
+  --   with synthunicity d1 d2
+  -- ... | ()
+  -- lem4 (SApHole (SApHole d1 x₁) x) (SAp d2 x₂)
+  --   with synthunicity d1 d2
+  -- ... | ()
 
-  lem5 : ∀ {Γ e eh} →
-        Γ ⊢ e => <||> →
-        Γ ⊢ e ∘ (eh ◆e) => <||> →
-        Γ ⊢ eh ◆e <= <||>
-  lem5 d1 (SAp d2 x) with synthunicity d1 d2
-  ... | ()
-  lem5 d1 (SApHole d2 x) = x
+  -- lem5 : ∀ {Γ e eh} →
+  --       Γ ⊢ e => <||> →
+  --       Γ ⊢ e ∘ (eh ◆e) => <||> →
+  --       Γ ⊢ eh ◆e <= <||>
+  -- lem5 d1 (SAp d2 x) with synthunicity d1 d2
+  -- ... | ()
+  -- lem5 d1 (SApHole d2 x) = x
 
-  lem6 : ∀ {Γ e1 e2} →
-         Γ ⊢ e1 ·+ e2 => num →
-         Γ ⊢ e1 <= num × Γ ⊢ e2 <= num
-  lem6 (SPlus x x₁) = x , x₁
+  -- lem6 : ∀ {Γ e1 e2} →
+  --        Γ ⊢ e1 ·+ e2 => num →
+  --        Γ ⊢ e1 <= num × Γ ⊢ e2 <= num
+  -- lem6 (SPlus x x₁) = x , x₁
 
-  lem7 : ∀{Γ e t e' t'} →
-         Γ ⊢ <| e |> => <||> →
-         Γ ⊢ ▹ e ◃ => t ~ move parent ~> e' => t' →
-         ⊥
-  lem7 (SFHole _) (SAMove ())
+  -- lem7 : ∀{Γ e t e' t'} →
+  --        Γ ⊢ <| e |> => <||> →
+  --        Γ ⊢ ▹ e ◃ => t ~ move parent ~> e' => t' →
+  --        ⊥
+  -- lem7 (SFHole _) (SAMove ())
 
-  lem8a : ∀ {Γ e e' t} →
-        Γ ⊢ ▹ e ◃ ~ move nextSib ~> e' ⇐ t → ⊥
-  lem8a (AASubsume x (SAMove ()) x₂)
-  lem8a (AAMove ())
+  -- lem8a : ∀ {Γ e e' t} →
+  --       Γ ⊢ ▹ e ◃ ~ move nextSib ~> e' ⇐ t → ⊥
+  -- lem8a (AASubsume x (SAMove ()) x₂)
+  -- lem8a (AAMove ())
 
   -- expressions in focus don't move to next sib
-  lem8s : ∀ {Γ e e' t t'} →
-        Γ ⊢ ▹ e ◃ => t ~ move nextSib ~> e' => t' → ⊥
-  lem8s (SAMove ())
+  -- lem8s : ∀ {Γ e e' t t'} →
+  --       Γ ⊢ ▹ e ◃ => t ~ move nextSib ~> e' => t' → ⊥
+  -- lem8s (SAMove ())
 
   lem10 : ∀{Γ x t1 t2 e} →
           Γ ⊢ ·λ x (e ◆e) <= (t1 ==> t2) →
@@ -169,14 +169,27 @@ module deterministic where
 
   -- if a type isn't consistent with hole to hole, it isn't compatible with
   -- any function type at all.
-  lem12 : {t : τ̇} → (t ~̸ (<||> ==> <||>)) → ((t1 t2 : τ̇) → t ~̸ (t1 ==> t2))
-  lem12 {num} p t1 t2 ()
-  lem12 {<||>} p t1 t2 TCHole2 = p TCHole2
-  lem12 {(t ==> t')} p t1 t2 x = p (TCArr TCHole1 TCHole1)
+  -- lem12 : {t : τ̇} → (t ~̸ (<||> ==> <||>)) → ((t1 t2 : τ̇) → t ~̸ (t1 ==> t2))
+  -- lem12 {num} p t1 t2 ()
+  -- lem12 {<||>} p t1 t2 TCHole2 = p TCHole2
+  --  lem12 {(t ==> t')} p t1 t2 x = p (TCArr TCHole1 TCHole1)
 
   --- NEW LEMMAS
-  lem-erasewt : ∀{e e' Γ t} → erase-e e e' → Γ ⊢ e' <= t → Γ ⊢ (e ◆e) <= t
-  lem-erasewt er wt = tr (λ x → _ ⊢ x <= _) (! (erase-e◆ er)) wt
+  lem-erase-ana : ∀{e e' Γ t} → erase-e e e' → Γ ⊢ e' <= t → Γ ⊢ (e ◆e) <= t
+  lem-erase-ana er wt = tr (λ x → _ ⊢ x <= _) (! (erase-e◆ er)) wt
+
+  lem-erase-synth : ∀{e e' Γ t} → erase-e e e' → Γ ⊢ e' => t → Γ ⊢ (e ◆e) => t
+  lem-erase-synth er wt = tr (λ x → _ ⊢ x => _) (! (erase-e◆ er)) wt
+
+  lem-mvana : ∀{Γ e δ e' e'' t} →
+              (Γ ⊢ e ~ move δ ~> e'' ⇐ t) →
+              ((e ·:₁ t) + move δ +>e e') → ⊥
+  lem-mvana (AASubsume x₁ (SAMove ()) x) EMAscParent1
+  lem-mvana (AASubsume x₁ (SAMove ()) x) EMAscNextSib
+  lem-mvana (AAMove ()) EMAscParent1
+  lem-mvana (AAMove ()) EMAscNextSib
+  lem-mvana (AAZipLam x₁ d1) ()
+
 
   mutual
     -- an action on an expression in a synthetic position produces one
@@ -214,10 +227,10 @@ module deterministic where
     actdet2' EETop (SAsc x) (SAConPlus2 x₁) (SAConPlus2 x₂) = refl , refl
 
     actdet2' (EEAscL E) (SAsc x) (SAMove x₁) (SAMove x₂) = movedet x₁ x₂ , refl
-    actdet2' (EEAscL E) (SAsc x) (SAMove x₁) (SAZipAsc1 x₂) = {!!}
-    actdet2' (EEAscL E) (SAsc x) (SAZipAsc1 x₁) (SAMove x₂) = {!!}
+    actdet2' (EEAscL E) (SAsc x) (SAMove x₁) (SAZipAsc1 x₂) = abort (lem-mvana x₂ x₁)
+    actdet2' (EEAscL E) (SAsc x) (SAZipAsc1 x₁) (SAMove x₂) = abort (lem-mvana x₁ x₂)
     actdet2' (EEAscL E) (SAsc x) (SAZipAsc1 x₁) (SAZipAsc1 x₂)
-      with actdet3 (lem-erasewt E x) x₁ x₂
+      with actdet3 (lem-erase-ana E x) x₁ x₂
     ... | refl = refl , refl
 
     actdet2' (EEAscR x) (SAsc x₁) (SAMove x₂) (SAMove x₃) = movedet x₂ x₃ , refl
@@ -260,10 +273,15 @@ module deterministic where
     actdet2' EETop (SAp wt x) (SAConPlus2 x₁) (SAConPlus2 x₂) = refl , refl
 
     actdet2' (EEApL E) (SAp wt x) (SAMove x₁) (SAMove x₂) = movedet x₁ x₂ , refl
-    actdet2' (EEApL E) (SAp wt x) (SAMove x₁) (SAZipAp1 x₂ d2 x₃) = {!!}
+    actdet2' (EEApL E) (SAp wt x) (SAMove x₁) (SAZipAp1 x₂ d2 x₃)
+      with synthunicity (lem-erase-synth E wt) x₂
+    ... | refl = {!!}
     actdet2' (EEApL E) (SAp wt x) (SAMove x₁) (SAZipAp2 x₂ d2 x₃) = {!!}
     actdet2' (EEApL E) (SAp wt x) (SAZipAp1 x₁ d1 x₂) (SAMove x₃) = {!!}
-    actdet2' (EEApL E) (SAp wt x) (SAZipAp1 x₁ d1 x₂) (SAZipAp1 x₃ d2 x₄) = {!!}
+    actdet2' (EEApL E) (SAp wt x) (SAZipAp1 x₁ d1 x₂) (SAZipAp1 x₃ d2 x₄)
+      with synthunicity x₁ x₃
+    ... | refl with actdet2' E {!!} d1 d2
+    ... | refl , refl  = refl , refl
     actdet2' (EEApL E) (SAp wt x) (SAZipAp1 x₁ d1 x₂) (SAZipAp2 x₃ d2 x₄) = {!!}
     actdet2' (EEApL E) (SAp wt x) (SAZipAp2 x₁ d1 x₂) (SAMove x₃) = {!!}
     actdet2' (EEApL E) (SAp wt x) (SAZipAp2 x₁ d1 x₂) (SAZipAp1 x₃ d2 x₄) = {!!}
@@ -299,9 +317,17 @@ module deterministic where
     actdet2' EETop (SPlus x x₁) (SAConPlus2 x₂) (SAConPlus1 x₃) = abort (x₂ x₃)
     actdet2' EETop (SPlus x x₁) (SAConPlus2 x₂) (SAConPlus2 x₃) = refl , refl
 
-    actdet2' (EEPlusL E) (SPlus x x₁) d1 d2 = {!!}
+    actdet2' (EEPlusL E) (SPlus x x₁) (SAMove x₂) (SAMove x₃) = movedet x₂ x₃ , refl
+    actdet2' (EEPlusL E) (SPlus x x₁) (SAMove x₂) (SAZipPlus1 d2) = {!!}
+    actdet2' (EEPlusL E) (SPlus x x₁) (SAZipPlus1 x₂) (SAMove x₃) = {!!} , refl
+    actdet2' (EEPlusL E) (SPlus x x₁) (SAZipPlus1 x₂) (SAZipPlus1 x₃)
+      = ap1 (λ x₄ → x₄ ·+₁ _) (actdet3 (lem-erase-ana E x) x₂ x₃) , refl
 
-    actdet2' (EEPlusR E) (SPlus x x₁) d1 d2 = {!!}
+    actdet2' (EEPlusR E) (SPlus x x₁) (SAMove x₂) (SAMove x₃) = movedet x₂ x₃ , refl
+    actdet2' (EEPlusR E) (SPlus x x₁) (SAMove x₂) (SAZipPlus2 x₃) = {!!}
+    actdet2' (EEPlusR E) (SPlus x x₁) (SAZipPlus2 x₂) (SAMove x₃) = {!!}
+    actdet2' (EEPlusR E) (SPlus x x₁) (SAZipPlus2 x₂) (SAZipPlus2 x₃)
+      = ap1 (_·+₂_ _) (actdet3 (lem-erase-ana E x₁) x₂ x₃)  , refl
 
     actdet2' EETop SEHole (SAMove x) (SAMove x₁) = movedet x x₁ , refl
     actdet2' EETop SEHole SADel SADel = refl , refl
@@ -387,7 +413,7 @@ module deterministic where
       with synthunicity wt x₃
     ... | ()
     actdet2' (EEApR E) (SApHole wt x) (SAZipAp4 x₂ x₁) (SAZipAp4 x₃ x₄)
-      with actdet3 (lem-erasewt E x) x₁ x₄
+      with actdet3 (lem-erase-ana E x) x₁ x₄
     ... | ih = (ap1 (_∘₂_ _) ih) , refl
 
     -- an action on an expression in an analytic position produces one
