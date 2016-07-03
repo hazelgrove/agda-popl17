@@ -37,7 +37,7 @@ module checks where
   data buildtype : (t : τ̂) → List action → Set where
     BuildNum   : buildtype ▹ num ◃  [ construct num ]
     BuildTHole : buildtype ▹ <||> ◃ [ del ]
-    BuildArr   : (t1 t2 : τ̇) (l1 l2 : List action)
+    BuildArr   : {t1 t2 : τ̇} {l1 l2 : List action}
                  → buildtype ▹ t1 ◃ l1
                  → buildtype ▹ t2 ◃ l2
                  → buildtype ▹ t1 ==> t2 ◃
@@ -46,7 +46,7 @@ module checks where
   -- small example of a derivation for building a particular type.
   bt-ex : Σ[ l ∈ List action ] buildtype (▹ num ==> <||> ◃) l
   bt-ex = construct num :: construct arrow :: del :: move parent :: [] ,
-         BuildArr num <||> (construct num :: []) (del :: []) BuildNum
+         BuildArr  BuildNum
          BuildTHole
 
   -- todo: it's not clear if i can get away with not knowing the typing
@@ -55,37 +55,39 @@ module checks where
   -- paired action semantics judgements.
   --
   --  (Γ : ·ctx) (t : τ̇) (wt : (Γ ⊢ e => t) + (Γ ⊢ e <= t))
+  --
+  -- or, more realistically, will need two jugements, buildeana and
+  -- buildesynth
 
   -- there's a hidden invariant here, which is that we always leave the
   -- focus at the top of the expression. this lets us prove later that we
   -- can build a specifc thing starting at the expression that's just a
   -- hole in focus.
 
-  -- currently: DO NOT TRUST THAT THESE LISTS ARE CORRECT
+  -- CURRENTLY DO NOT TRUST THAT THESE LISTS ARE CORRECT
   data buildexp : (e : ê) → List action → Set where
-    BuildAsc : (e : ė) (t : τ̇) (l1 l2 : List action)
+    BuildAsc : {e : ė} {t : τ̇} {l1 l2 : List action}
                → buildexp ▹ e ◃ l1
                → buildtype ▹ t ◃ l2
-               → buildexp ▹ e ·: t ◃
-                          (l1 ++ (construct asc :: l2 ++ [ move parent ]))
-    BuildX : (x : Nat) → buildexp ▹ X x ◃  [ construct (var x) ]
-    BuildLam : (x : Nat) (e : ė) (l : List action)
+               → buildexp ▹ e ·: t ◃ (l1 ++ (construct asc :: l2 ++ [ move parent ]))
+    BuildX : {x : Nat} → buildexp ▹ X x ◃  [ construct (var x) ]
+    BuildLam : {x : Nat} {e : ė} {l : List action}
                → buildexp ▹ e ◃ l
                → buildexp ▹ ·λ x e ◃ [] -- stub
-    BuildN : (n : Nat) → buildexp ▹ N n ◃ [ construct (numlit n) ]
-    BuildPlus : (e1 e2 : ė) (l1 l2 : List action)
+    BuildN : {n : Nat} → buildexp ▹ N n ◃ [ construct (numlit n) ]
+    BuildPlus : {e1 e2 : ė} {l1 l2 : List action}
                  → buildexp ▹ e1 ◃ l1
                  → buildexp ▹ e2 ◃ l2
                  → buildexp ▹ e1 ·+ e2 ◃
                             (l1 ++ l2 ++ [ move parent ])
-    BuildAp :  (e1 e2 : ė) (l1 l2 : List action)
+    BuildAp :  {e1 e2 : ė} {l1 l2 : List action}
                  → buildexp ▹ e1 ◃ l1
                  → buildexp ▹ e2 ◃ l2
                  → buildexp ▹ e1 ∘ e2 ◃
                             (l1 ++ l2 ++ [ move parent ])
     BuildEHole : buildexp ▹ <||> ◃ [ del ]
 
-    -- this littl guy might just happen sort of automatically in the
+    -- this little guy might just happen sort of automatically in the
     -- inducive structure of the proof and by appealing to zipper rules.
     --
     -- BuildFHole : (e : ė) (l : List action) →
@@ -99,16 +101,16 @@ module checks where
   buildτ num  = _ , BuildNum
   buildτ <||> = _ , BuildTHole
   buildτ (t1 ==> t2) with buildτ t1 | buildτ t2
-  ... | (l1 , p1) | (l2 , p2) = _ , BuildArr t1 t2 l1 l2 p1 p2
+  ... | (l1 , p1) | (l2 , p2) = _ , BuildArr p1 p2
 
   mutual
     buildsynth : {Γ : ·ctx} {e : ė} {t : τ̇} (wt : Γ ⊢ e => t) →
                Σ[ l ∈ List action ] buildexp ▹ e ◃ l
     buildsynth (SAsc {e = e} {t = t} x) with buildana x | buildτ t
-    ... | (l1 , p1) | (l2 , p2) = _ ,  BuildAsc e t l1 l2 p1 p2
-    buildsynth (SVar _) = _ , BuildX _
+    ... | (l1 , p1) | (l2 , p2) = _ ,  BuildAsc  p1 p2
+    buildsynth (SVar _) = _ , BuildX
     buildsynth (SAp {e1 = e1} {e2 = e2} wt x) = {!!}
-    buildsynth SNum = _ , BuildN _
+    buildsynth SNum = _ , BuildN
     buildsynth (SPlus {e1 = e1} {e2 = e2} x x₁) = {!!}
     buildsynth SEHole = {!!}
     buildsynth (SFHole wt) = {!!}
@@ -134,7 +136,7 @@ module checks where
   data runsynth :
     (Γ : ·ctx) (e : ê) (t1 : τ̇) (Lα : List action) (e' : ê) (t2 : τ̇) → Set where
      DoRefl  : {Γ : ·ctx} {e : ê} {t : τ̇} → runsynth Γ e t [] e t
-     DoSynth : (Γ : ·ctx) (e : ê) (t : τ̇) (α : action) (e' e'' : ê) (t' t'' : τ̇)
+     DoSynth : {Γ : ·ctx} {e : ê} {t : τ̇} {α : action} {e' e'' : ê} {t' t'' : τ̇}
                (L : List action) →
                 Γ ⊢ e => t ~ α ~> e' => t →
                runsynth Γ e' t' L e'' t'' →
@@ -142,34 +144,36 @@ module checks where
 
   data runana : (Γ : ·ctx) (e : ê) (Lα : List action) (e' : ê) (t : τ̇) → Set where
      DoRefl : {Γ : ·ctx} {e : ê} {t : τ̇} → runana Γ e [] e t
-     DoAna : (Γ : ·ctx) (e : ê) (α : action) (e' e'' : ê) (t : τ̇) (L : List action) →
+     DoAna : {Γ : ·ctx} {e : ê} {α : action} {e' e'' : ê} {t : τ̇}
+              (L : List action) →
               Γ ⊢ e ~ α ~> e' ⇐ t →
               runana Γ e' L e'' t →
               runana Γ e (α :: L) e'' t
 
   data runtype : (t : τ̂) (Lα : List action) (t' : τ̂) → Set where
      DoRefl : {t : τ̂} → runtype t [] t
-     DoType : (t : τ̂) (α : action) (t' t'' : τ̂) (L : List action) →
+     DoType : {t : τ̂} {α : action} {t' t'' : τ̂}
+              (L : List action) →
                t + α +> t' →
                runtype t' L t'' →
                runtype t (α :: L) t''
-
 
   -- if there is a list of actions that builds a type, running that list
   -- from the empty hole in focus really does produce the target type.
   constructτ : {t : τ̇} {L : List action} →
                         buildtype ▹ t ◃ L →
                         runtype (▹ <||> ◃) L (▹ t ◃)
-  constructτ  BuildNum = DoType ▹ <||> ◃ (construct num) ▹ num ◃ ▹ num ◃ [] TMConNum DoRefl
-  constructτ  BuildTHole = DoType ▹ <||> ◃ del ▹ <||> ◃ ▹ <||> ◃ [] TMDel DoRefl
-  constructτ  (BuildArr t1 t2 l1 l2 bt1 bt2) with constructτ bt1  | constructτ bt2
-  constructτ (BuildArr .<||> .<||> [] [] bt1 bt2) | DoRefl | DoRefl = DoType ▹ <||> ◃ (construct arrow) (<||> ==>₂ ▹ <||> ◃)
-                                                                        ▹ <||> ==> <||> ◃ (move parent :: []) TMConArrow
-                                                                        (DoType (<||> ==>₂ ▹ <||> ◃) (move parent) ▹ <||> ==> <||> ◃
-                                                                         ▹ <||> ==> <||> ◃ [] TMParent2 DoRefl)
-  constructτ (BuildArr .<||> t2 [] (x :: l2) bt1 bt2) | DoRefl | DoType .(▹ <||> ◃) .x t' .(▹ t2 ◃) .l2 x₁ ih2 = DoType ▹ <||> ◃ (construct arrow) (<||> ==>₂ ▹ <||> ◃) ▹ <||> ==> t2 ◃ (x :: (l2 ++ move parent :: [])) TMConArrow {!!}
-  constructτ (BuildArr t1 .<||> (x :: l1) [] bt1 bt2) | DoType .(▹ <||> ◃) .x t' .(▹ t1 ◃) .l1 x₁ ih1 | DoRefl = DoType ▹ <||> ◃ x t' ▹ t1 ==> <||> ◃ (l1 ++ construct arrow :: move parent :: []) x₁ {!!}
-  constructτ (BuildArr t1 t2 (x :: l1) (x₁ :: l2) bt1 bt2) | DoType .(▹ <||> ◃) .x t' .(▹ t1 ◃) .l1 x₂ ih1 | DoType .(▹ <||> ◃) .x₁ t'' .(▹ t2 ◃) .l2 x₃ ih2 = {!!}
+  constructτ  BuildNum = DoType [] TMConNum DoRefl
+  constructτ  BuildTHole = DoType [] TMDel DoRefl
+  constructτ (BuildArr bt1 bt2) with constructτ bt1  | constructτ bt2
+  ... | p | q = {!!}
+  -- constructτ (BuildArr bt1 bt2) | DoRefl | DoRefl = ? --  DoType ▹ <||> ◃ (construct arrow) (<||> ==>₂ ▹ <||> ◃)
+  --                                                      --                 ▹ <||> ==> <||> ◃ (move parent :: []) TMConArrow
+  --                                                        --               (DoType (<||> ==>₂ ▹ <||> ◃) (move parent) ▹ <||> ==> <||> ◃
+  --                                                          --              ▹ <||> ==> <||> ◃ [] TMParent2 DoRefl)
+  -- constructτ (BuildArr .<||> t2 [] (x :: l2) bt1 bt2) | DoRefl | DoType .(▹ <||> ◃) .x t' .(▹ t2 ◃) .l2 x₁ ih2 = DoType ▹ <||> ◃ (construct arrow) (<||> ==>₂ ▹ <||> ◃) ▹ <||> ==> t2 ◃ (x :: (l2 ++ move parent :: [])) TMConArrow {!!}
+  -- constructτ (BuildArr t1 .<||> (x :: l1) [] bt1 bt2) | DoType .(▹ <||> ◃) .x t' .(▹ t1 ◃) .l1 x₁ ih1 | DoRefl = DoType ▹ <||> ◃ x t' ▹ t1 ==> <||> ◃ (l1 ++ construct arrow :: move parent :: []) x₁ {!!}
+  -- constructτ (BuildArr t1 t2 (x :: l1) (x₁ :: l2) bt1 bt2) | DoType .(▹ <||> ◃) .x t' .(▹ t1 ◃) .l1 x₂ ih1 | DoType .(▹ <||> ◃) .x₁ t'' .(▹ t2 ◃) .l2 x₃ ih2 = {!!}
 
 
   -- tie together the mode theorem and the above to demonstrate that for
@@ -226,8 +230,7 @@ module checks where
               erase-t t t' →
               runtype t (movepar-t t) (▹ t' ◃)
   reachτ ETTop = DoRefl
-  reachτ (ETArrL tr) with reachτ tr
-  ... | ih = {!!}
+  reachτ (ETArrL tr) = {!!}
   reachτ (ETArrR tr) with reachτ tr
   ... | ih = {!!}
 
@@ -256,15 +259,3 @@ module checks where
     reachana y (ASubsume x x₁) with reachsynth {L = {!!} :: {!!}} y x
     ... | ih  = {!DoAna _ _ _ _ _ _ _ (AASubsume ? ? ?) !}
     reachana (EELam wt) (ALam x₁ b) = {!!}
-
-
-
-  -- there is no list of actions that can be preformed in sequence that
-  -- renders a complete term from (3 : <||>) 4.
-  ex5 : ∀{Γ e' t'} →
-          Σ[ L ∈ List action ]
-             ((runsynth Γ (((N 3) ·:₂ ▹ <||> ◃) ∘₁ (N 4)) <||> L e' t')
-               × ecomplete (e' ◆e))
-          → ⊥
-  ex5 (._ , DoRefl , (_ , notcomp ) , _) = notcomp
-  ex5 (._ , DoSynth Γ ._ ._ α e' e'' t' t'' L x p1 , p2) = {!!}
