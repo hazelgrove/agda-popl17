@@ -144,6 +144,22 @@ module checks where
   -- note that the only difference between the types for each judgement and
   -- the original action semantics is that the action is now a list of
   -- actions.
+  data runtype : (t : τ̂) (Lα : List action) (t' : τ̂) → Set where
+     DoRefl : {t : τ̂} → runtype t [] t
+     DoType : {t : τ̂} {α : action} {t' t'' : τ̂}
+              {L : List action} →
+               t + α +> t' →
+               runtype t' L t'' →
+               runtype t (α :: L) t''
+
+  -- runtype lifts to the list monoid as expected
+  runtype++ : ∀{t t' t'' L1 L2 }
+                → runtype t  L1 t'
+                → runtype t' L2 t''
+                → runtype t (L1 ++ L2) t''
+  runtype++ DoRefl d2 = d2
+  runtype++ (DoType x d1) d2 = DoType x (runtype++ d1 d2)
+
   data runsynth :
     (Γ : ·ctx) (e : ê) (t1 : τ̇) (Lα : List action) (e' : ê) (t2 : τ̇) → Set where
      DoRefl  : {Γ : ·ctx} {e : ê} {t : τ̇} → runsynth Γ e t [] e t
@@ -153,6 +169,14 @@ module checks where
                runsynth Γ e' t' L e'' t'' →
                runsynth Γ e t (α :: L) e'' t''
 
+  -- runsynth lifts to the list monoid as expected
+  runsynth++ : ∀{Γ e t L1 e' t' L2 e'' t''}
+                → runsynth Γ e t L1 e' t'
+                → runsynth Γ e' t' L2 e'' t''
+                → runsynth Γ e t (L1 ++ L2) e'' t''
+  runsynth++ DoRefl d2 = d2
+  runsynth++ (DoSynth x d1) d2 = DoSynth x (runsynth++ d1 d2)
+
   data runana : (Γ : ·ctx) (e : ê) (Lα : List action) (e' : ê) (t : τ̇) → Set where
      DoRefl : {Γ : ·ctx} {e : ê} {t : τ̇} → runana Γ e [] e t
      DoAna : {Γ : ·ctx} {e : ê} {α : action} {e' e'' : ê} {t : τ̇}
@@ -161,13 +185,14 @@ module checks where
               runana Γ e' L e'' t →
               runana Γ e (α :: L) e'' t
 
-  data runtype : (t : τ̂) (Lα : List action) (t' : τ̂) → Set where
-     DoRefl : {t : τ̂} → runtype t [] t
-     DoType : {t : τ̂} {α : action} {t' t'' : τ̂}
-              {L : List action} →
-               t + α +> t' →
-               runtype t' L t'' →
-               runtype t (α :: L) t''
+  -- runana lifts to the list monoid as expected
+  runana++ : ∀{Γ e t L1 e' L2 e''}
+                → runana Γ e  L1 e' t
+                → runana Γ e' L2 e'' t
+                → runana Γ e (L1 ++ L2) e'' t
+  runana++ DoRefl d2 = d2
+  runana++ (DoAna x d1) d2 = DoAna x (runana++ d1 d2)
+
 
   -- if there is a list of actions that builds a type, running that list
   -- from the empty hole in focus really does produce the target type.
@@ -231,51 +256,76 @@ module checks where
   -- the expression with top-level focus may not be the Least Common
   -- Ancestor in the expression tree of the given pair. however, the work
   -- of this less minimal thing and corresponding size of the proof term is
-  -- still bounded by the size of the expression, and is easier to
-  -- maniupulate judgementally.
+  -- still bounded linearly by the size of the expression, and is far
+  -- easier to maniupulate judgementally.
 
-  movepar-t : τ̂ → List action
-  movepar-t ▹ _ ◃      = []
-  movepar-t (t ==>₁ _) = move parent :: movepar-t t
-  movepar-t (_ ==>₂ t) = move parent :: movepar-t t
+  moveup-t : τ̂ → List action
+  moveup-t ▹ _ ◃      = []
+  moveup-t (t ==>₁ _) = move parent :: moveup-t t
+  moveup-t (_ ==>₂ t) = move parent :: moveup-t t
 
-  movepar-e : ê → List action
-  movepar-e ▹ _ ◃     = []
-  movepar-e (e ·:₁ _) = move parent :: movepar-e e
-  movepar-e (_ ·:₂ t) = move parent :: movepar-t t
-  movepar-e (·λ _ e)  = move parent :: movepar-e e
-  movepar-e (e ∘₁ _)  = move parent :: movepar-e e
-  movepar-e (_ ∘₂ e)  = move parent :: movepar-e e
-  movepar-e (e ·+₁ _) = move parent :: movepar-e e
-  movepar-e (_ ·+₂ e) = move parent :: movepar-e e
-  movepar-e <| e |>   = move parent :: movepar-e e
+  moveup-e : ê → List action
+  moveup-e ▹ _ ◃     = []
+  moveup-e (e ·:₁ _) = move parent :: moveup-e e
+  moveup-e (_ ·:₂ t) = move parent :: moveup-t t
+  moveup-e (·λ _ e)  = move parent :: moveup-e e
+  moveup-e (e ∘₁ _)  = move parent :: moveup-e e
+  moveup-e (_ ∘₂ e)  = move parent :: moveup-e e
+  moveup-e (e ·+₁ _) = move parent :: moveup-e e
+  moveup-e (_ ·+₂ e) = move parent :: moveup-e e
+  moveup-e <| e |>   = move parent :: moveup-e e
 
-  reachτ : {t : τ̂} {t' : τ̇} →
+  reachup-type : {t : τ̂} {t' : τ̇} →
               erase-t t t' →
-              runtype t (movepar-t t) (▹ t' ◃)
-  reachτ ETTop = DoRefl
-  reachτ (ETArrL tr) = {!!}
-  reachτ (ETArrR tr) with reachτ tr
+              runtype t (moveup-t t) (▹ t' ◃)
+  reachup-type ETTop = DoRefl
+  reachup-type (ETArrL tr) with reachup-type tr
+  ... | ih = {!!}
+  reachup-type (ETArrR tr) with reachup-type tr
   ... | ih = {!!}
 
   mutual
-    reachsynth : {Γ : ·ctx} {e : ê} {t : τ̇} {L : List action} {e' : ė} →
+    reachup-synth : {Γ : ·ctx} {e : ê} {t : τ̇} {L : List action} {e' : ė} →
                       (erase-e e e') →
                       (wt : Γ ⊢ e' => t)
-                     → runsynth Γ e t (movepar-e e) ▹ e' ◃ t
-    reachsynth = {!!}
+                     → runsynth Γ e t (moveup-e e) ▹ e' ◃ t
+    reachup-synth = {!!}
 
-    reachana : {Γ : ·ctx} {e : ê} {t : τ̇} {L : List action} {e' : ė} →
+    reachup-ana : {Γ : ·ctx} {e : ê} {t : τ̇} {L : List action} {e' : ė} →
                       (erase-e e e') →
                       (wt : Γ ⊢ e' <= t)
-                     → runana Γ e (movepar-e e) ▹ e' ◃ t
-    reachana = {!!}
+                     → runana Γ e (moveup-e e) ▹ e' ◃ t
+    reachup-ana = {!!}
+
+  -- movedown-t : {t1 t2 : τ̂} (t : τ̇) → erase-t t1 t → erase-t t2 t → List action
+  movedown-t : (t : τ̇) (t' : τ̂) (p : erase-t t' t) → List action
+  movedown-t = {!!}
+
+  movedown-e : ê → ê → List action
+  movedown-e = {!!}
+
+  reachdown-type : {t : τ̇} {t' : τ̂} → (p : erase-t t' t) →
+                     runtype (▹ t ◃) (movedown-t t t' p) t'
+  reachdown-type = {!!}
+
+  -- mutual
+  --   reachdown-synth : {Γ : ·ctx} {e : ê} {t : τ̇} {L : List action} {e' : ė} →
+  --                     (erase-e e e') →
+  --                     (wt : Γ ⊢ e' => t)
+  --                    → runsynth Γ e t (movedown-e e) ▹ e' ◃ t
+  --   reachdown-synth = {!!}
+
+  --   reachdown-ana : {Γ : ·ctx} {e : ê} {t : τ̇} {L : List action} {e' : ė} →
+  --                     (erase-e e e') →
+  --                     (wt : Γ ⊢ e' <= t)
+  --                    → runana Γ e (movedown-e e) ▹ e' ◃ t
+  --   reachdown-ana = {!!}
 
 
-  -- top level statement of the reachability triplet. the movement between
-  -- judgemental and metafunctional erasure happens internally to theses
-  -- statements to present a consistent interface with the paper, while
-  -- allowing easy pattern matching in the proofs.
+  -- this is the final statement of the reachability triplet. the movement
+  -- between judgemental and metafunctional erasure happens internally to
+  -- theses statements to present a consistent interface with the text of
+  -- the paper, while also allowing easy pattern matching in the proofs.
   --
   -- the justification for these statements, intuitively, is that focus
   -- cannot change the type of things because the typing judgement is
@@ -284,8 +334,12 @@ module checks where
   -- not merely a compatible one in an extension or any other weakening of
   -- the statement. these are lemmas which are currently not proven. TODO?
 
-  reachability-types : (t1 t2 : τ̂) → (t1 ◆t) == (t2 ◆t) → Σ[ L ∈ List action ] runtype t1 L t2
-  reachability-types = {!!}
+  reachability-types : (t1 t2 : τ̂) → (t1 ◆t) == (t2 ◆t) →
+                           Σ[ L ∈ List action ] runtype t1 L t2
+  reachability-types t1 t2 eq with ◆erase-t t1 (t2 ◆t) eq | ◆erase-t t2 (t1 ◆t) (! eq)
+  ... | er1 | er2 with reachup-type er1 | reachdown-type er2
+  ... | up  | down = moveup-t t1 ++ movedown-t (t1 ◆t) t2 er2 ,
+                     runtype++ up (tr (λ x → runtype ▹ x ◃ (movedown-t (t1 ◆t) t2 er2 ) t2 ) eq down)
 
   reachability-synth : {Γ : ·ctx} {t : τ̇} {e1 e2 : ê} →
                             Γ ⊢ e1 ◆e => t →
