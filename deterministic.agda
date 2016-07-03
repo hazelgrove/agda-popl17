@@ -92,124 +92,32 @@ module deterministic where
   synthmovedet (SAZipPlus1 (AAMove ())) EMPlusNextSib
   synthmovedet (SAZipPlus2 (AASubsume _ (SAMove ()) _)) EMPlusParent2
   synthmovedet (SAZipPlus2 (AAMove ())) EMPlusParent2
-  synthmovedet (SAZipHole1 _ (SAMove ()) x) EMFHoleParent
+  synthmovedet (SAZipHole1 _ (SAMove ()) _) EMFHoleParent
   synthmovedet (SAZipHole2 _ (SAMove ())) EMFHoleParent
 
-  -- these are all techincal lemmas for the cases of the main theorem
-  lem1 : {Γ : ·ctx} {t1 t2 : τ̇} →
-           Γ ⊢ <||> <= (t1 ==> t2) →
-           (t1 ==> t2) ~ (<||> ==> <||>)
-  lem1 (ASubsume SEHole TCHole1) = TCArr TCHole1 TCHole1
+  -- these are techincal lemmas for the cases of the main theorem
 
-  -- lem3 : ∀{ Γ e t } → Γ ⊢ (e ·: t) <= t → Γ ⊢ e <= t
-  -- lem3 (ASubsume (SAsc x) x₁) = x
-
-  -- lem4 : ∀{ Γ e eh t t2 } →
-  --        Γ ⊢ e ∘ (eh ◆e) => t →
-  --        Γ ⊢ e => (t2 ==> t) →
-  --        Γ ⊢ (eh ◆e) <= t2
-  -- lem4 (SAp (SAsc x₁) x) (SAsc x₂) = x
-  -- lem4 {Γ = G} (SAp (SVar x₁) x) (SVar x₂)
-  --   with ctxunicity {Γ = G}  x₁ x₂
-  -- ... | refl = x
-  -- lem4 (SAp (SAp d1 x₁) x) (SAp d2 x₂)
-  --   with synthunicity d1 d2
-  -- ... | refl = x
-  -- lem4 (SApHole () x) (SAsc x₁)
-  -- lem4 {Γ = G} (SApHole (SVar x₁) x) (SVar x₂)
-  --   with ctxunicity {Γ = G} x₁ x₂
-  -- ... | ()
-  -- lem4 (SApHole (SAp d1 x₁) x) (SAp d2 x₂)
-  --   with synthunicity d1 d2
-  -- ... | ()
-  -- lem4 (SApHole (SApHole d1 x₁) x) (SAp d2 x₂)
-  --   with synthunicity d1 d2
-  -- ... | ()
-
-  -- lem5 : ∀ {Γ e eh} →
-  --       Γ ⊢ e => <||> →
-  --       Γ ⊢ e ∘ (eh ◆e) => <||> →
-  --       Γ ⊢ eh ◆e <= <||>
-  -- lem5 d1 (SAp d2 x) with synthunicity d1 d2
-  -- ... | ()
-  -- lem5 d1 (SApHole d2 x) = x
-
-  -- lem6 : ∀ {Γ e1 e2} →
-  --        Γ ⊢ e1 ·+ e2 => num →
-  --        Γ ⊢ e1 <= num × Γ ⊢ e2 <= num
-  -- lem6 (SPlus x x₁) = x , x₁
-
-  -- lem7 : ∀{Γ e t e' t'} →
-  --        Γ ⊢ <| e |> => <||> →
-  --        Γ ⊢ ▹ e ◃ => t ~ move parent ~> e' => t' →
-  --        ⊥
-  -- lem7 (SFHole _) (SAMove ())
-
-  -- lem8a : ∀ {Γ e e' t} →
-  --       Γ ⊢ ▹ e ◃ ~ move nextSib ~> e' ⇐ t → ⊥
-  -- lem8a (AASubsume x (SAMove ()) x₂)
-  -- lem8a (AAMove ())
-
-  -- expressions in focus don't move to next sib
-  -- lem8s : ∀ {Γ e e' t t'} →
-  --       Γ ⊢ ▹ e ◃ => t ~ move nextSib ~> e' => t' → ⊥
-  -- lem8s (SAMove ())
-
-  lem10 : ∀{Γ x t1 t2 e} →
+  -- this would not be needed except that currently only one of the two
+  -- determinism arguments uses jugemental erasure.
+  lem-alam : ∀{Γ x t1 t2 e} →
           Γ ⊢ ·λ x (e ◆e) <= (t1 ==> t2) →
           (Γ ,, (x , t1)) ⊢ e ◆e <= t2
-  lem10 (ASubsume () x₂)
-  lem10 (ALam x₁ d1) = d1
+  lem-alam (ASubsume () x₂)
+  lem-alam (ALam x₁ d1) = d1
 
-    -- expressions in focus don't move to parent
-  lem11 : ∀ {Γ e e' t} →
-        Γ ⊢ ▹ e ◃ ~ move parent ~> e' ⇐ t → ⊥
-  lem11 (AASubsume x (SAMove ()) x₂)
-  lem11 (AAMove ())
-
-  -- if a type isn't consistent with hole to hole, it isn't compatible with
-  -- any function type at all.
-  -- lem12 : {t : τ̇} → (t ~̸ (<||> ==> <||>)) → ((t1 t2 : τ̇) → t ~̸ (t1 ==> t2))
-  -- lem12 {num} p t1 t2 ()
-  -- lem12 {<||>} p t1 t2 TCHole2 = p TCHole2
-  --  lem12 {(t ==> t')} p t1 t2 x = p (TCArr TCHole1 TCHole1)
-
-  --- NEW LEMMAS
-  lem-erase-ana : ∀{e e' Γ t} → erase-e e e' → Γ ⊢ e' <= t → Γ ⊢ (e ◆e) <= t
-  lem-erase-ana er wt = tr (λ x → _ ⊢ x <= _) (! (erase-e◆ er)) wt
-
-  lem-erase-synth : ∀{e e' Γ t} → erase-e e e' → Γ ⊢ e' => t → Γ ⊢ (e ◆e) => t
-  lem-erase-synth er wt = tr (λ x → _ ⊢ x => _) (! (erase-e◆ er)) wt
-
-  lem-mvana : ∀{Γ e δ e' e'' t} →
-              (Γ ⊢ e ~ move δ ~> e'' ⇐ t) →
-              ((e ·:₁ t) + move δ +>e e') → ⊥
-  lem-mvana (AASubsume x₁ (SAMove ()) x) EMAscParent1
-  lem-mvana (AASubsume x₁ (SAMove ()) x) EMAscNextSib
-  lem-mvana (AAMove ()) EMAscParent1
-  lem-mvana (AAMove ()) EMAscNextSib
-  lem-mvana (AAZipLam x₁ d1) ()
-
-  -- non-movement lemmas
-  lem-nomove-pars : ∀{Γ e t e' t'} →
-         Γ ⊢ ▹ e ◃ => t ~ move parent ~> e' => t' →
-         ⊥
+  -- non-movement lemmas; theses show up pervasively throughout and save a
+  -- lot of pattern matching.
+  lem-nomove-pars : ∀{Γ e t e' t'} → Γ ⊢ ▹ e ◃ => t ~ move parent ~> e' => t' → ⊥
   lem-nomove-pars (SAMove ())
 
-  lem-nomove-para : ∀{Γ e t e'} →
-         Γ ⊢ ▹ e ◃ ~ move parent ~> e' ⇐ t →
-         ⊥
+  lem-nomove-para : ∀{Γ e t e'} → Γ ⊢ ▹ e ◃ ~ move parent ~> e' ⇐ t → ⊥
   lem-nomove-para (AASubsume x x₁ x₂) = lem-nomove-pars x₁
   lem-nomove-para (AAMove ())
 
-  lem-nomove-nss : ∀{Γ e t e' t'} →
-         Γ ⊢ ▹ e ◃ => t ~ move nextSib ~> e' => t' →
-         ⊥
+  lem-nomove-nss : ∀{Γ e t e' t'} → Γ ⊢ ▹ e ◃ => t ~ move nextSib ~> e' => t' → ⊥
   lem-nomove-nss (SAMove ())
 
-  lem-nomove-nsa : ∀{Γ e t e'} →
-         Γ ⊢ ▹ e ◃ ~ move nextSib ~> e' ⇐ t →
-         ⊥
+  lem-nomove-nsa : ∀{Γ e t e'} → Γ ⊢ ▹ e ◃ ~ move nextSib ~> e' ⇐ t → ⊥
   lem-nomove-nsa (AASubsume x x₁ x₂) = lem-nomove-nss x₁
   lem-nomove-nsa (AAMove ())
 
@@ -249,8 +157,10 @@ module deterministic where
     actdet2' EETop (SAsc x) (SAConPlus2 x₁) (SAConPlus2 x₂) = refl , refl
 
     actdet2' (EEAscL E) (SAsc x) (SAMove x₁) (SAMove x₂) = movedet x₁ x₂ , refl
-    actdet2' (EEAscL E) (SAsc x) (SAMove x₁) (SAZipAsc1 x₂) = abort (lem-mvana x₂ x₁)
-    actdet2' (EEAscL E) (SAsc x) (SAZipAsc1 x₁) (SAMove x₂) = abort (lem-mvana x₁ x₂)
+    actdet2' (EEAscL E) (SAsc x) (SAMove EMAscParent1) (SAZipAsc1 x₂) = abort (lem-nomove-para x₂)
+    actdet2' (EEAscL E) (SAsc x) (SAMove EMAscNextSib) (SAZipAsc1 x₂) = abort (lem-nomove-nsa x₂)
+    actdet2' (EEAscL E) (SAsc x) (SAZipAsc1 x₁) (SAMove EMAscParent1) = abort (lem-nomove-para x₁)
+    actdet2' (EEAscL E) (SAsc x) (SAZipAsc1 x₁) (SAMove EMAscNextSib) = abort (lem-nomove-nsa x₁)
     actdet2' (EEAscL E) (SAsc x) (SAZipAsc1 x₁) (SAZipAsc1 x₂)
       with actdet3 (lem-erase-ana E x) x₁ x₂
     ... | refl = refl , refl
@@ -293,6 +203,8 @@ module deterministic where
     actdet2' EETop (SAp wt x) (SAConPlus1 x₁) (SAConPlus2 x₂) = abort (x₂ x₁)
     actdet2' EETop (SAp wt x) (SAConPlus2 x₁) (SAConPlus1 x₂) = abort (x₁ x₂)
     actdet2' EETop (SAp wt x) (SAConPlus2 x₁) (SAConPlus2 x₂) = refl , refl
+
+
 
     actdet2' (EEApL E) (SAp wt x) (SAMove x₁) (SAMove x₂) = movedet x₁ x₂ , refl
     actdet2' (EEApL E) (SAp wt x) (SAMove EMApParent1) (SAZipAp1 x₂ d2 x₃) = abort (lem-nomove-pars d2)
@@ -446,6 +358,7 @@ module deterministic where
       with actdet3 (lem-erase-ana E x) x₁ x₄
     ... | ih = (ap1 (_∘₂_ _) ih) , refl
 
+
     -- an action on an expression in an analytic position produces one
     -- resultant expression and type.
     actdet3 : {Γ : ·ctx} {e e' e'' : ê} {t : τ̇} {α : action} →
@@ -486,10 +399,10 @@ module deterministic where
 
     actdet3 D1 (AAConLam1 x₃) (AASubsume {p = p} SEHole (SAConLam x₅) x₆) = abort (π2 p _ refl)
     actdet3 D1 (AAConLam1 x₁) (AAConLam1 x₂) = refl
-    actdet3 D1 (AAConLam1 x₃) (AAConLam2 x₄ x₅) = abort (x₅ (lem1 D1))
+    actdet3 D1 (AAConLam1 x₃) (AAConLam2 x₄ x₅) = abort (x₅ (TCArr TCHole1 TCHole1))
 
     actdet3 D1 (AAConLam2 x₁ x₂) (AASubsume x₃ (SAConLam x₄) x₅) = abort (x₂ x₅)
-    actdet3 D1 (AAConLam2 x₁ x₂) (AAConLam1 x₃) = abort (x₂ (lem1 D1))
+    actdet3 D1 (AAConLam2 x₁ x₂) (AAConLam1 x₃) = abort (x₂ (TCArr TCHole1 TCHole1))
     actdet3 D1 (AAConLam2 x₁ x₂) (AAConLam2 x₃ x₄) = refl
 
     actdet3 D1 (AAConNumlit x) (AASubsume x₁ SAConNumlit x₃) = abort (x x₃)
@@ -498,8 +411,8 @@ module deterministic where
     actdet3 D1 (AAFinish x) (AASubsume x₁ (SAFinish x₂) x₃) = refl
     actdet3 D1 (AAFinish x) (AAFinish x₁) = refl
 
-    actdet3 D1 (AAZipLam x₃ D2) (AASubsume x₁ (SAMove EMLamParent) x₄) = abort (lem11 D2)
+    actdet3 D1 (AAZipLam x₃ D2) (AASubsume x₁ (SAMove EMLamParent) x₄) = abort (lem-nomove-para D2)
     actdet3 D1 (AAZipLam x₃ d) (AAMove EMLamParent) = abort (lem-nomove-para d)
     actdet3 D1 (AAZipLam {e = e} x₃ D2) (AAZipLam x₁ D3)
-      with actdet3 (lem10 {e = e} D1) D2 D3
+      with actdet3 (lem-alam {e = e} D1) D2 D3
     ... | refl = refl
