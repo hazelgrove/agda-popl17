@@ -280,15 +280,15 @@ module checks where
   moveup-t (_ ==>₂ t) = moveup-t t ++ [ move parent ]
 
   moveup-e : ê → List action
-  moveup-e ▹ _ ◃     = []
-  moveup-e (e ·:₁ _) = moveup-e e ++ [ move parent ]
-  moveup-e (_ ·:₂ t) = moveup-t t ++ [ move parent ]
-  moveup-e (·λ _ e)  = moveup-e e ++ [ move parent ]
-  moveup-e (e ∘₁ _)  = moveup-e e ++ [ move parent ]
-  moveup-e (_ ∘₂ e)  = moveup-e e ++ [ move parent ]
-  moveup-e (e ·+₁ _) = moveup-e e ++ [ move parent ]
-  moveup-e (_ ·+₂ e) = moveup-e e ++ [ move parent ]
-  moveup-e <| e |>   = moveup-e e ++ [ move parent ]
+  moveup-e ▹ _ ◃      = []
+  moveup-e (e ·:₁ _)  = moveup-e e ++ [ move parent ]
+  moveup-e (_ ·:₂ t)  = moveup-t t ++ [ move parent ]
+  moveup-e (·λ _ e)   = moveup-e e ++ [ move parent ]
+  moveup-e (e ∘₁ _)   = moveup-e e ++ [ move parent ]
+  moveup-e (_ ∘₂ e)   = moveup-e e ++ [ move parent ]
+  moveup-e (e ·+₁ _)  = moveup-e e ++ [ move parent ]
+  moveup-e (_ ·+₂ e)  = moveup-e e ++ [ move parent ]
+  moveup-e <| e |>    = moveup-e e ++ [ move parent ]
 
   reachup-type : {t : τ̂} {t' : τ̇} →
               erase-t t t' →
@@ -300,16 +300,16 @@ module checks where
   ... | ih = runtype++ (runtype-cong2 ih) (DoType TMParent2 DoRefl)
 
   mutual
-    reachup-synth : {Γ : ·ctx} {e : ê} {t : τ̇} {L : List action} {e' : ė} →
-                      (erase-e e e') →
-                      (wt : Γ ⊢ e' => t)
-                     → runsynth Γ e t (moveup-e e) ▹ e' ◃ t
+    reachup-synth : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
+                      erase-e e e' →
+                      Γ ⊢ e' => t →
+                      runsynth Γ e t (moveup-e e) ▹ e' ◃ t
     reachup-synth = {!!}
 
-    reachup-ana : {Γ : ·ctx} {e : ê} {t : τ̇} {L : List action} {e' : ė} →
-                      (erase-e e e') →
-                      (wt : Γ ⊢ e' <= t)
-                     → runana Γ e (moveup-e e) ▹ e' ◃ t
+    reachup-ana : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
+                      erase-e e e' →
+                      Γ ⊢ e' <= t →
+                      runana Γ e (moveup-e e) ▹ e' ◃ t
     reachup-ana = {!!}
 
   movedown-t : (t : τ̇) (t' : τ̂) (p : erase-t t' t) → List action
@@ -336,18 +336,18 @@ module checks where
   reachdown-type (ETArrR p) with reachdown-type p
   ... | ih = DoType TMFirstChild (DoType TMNextSib (runtype-cong2 ih))
 
-  -- mutual
-  --   reachdown-synth : {Γ : ·ctx} {e : ê} {t : τ̇} {L : List action} {e' : ė} →
-  --                     (erase-e e e') →
-  --                     (wt : Γ ⊢ e' => t)
-  --                    → runsynth Γ e t (movedown-e e) ▹ e' ◃ t
-  --   reachdown-synth = {!!}
+  mutual
+    reachdown-synth : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
+                      (p : erase-e e e') →
+                      (wt : Γ ⊢ e' => t)
+                     → runsynth Γ ▹ e' ◃ t (movedown-e e' e p) e t
+    reachdown-synth = {!!}
 
-  --   reachdown-ana : {Γ : ·ctx} {e : ê} {t : τ̇} {L : List action} {e' : ė} →
-  --                     (erase-e e e') →
-  --                     (wt : Γ ⊢ e' <= t)
-  --                    → runana Γ e (movedown-e e) ▹ e' ◃ t
-  --   reachdown-ana = {!!}
+    reachdown-ana : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
+                      (p : erase-e e e') →
+                      (wt : Γ ⊢ e' <= t)
+                     → runana Γ ▹ e' ◃ (movedown-e e' e p) e  t
+    reachdown-ana = {!!}
 
 
   -- this is the final statement of the reachability triplet. the movement
@@ -369,16 +369,22 @@ module checks where
   ... | up  | down = moveup-t t1 ++ movedown-t (t1 ◆t) t2 er2 ,
                      runtype++ up (tr (λ x → runtype ▹ x ◃ (movedown-t (t1 ◆t) t2 er2 ) t2 ) eq down)
 
-  reachability-synth : {Γ : ·ctx} {t : τ̇} {e1 e2 : ê} →
+  reachability-synth : (Γ : ·ctx) (t : τ̇) (e1 e2 : ê) →
                             Γ ⊢ e1 ◆e => t →
                             Γ ⊢ e2 ◆e => t →
                             e1 ◆e == e2 ◆e →
                             Σ[ L ∈ List action ] runsynth Γ e1 t L e2 t
-  reachability-synth = {!!}
+  reachability-synth Γ t e1 e2 wt1 wt2 eq with ◆erase-e e1 (e2 ◆e) eq | ◆erase-e e2 (e1 ◆e) (! eq)
+  ... | er1 | er2 with reachup-synth er1 wt2 | reachdown-synth er2 wt1
+  ... | up  | down = moveup-e e1 ++ movedown-e (e1 ◆e) e2 er2 , runsynth++ up (tr (λ x → runsynth Γ ▹ x ◃ t (movedown-e (e1 ◆e) e2 er2) e2 t) eq
+                                                                                 down)
 
-  reachability-ana : {Γ : ·ctx} {t : τ̇} {e1 e2 : ê} →
+  reachability-ana : (Γ : ·ctx) (t : τ̇) (e1 e2 : ê) →
                             Γ ⊢ e1 ◆e <= t →
                             Γ ⊢ e2 ◆e <= t →
                             e1 ◆e == e2 ◆e →
                             Σ[ L ∈ List action ] runana Γ e1 L e2 t
-  reachability-ana = {!!}
+  reachability-ana Γ t e1 e2 wt1 wt2 eq with ◆erase-e e1 (e2 ◆e) eq | ◆erase-e e2 (e1 ◆e) (! eq)
+  ... | er1 | er2 with reachup-ana er1 wt2 | reachdown-ana er2 wt1
+  ... | up  | down = moveup-e e1 ++ movedown-e (e1 ◆e) e2 er2 , runana++ up (tr (λ x → runana Γ ▹ x ◃ (movedown-e (e1 ◆e) e2 er2) e2 t) eq
+                                                                                 down)
