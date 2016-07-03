@@ -100,43 +100,46 @@ module checks where
   -- actions in the jugement -- agda unification will pick whatever lists
   -- are written allow and automatically adjust these to arbitrary changes
   -- in the judgement
-  buildτ : (t : τ̇) → Σ[ l ∈ List action ] buildtype ▹ t ◃ l
-  buildτ num  = _ , BuildNum
-  buildτ <||> = _ , BuildTHole
-  buildτ (t1 ==> t2) with buildτ t1 | buildτ t2
+  buildtype-mode : (t : τ̇) → Σ[ l ∈ List action ] buildtype ▹ t ◃ l
+  buildtype-mode num  = _ , BuildNum
+  buildtype-mode <||> = _ , BuildTHole
+  buildtype-mode (t1 ==> t2) with buildtype-mode t1 | buildtype-mode t2
   ... | (_ , p1) | (_ , p2) = _ , BuildArr p1 p2
 
   mutual
-    buildsynth : {Γ : ·ctx} {e : ė} {t : τ̇} (wt : Γ ⊢ e => t) →
+    buildexp-mode-synth : {Γ : ·ctx} {e : ė} {t : τ̇} (wt : Γ ⊢ e => t) →
                Σ[ l ∈ List action ] buildexp ▹ e ◃ l
-    buildsynth (SAsc {t = t} d) with buildana d | buildτ t
+    buildexp-mode-synth (SAsc {t = t} d) with buildexp-mode-ana d | buildtype-mode t
     ... | (_ , p1) | (_ , p2) = _ ,  BuildAsc p1 p2
-    buildsynth (SVar _) = _ , BuildX
-    buildsynth (SAp d1 d2) with buildsynth d1 | buildana d2
+    buildexp-mode-synth (SVar _) = _ , BuildX
+    buildexp-mode-synth (SAp d1 d2) with buildexp-mode-synth d1 | buildexp-mode-ana d2
     ... | (_ , p1) | (_ , p2) = _ , BuildAp p1 p2
-    buildsynth SNum = _ , BuildN
-    buildsynth (SPlus d1 d2) with buildana d1 | buildana d2
+    buildexp-mode-synth SNum = _ , BuildN
+    buildexp-mode-synth (SPlus d1 d2) with buildexp-mode-ana d1 | buildexp-mode-ana d2
     ... | (_ , p1) | (_ , p2) = _ , BuildPlus p1 p2
-    buildsynth SEHole = _ , BuildEHole
-    buildsynth (SFHole d) with buildsynth d
+    buildexp-mode-synth SEHole = _ , BuildEHole
+    buildexp-mode-synth (SFHole d) with buildexp-mode-synth d
     ... | (_ , p)= _ , BuildFHole p
-    buildsynth (SApHole d1 d2) with buildsynth d1 | buildana d2
+    buildexp-mode-synth (SApHole d1 d2) with buildexp-mode-synth d1 | buildexp-mode-ana d2
     ... | (_ , p1) | (_ , p2) = _ , BuildAp p1 p2
 
-    buildana : {Γ : ·ctx} {e : ė} {t : τ̇} (wt : Γ ⊢ e <= t) →
+    buildexp-mode-ana : {Γ : ·ctx} {e : ė} {t : τ̇} (wt : Γ ⊢ e <= t) →
               Σ[ l ∈ List action ] buildexp ▹ e ◃ l
-    buildana (ASubsume x _) = buildsynth x
-    buildana (ALam apart d) with buildana d
+    buildexp-mode-ana (ASubsume x _) = buildexp-mode-synth x
+    buildexp-mode-ana (ALam _ d) with buildexp-mode-ana d
     ... | (_ , p)= _ , BuildLam p
 
   -- these three judmgements lift the action semantics judgements to relate
   -- an expression and a list of pair-wise composable actions to the
   -- expression that's produced by tracing through the action semantics for
-  -- each element in that list. we do this just by appealing to the
-  -- original judgement with some constraints about using the same term to
-  -- enforce composability. in all three cases, we assert that the empty
-  -- list of actions constitutes a reflexivity step, so when you run out of
-  -- actions to preform you have to be where you wanted to be.
+  -- each element in that list.
+  --
+  -- we do this just by appealing to the original judgement with
+  -- constraints on the terms to enforce composability.
+  --
+  -- in all three cases, we assert that the empty list of actions
+  -- constitutes a reflexivity step, so when you run out of actions to
+  -- preform you have to be where you wanted to be.
   --
   -- note that the only difference between the types for each judgement and
   -- the original action semantics is that the action is now a list of
@@ -145,7 +148,7 @@ module checks where
     (Γ : ·ctx) (e : ê) (t1 : τ̇) (Lα : List action) (e' : ê) (t2 : τ̇) → Set where
      DoRefl  : {Γ : ·ctx} {e : ê} {t : τ̇} → runsynth Γ e t [] e t
      DoSynth : {Γ : ·ctx} {e : ê} {t : τ̇} {α : action} {e' e'' : ê} {t' t'' : τ̇}
-               (L : List action) →
+               {L : List action} →
                 Γ ⊢ e => t ~ α ~> e' => t →
                runsynth Γ e' t' L e'' t'' →
                runsynth Γ e t (α :: L) e'' t''
@@ -153,7 +156,7 @@ module checks where
   data runana : (Γ : ·ctx) (e : ê) (Lα : List action) (e' : ê) (t : τ̇) → Set where
      DoRefl : {Γ : ·ctx} {e : ê} {t : τ̇} → runana Γ e [] e t
      DoAna : {Γ : ·ctx} {e : ê} {α : action} {e' e'' : ê} {t : τ̇}
-              (L : List action) →
+              {L : List action} →
               Γ ⊢ e ~ α ~> e' ⇐ t →
               runana Γ e' L e'' t →
               runana Γ e (α :: L) e'' t
@@ -161,7 +164,7 @@ module checks where
   data runtype : (t : τ̂) (Lα : List action) (t' : τ̂) → Set where
      DoRefl : {t : τ̂} → runtype t [] t
      DoType : {t : τ̂} {α : action} {t' t'' : τ̂}
-              (L : List action) →
+              {L : List action} →
                t + α +> t' →
                runtype t' L t'' →
                runtype t (α :: L) t''
@@ -171,30 +174,19 @@ module checks where
   constructτ : {t : τ̇} {L : List action} →
                         buildtype ▹ t ◃ L →
                         runtype (▹ <||> ◃) L (▹ t ◃)
-  constructτ  BuildNum = DoType [] TMConNum DoRefl
-  constructτ  BuildTHole = DoType [] TMDel DoRefl
-  constructτ (BuildArr bt1 bt2) with constructτ bt1  | constructτ bt2
-  ... | p | q = {!!}
-  -- constructτ (BuildArr bt1 bt2) | DoRefl | DoRefl = ? --  DoType ▹ <||> ◃ (construct arrow) (<||> ==>₂ ▹ <||> ◃)
-  --                                                      --                 ▹ <||> ==> <||> ◃ (move parent :: []) TMConArrow
-  --                                                        --               (DoType (<||> ==>₂ ▹ <||> ◃) (move parent) ▹ <||> ==> <||> ◃
-  --                                                          --              ▹ <||> ==> <||> ◃ [] TMParent2 DoRefl)
-  -- constructτ (BuildArr .<||> t2 [] (x :: l2) bt1 bt2) | DoRefl | DoType .(▹ <||> ◃) .x t' .(▹ t2 ◃) .l2 x₁ ih2 = DoType ▹ <||> ◃ (construct arrow) (<||> ==>₂ ▹ <||> ◃) ▹ <||> ==> t2 ◃ (x :: (l2 ++ move parent :: [])) TMConArrow {!!}
-  -- constructτ (BuildArr t1 .<||> (x :: l1) [] bt1 bt2) | DoType .(▹ <||> ◃) .x t' .(▹ t1 ◃) .l1 x₁ ih1 | DoRefl = DoType ▹ <||> ◃ x t' ▹ t1 ==> <||> ◃ (l1 ++ construct arrow :: move parent :: []) x₁ {!!}
-  -- constructτ (BuildArr t1 t2 (x :: l1) (x₁ :: l2) bt1 bt2) | DoType .(▹ <||> ◃) .x t' .(▹ t1 ◃) .l1 x₂ ih1 | DoType .(▹ <||> ◃) .x₁ t'' .(▹ t2 ◃) .l2 x₃ ih2 = {!!}
-
-
-  -- tie together the mode theorem and the above to demonstrate that for
-  -- any type there is a list of actions that builds it.
-  type-constructability : (t : τ̇) → Σ[ L ∈ List action ] runtype (▹ <||> ◃) L (▹ t ◃)
-  type-constructability t with buildτ t
-  ... | (L , pf) = L , constructτ pf
+  constructτ  BuildNum = DoType TMConNum DoRefl
+  constructτ  BuildTHole = DoType TMDel DoRefl
+  constructτ (BuildArr bt1 bt2) with constructτ bt1 | constructτ bt2
+  ... | DoRefl     | DoRefl       = DoType TMConArrow (DoType TMParent2 DoRefl)
+  ... | DoRefl     | DoType x q   = DoType TMConArrow {!!}
+  ... | DoType x p | DoRefl       = {!!}
+  ... | DoType x p | DoType  x₁ q = {!!}
 
   mutual
     constructsynth : {Γ : ·ctx} {e : ė} {t : τ̇} {L : List action} →
                        Γ ⊢ e => t
                      → buildexp ▹ e ◃ L
-                     → runsynth Γ ▹ <||> ◃ t L ▹ e ◃ t
+                     → runsynth Γ ▹ <||> ◃ <||> L ▹ e ◃ t
     constructsynth wt b = {!!}
 
     constructana : {Γ : ·ctx} {e : ė} {t : τ̇} {L : List action} →
@@ -204,19 +196,43 @@ module checks where
     constructana wt b = {!!}
 
 
+  -- tie together the mode theorem and the above to demonstrate that for
+  -- any type there is a spcific list of actions that builds it.
+  constructability-types : (t : τ̇) → Σ[ L ∈ List action ] runtype (▹ <||> ◃) L (▹ t ◃)
+  constructability-types t with buildtype-mode t
+  ... | (L , pf) = L , constructτ pf
+
+  constructability-synth : {Γ : ·ctx} {t : τ̇} {e : ė} → (Γ ⊢ e => t) →
+                              Σ[ L ∈ List action ]
+                                 runsynth Γ ▹ <||> ◃ <||> L ▹ e ◃ t
+  constructability-synth wt with buildexp-mode-synth wt
+  ... | (L , pf) = L , constructsynth wt pf
+
+  constructability-ana : {Γ : ·ctx} {t : τ̇} {e : ė} → (Γ ⊢ e <= t) →
+                              Σ[ L ∈ List action ]
+                                 runana Γ ▹ <||> ◃ L ▹ e ◃ t
+  constructability-ana wt with buildexp-mode-ana wt
+  ... | (L , pf) = L , constructana wt pf
+
+
+
+
+
   ------- reachability
 
-  -- we break reachability into two halves: first you produce a list of
-  -- actions that are all "move parent" to pull the focus to the very top
-  -- of the expression in question. then, you go back down into the
-  -- expression with a sequence of move firstChild and move nextSibs as
-  -- appropriate. the append of these two lists will reach from one
-  -- expression to the other. there may well be a shorter list of actions
-  -- that does the same thing; the expression with top-level focus may not
-  -- be the Least Common Ancestor in the expression tree of the given
-  -- pair. however, the work of this less minimal thing and corresponding
-  -- size of the proof term is still bounded by the size of the expression,
-  -- and is easier to maniupulate judgementally.
+  -- algorithmically, we break reachability into two halves: first you
+  -- produce a list of actions that are all "move parent" to pull the focus
+  -- to the very top of the expression in question. then, you go back down
+  -- into the expression with a sequence of move firstChild and move
+  -- nextSibs as appropriate. the append of these two lists will reach from
+  -- one expression to the other.
+  --
+  -- there may well be a shorter list of actions that does the same thing;
+  -- the expression with top-level focus may not be the Least Common
+  -- Ancestor in the expression tree of the given pair. however, the work
+  -- of this less minimal thing and corresponding size of the proof term is
+  -- still bounded by the size of the expression, and is easier to
+  -- maniupulate judgementally.
 
   movepar-t : τ̂ → List action
   movepar-t ▹ _ ◃      = []
@@ -246,24 +262,41 @@ module checks where
     reachsynth : {Γ : ·ctx} {e : ê} {t : τ̇} {L : List action} {e' : ė} →
                       (erase-e e e') →
                       (wt : Γ ⊢ e' => t)
-                     → runsynth Γ e  t (movepar-e e) ▹ e' ◃ t
-    reachsynth EETop _ = DoRefl
-    reachsynth (EEAscL er) (SAsc x) = {!!}
-    reachsynth (EEAscR x) (SAsc x₁) = {!reachτ !}
-    reachsynth (EELam er) ()
-    reachsynth (EEApL er) (SAp wt x) = {!!}
-    reachsynth (EEApL er) (SApHole wt x) = {!!}
-    reachsynth (EEApR er) (SAp wt x) = {!!}
-    reachsynth (EEApR er) (SApHole wt x) = {!!}
-    reachsynth (EEPlusL er) (SPlus x x₁) = {!!}
-    reachsynth (EEPlusR er) (SPlus x x₁) = {!!}
-    reachsynth (EEFHole er) (SFHole wt) = {!!}
+                     → runsynth Γ e t (movepar-e e) ▹ e' ◃ t
+    reachsynth = {!!}
 
     reachana : {Γ : ·ctx} {e : ê} {t : τ̇} {L : List action} {e' : ė} →
                       (erase-e e e') →
                       (wt : Γ ⊢ e' <= t)
                      → runana Γ e (movepar-e e) ▹ e' ◃ t
-    reachana EETop _ = DoRefl
-    reachana y (ASubsume x x₁) with reachsynth {L = {!!} :: {!!}} y x
-    ... | ih  = {!DoAna _ _ _ _ _ _ _ (AASubsume ? ? ?) !}
-    reachana (EELam wt) (ALam x₁ b) = {!!}
+    reachana = {!!}
+
+
+  -- top level statement of the reachability triplet. the movement between
+  -- judgemental and metafunctional erasure happens internally to theses
+  -- statements to present a consistent interface with the paper, while
+  -- allowing easy pattern matching in the proofs.
+  --
+  -- the justification for these statements, intuitively, is that focus
+  -- cannot change the type of things because the typing judgement is
+  -- defined on the focus-erased terms and types. so if two terms agree up
+  -- to erasure, they must have the exact same type in the same context,
+  -- not merely a compatible one in an extension or any other weakening of
+  -- the statement. these are lemmas which are currently not proven. TODO?
+
+  reachability-types : (t1 t2 : τ̂) → (t1 ◆t) == (t2 ◆t) → Σ[ L ∈ List action ] runtype t1 L t2
+  reachability-types = {!!}
+
+  reachability-synth : {Γ : ·ctx} {t : τ̇} {e1 e2 : ê} →
+                            Γ ⊢ e1 ◆e => t →
+                            Γ ⊢ e2 ◆e => t →
+                            e1 ◆e == e2 ◆e →
+                            Σ[ L ∈ List action ] runsynth Γ e1 t L e2 t
+  reachability-synth = {!!}
+
+  reachability-ana : {Γ : ·ctx} {t : τ̇} {e1 e2 : ê} →
+                            Γ ⊢ e1 ◆e <= t →
+                            Γ ⊢ e2 ◆e <= t →
+                            e1 ◆e == e2 ◆e →
+                            Σ[ L ∈ List action ] runana Γ e1 L e2 t
+  reachability-ana = {!!}

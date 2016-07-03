@@ -1,9 +1,13 @@
 technical complaints about the proof text
 -----------------------------------------
 
-- try proving actdet2 with judgmental erasure; that will let me induct on
-  the derivation of well-typedness, which should knock out most of the
-  irritating lemmas.
+- check over the text of determinism to look for redundancies -- places
+  where you can underscore on an argument and lose some cases, or something
+  similar. anything like that will make it far easier to extend the proof
+  for languages with new constructs.
+
+- is there some way to restate the action semantics that makes fewer proof
+  cases? like instead of zip1, zip2 etc, index them by fin4 or whatever.
 
 more metatheory
 ---------------
