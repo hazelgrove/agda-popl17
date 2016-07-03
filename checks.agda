@@ -261,7 +261,7 @@ module checks where
 
   moveup-t : τ̂ → List action
   moveup-t ▹ _ ◃      = []
-  moveup-t (t ==>₁ _) = move parent :: moveup-t t
+  moveup-t (t ==>₁ _) = moveup-t t ++ [ move parent ]
   moveup-t (_ ==>₂ t) = move parent :: moveup-t t
 
   moveup-e : ê → List action
@@ -279,8 +279,8 @@ module checks where
               erase-t t t' →
               runtype t (moveup-t t) (▹ t' ◃)
   reachup-type ETTop = DoRefl
-  reachup-type (ETArrL tr) with reachup-type tr
-  ... | ih = {!!}
+  reachup-type (ETArrL {t1 = t1} {t1' = t1'} tr) with reachup-type tr
+  ... | ih = {!runtype++ {L1 = [ move parent ]} {L2 = moveup-t t1} ? ih !}
   reachup-type (ETArrR tr) with reachup-type tr
   ... | ih = {!!}
 
@@ -304,22 +304,34 @@ module checks where
 
   movedown-e : (e : ė) (e' : ê) (p : erase-e e' e) → List action
   movedown-e _ ▹ ._ ◃ EETop = []
-  movedown-e (e ·: x) (e' ·:₁ .x) (EEAscL er) = move firstChild :: movedown-e _ _ er
-  movedown-e (e ·: x) (.e ·:₂ x₁) (EEAscR tr) = move firstChild :: move nextSib :: movedown-t _ _ tr
-  movedown-e (·λ x e) (·λ .x e') (EELam er) = move firstChild :: movedown-e _ _ er
+  movedown-e (e ·: x) (e' ·:₁ .x)   (EEAscL er) = move firstChild :: movedown-e _ _ er
+  movedown-e (e ·: x) (.e ·:₂ x₁)   (EEAscR tr) = move firstChild :: move nextSib :: movedown-t _ _ tr
+  movedown-e (·λ x e) (·λ .x e')    (EELam er) = move firstChild :: movedown-e _ _ er
   movedown-e (e ·+ e₁) (e' ·+₁ .e₁) (EEPlusL er) = move firstChild :: movedown-e _ _ er
-  movedown-e (e ·+ e₁) (.e ·+₂ e') (EEPlusR er) = move firstChild :: move nextSib ::  movedown-e _ _ er
-  movedown-e <| e |> <| e' |> (EEFHole er) = move firstChild :: movedown-e _ _ er
-  movedown-e (e ∘ e₁) (e' ∘₁ .e₁) (EEApL er) = move firstChild :: movedown-e _ _ er
-  movedown-e (e ∘ e₁) (.e ∘₂ e') (EEApR er) = move firstChild :: move nextSib :: movedown-e _ _ er
+  movedown-e (e ·+ e₁) (.e ·+₂ e')  (EEPlusR er) = move firstChild :: move nextSib ::  movedown-e _ _ er
+  movedown-e <| e |> <| e' |>       (EEFHole er) = move firstChild :: movedown-e _ _ er
+  movedown-e (e ∘ e₁) (e' ∘₁ .e₁)   (EEApL er) = move firstChild :: movedown-e _ _ er
+  movedown-e (e ∘ e₁) (.e ∘₂ e')    (EEApR er) = move firstChild :: move nextSib :: movedown-e _ _ er
 
   reachdown-type : {t : τ̇} {t' : τ̂} → (p : erase-t t' t) →
                      runtype (▹ t ◃) (movedown-t t t' p) t'
   reachdown-type ETTop = DoRefl
   reachdown-type (ETArrL p) with reachdown-type p
-  ... | ih = DoType TMFirstChild {!!}
+  ... | ih = DoType TMFirstChild (lem ih)
+   where
+     lem : ∀ {t1 t1' t2 L } →
+            runtype t1' L t1 →
+            runtype (t1' ==>₁ t2) L (t1 ==>₁ t2)
+     lem DoRefl = DoRefl
+     lem (DoType x L') = DoType (TMZip1 x) (lem L')
   reachdown-type (ETArrR p) with reachdown-type p
-  ... | ih = DoType TMFirstChild (DoType TMNextSib {!!})
+  ... | ih = DoType TMFirstChild (DoType TMNextSib (lem ih))
+     where
+     lem : ∀ {t1 t2 t2' L } →
+            runtype t2' L t2 →
+            runtype (t1 ==>₂ t2') L (t1 ==>₂ t2)
+     lem DoRefl = DoRefl
+     lem (DoType x L') = DoType (TMZip2 x) (lem L')
 
   -- mutual
   --   reachdown-synth : {Γ : ·ctx} {e : ê} {t : τ̇} {L : List action} {e' : ė} →
