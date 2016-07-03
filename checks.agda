@@ -86,40 +86,48 @@ module checks where
                  → buildexp ▹ e1 ∘ e2 ◃
                             (l1 ++ l2 ++ [ move parent ])
     BuildEHole : buildexp ▹ <||> ◃ [ del ]
-
-    -- this little guy might just happen sort of automatically in the
-    -- inducive structure of the proof and by appealing to zipper rules.
-    --
-    -- BuildFHole : (e : ė) (l : List action) →
-    --              buildexp ▹ e ◃ l →
-    --              buildexp ▹ <| e |> ◃ [] -- stub
+    BuildFHole : {e : ė} {l : List action} →
+                 buildexp ▹ e ◃ l →
+                 buildexp ▹ <| e |> ◃ [] -- stub
 
   -- taken together, these three theorems say that the build judgements
   -- have mode (∀, ∃), which is to say that they effectively define total
   -- functions and we didn't miss any cases.
+  --
+  -- note that they do *not* say anything whatsoever about whether the
+  -- lists produced are remotely correct. the proofs have been written in a
+  -- style that pins them least to the particular choice of lists of
+  -- actions in the jugement -- agda unification will pick whatever lists
+  -- are written allow and automatically adjust these to arbitrary changes
+  -- in the judgement
   buildτ : (t : τ̇) → Σ[ l ∈ List action ] buildtype ▹ t ◃ l
   buildτ num  = _ , BuildNum
   buildτ <||> = _ , BuildTHole
   buildτ (t1 ==> t2) with buildτ t1 | buildτ t2
-  ... | (l1 , p1) | (l2 , p2) = _ , BuildArr p1 p2
+  ... | (_ , p1) | (_ , p2) = _ , BuildArr p1 p2
 
   mutual
     buildsynth : {Γ : ·ctx} {e : ė} {t : τ̇} (wt : Γ ⊢ e => t) →
                Σ[ l ∈ List action ] buildexp ▹ e ◃ l
-    buildsynth (SAsc {e = e} {t = t} x) with buildana x | buildτ t
-    ... | (l1 , p1) | (l2 , p2) = _ ,  BuildAsc  p1 p2
+    buildsynth (SAsc {t = t} d) with buildana d | buildτ t
+    ... | (_ , p1) | (_ , p2) = _ ,  BuildAsc p1 p2
     buildsynth (SVar _) = _ , BuildX
-    buildsynth (SAp {e1 = e1} {e2 = e2} wt x) = {!!}
+    buildsynth (SAp d1 d2) with buildsynth d1 | buildana d2
+    ... | (_ , p1) | (_ , p2) = _ , BuildAp p1 p2
     buildsynth SNum = _ , BuildN
-    buildsynth (SPlus {e1 = e1} {e2 = e2} x x₁) = {!!}
-    buildsynth SEHole = {!!}
-    buildsynth (SFHole wt) = {!!}
-    buildsynth (SApHole wt x) = {!!}
+    buildsynth (SPlus d1 d2) with buildana d1 | buildana d2
+    ... | (_ , p1) | (_ , p2) = _ , BuildPlus p1 p2
+    buildsynth SEHole = _ , BuildEHole
+    buildsynth (SFHole d) with buildsynth d
+    ... | (_ , p)= _ , BuildFHole p
+    buildsynth (SApHole d1 d2) with buildsynth d1 | buildana d2
+    ... | (_ , p1) | (_ , p2) = _ , BuildAp p1 p2
 
     buildana : {Γ : ·ctx} {e : ė} {t : τ̇} (wt : Γ ⊢ e <= t) →
               Σ[ l ∈ List action ] buildexp ▹ e ◃ l
-    buildana (ASubsume x x₁) = buildsynth x
-    buildana (ALam  x wt) = {!!}
+    buildana (ASubsume x _) = buildsynth x
+    buildana (ALam apart d) with buildana d
+    ... | (_ , p)= _ , BuildLam p
 
   -- these three judmgements lift the action semantics judgements to relate
   -- an expression and a list of pair-wise composable actions to the
