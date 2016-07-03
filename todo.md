@@ -9,6 +9,8 @@ technical complaints about the proof text
 - is there some way to restate the action semantics that makes fewer proof
   cases? like instead of zip1, zip2 etc, index them by fin4 or whatever.
 
+- unify congruence lemmas? is that the right thing to even call them?
+
 more metatheory
 ---------------
 
