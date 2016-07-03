@@ -467,13 +467,11 @@ module deterministic where
     actdet3 D1 (AASubsume x₁ (SAConLam x₃) x₂) (AAConLam2 x₄ x₅) = abort (x₅ x₂)
     actdet3 D1 (AASubsume x SAConNumlit x₂) (AAConNumlit x₃) = abort (x₃ x₂)
     actdet3 D1 (AASubsume x (SAFinish x₁) x₂) (AAFinish x₃) = refl
-    actdet3 D1 (AASubsume x₁ (SAMove EMLamParent) x₂) (AAZipLam x₄ (AASubsume x₃ (SAMove ()) x₆))
-    actdet3 D1 (AASubsume x₁ (SAMove EMLamParent) x₂) (AAZipLam x₄ (AAMove ()))
+    actdet3 D1 (AASubsume x₁ (SAMove EMLamParent) x₂) (AAZipLam x₄ x₆) = abort (lem-nomove-para x₆)
 
     actdet3 D1 (AAMove x) (AASubsume x₁ x₂ x₃) =  ! (synthmovedet x₂ x)
     actdet3 D1 (AAMove x) (AAMove x₁) = movedet x x₁
-    actdet3 D1 (AAMove EMLamParent) (AAZipLam x₃ (AASubsume x₁ (SAMove ()) x₄))
-    actdet3 D1 (AAMove EMLamParent) (AAZipLam x₃ (AAMove ()))
+    actdet3 D1 (AAMove EMLamParent) (AAZipLam x₃ d) = abort (lem-nomove-para d)
 
     actdet3 D1 AADel (AASubsume _ SADel _) = refl
     actdet3 D1 AADel AADel = refl
@@ -501,8 +499,7 @@ module deterministic where
     actdet3 D1 (AAFinish x) (AAFinish x₁) = refl
 
     actdet3 D1 (AAZipLam x₃ D2) (AASubsume x₁ (SAMove EMLamParent) x₄) = abort (lem11 D2)
-    actdet3 D1 (AAZipLam x₃ (AASubsume x₁ (SAMove ()) x₄)) (AAMove EMLamParent)
-    actdet3 D1 (AAZipLam x₃ (AAMove ())) (AAMove EMLamParent)
+    actdet3 D1 (AAZipLam x₃ d) (AAMove EMLamParent) = abort (lem-nomove-para d)
     actdet3 D1 (AAZipLam {e = e} x₃ D2) (AAZipLam x₁ D3)
       with actdet3 (lem10 {e = e} D1) D2 D3
     ... | refl = refl
