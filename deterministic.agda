@@ -204,8 +204,6 @@ module deterministic where
     actdet2' EETop (SAp wt x) (SAConPlus2 x₁) (SAConPlus1 x₂) = abort (x₁ x₂)
     actdet2' EETop (SAp wt x) (SAConPlus2 x₁) (SAConPlus2 x₂) = refl , refl
 
-
-
     actdet2' (EEApL E) (SAp wt x) (SAMove x₁) (SAMove x₂) = movedet x₁ x₂ , refl
     actdet2' (EEApL E) (SAp wt x) (SAMove EMApParent1) (SAZipAp1 x₂ d2 x₃) = abort (lem-nomove-pars d2)
     actdet2' (EEApL E) (SAp wt x) (SAMove EMApNextSib) (SAZipAp1 x₂ d2 x₃) = abort (lem-nomove-nss d2)
@@ -215,7 +213,7 @@ module deterministic where
     actdet2' (EEApL E) (SAp wt x) (SAZipAp1 x₁ d1 x₂) (SAMove EMApNextSib) = abort (lem-nomove-nss d1)
     actdet2' (EEApL E) (SAp wt x) (SAZipAp1 x₁ d1 x₂) (SAZipAp1 x₃ d2 x₄)
       with synthunicity x₁ x₃
-    ... | refl with actdet2' E {!x₁ E!} d1 d2
+    ... | refl with actdet2' E (lem-synth-erase x₁ E) d1 d2
     ... | refl , refl  = refl , refl
     actdet2' (EEApL E) (SAp wt x) (SAZipAp1 x₁ d1 x₂) (SAZipAp2 x₃ d2 x₄) = {!!}
     actdet2' (EEApL E) (SAp wt x) (SAZipAp2 x₁ d1 x₂) (SAMove EMApParent1) = abort (lem-nomove-pars d1)
