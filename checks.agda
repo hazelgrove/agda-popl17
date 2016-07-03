@@ -304,14 +304,14 @@ module checks where
 
   movedown-e : (e : ė) (e' : ê) (p : erase-e e' e) → List action
   movedown-e _ ▹ ._ ◃ EETop = []
-  movedown-e (e ·: x) (e' ·:₁ .x) (EEAscL er) = {!!}
-  movedown-e (e ·: x) (.e ·:₂ x₁) (EEAscR x₂) = {!!}
-  movedown-e (·λ x e) (·λ .x e') (EELam er) = {!!}
-  movedown-e (e ·+ e₁) (e' ·+₁ .e₁) (EEPlusL er) = {!!}
-  movedown-e (e ·+ e₁) (.e ·+₂ e') (EEPlusR er) = {!!}
-  movedown-e <| e |> <| e' |> (EEFHole er) = {!!}
-  movedown-e (e ∘ e₁) (e' ∘₁ .e₁) (EEApL er) = {!!}
-  movedown-e (e ∘ e₁) (.e ∘₂ e') (EEApR er) = {!!}
+  movedown-e (e ·: x) (e' ·:₁ .x) (EEAscL er) = move firstChild :: movedown-e _ _ er
+  movedown-e (e ·: x) (.e ·:₂ x₁) (EEAscR tr) = move firstChild :: move nextSib :: movedown-t _ _ tr
+  movedown-e (·λ x e) (·λ .x e') (EELam er) = move firstChild :: movedown-e _ _ er
+  movedown-e (e ·+ e₁) (e' ·+₁ .e₁) (EEPlusL er) = move firstChild :: movedown-e _ _ er
+  movedown-e (e ·+ e₁) (.e ·+₂ e') (EEPlusR er) = move firstChild :: move nextSib ::  movedown-e _ _ er
+  movedown-e <| e |> <| e' |> (EEFHole er) = move firstChild :: movedown-e _ _ er
+  movedown-e (e ∘ e₁) (e' ∘₁ .e₁) (EEApL er) = move firstChild :: movedown-e _ _ er
+  movedown-e (e ∘ e₁) (.e ∘₂ e') (EEApR er) = move firstChild :: move nextSib :: movedown-e _ _ er
 
   reachdown-type : {t : τ̇} {t' : τ̂} → (p : erase-t t' t) →
                      runtype (▹ t ◃) (movedown-t t t' p) t'
