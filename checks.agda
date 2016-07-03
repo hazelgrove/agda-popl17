@@ -297,16 +297,29 @@ module checks where
                      → runana Γ e (moveup-e e) ▹ e' ◃ t
     reachup-ana = {!!}
 
-  -- movedown-t : {t1 t2 : τ̂} (t : τ̇) → erase-t t1 t → erase-t t2 t → List action
   movedown-t : (t : τ̇) (t' : τ̂) (p : erase-t t' t) → List action
-  movedown-t = {!!}
+  movedown-t _ ▹ ._ ◃ ETTop = []
+  movedown-t (t ==> t₁) (t' ==>₁ .t₁) (ETArrL p) = move firstChild :: (movedown-t _ _ p)
+  movedown-t (t ==> t₁) (.t ==>₂ t') (ETArrR p) = move firstChild :: move nextSib :: movedown-t _ _ p
 
-  movedown-e : ê → ê → List action
-  movedown-e = {!!}
+  movedown-e : (e : ė) (e' : ê) (p : erase-e e' e) → List action
+  movedown-e _ ▹ ._ ◃ EETop = []
+  movedown-e (e ·: x) (e' ·:₁ .x) (EEAscL er) = {!!}
+  movedown-e (e ·: x) (.e ·:₂ x₁) (EEAscR x₂) = {!!}
+  movedown-e (·λ x e) (·λ .x e') (EELam er) = {!!}
+  movedown-e (e ·+ e₁) (e' ·+₁ .e₁) (EEPlusL er) = {!!}
+  movedown-e (e ·+ e₁) (.e ·+₂ e') (EEPlusR er) = {!!}
+  movedown-e <| e |> <| e' |> (EEFHole er) = {!!}
+  movedown-e (e ∘ e₁) (e' ∘₁ .e₁) (EEApL er) = {!!}
+  movedown-e (e ∘ e₁) (.e ∘₂ e') (EEApR er) = {!!}
 
   reachdown-type : {t : τ̇} {t' : τ̂} → (p : erase-t t' t) →
                      runtype (▹ t ◃) (movedown-t t t' p) t'
-  reachdown-type = {!!}
+  reachdown-type ETTop = DoRefl
+  reachdown-type (ETArrL p) with reachdown-type p
+  ... | ih = DoType TMFirstChild {!!}
+  reachdown-type (ETArrR p) with reachdown-type p
+  ... | ih = DoType TMFirstChild (DoType TMNextSib {!!})
 
   -- mutual
   --   reachdown-synth : {Γ : ·ctx} {e : ê} {t : τ̇} {L : List action} {e' : ė} →
