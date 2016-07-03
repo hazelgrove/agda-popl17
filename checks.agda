@@ -281,14 +281,14 @@ module checks where
 
   moveup-e : ê → List action
   moveup-e ▹ _ ◃     = []
-  moveup-e (e ·:₁ _) = move parent :: moveup-e e
-  moveup-e (_ ·:₂ t) = move parent :: moveup-t t
-  moveup-e (·λ _ e)  = move parent :: moveup-e e
-  moveup-e (e ∘₁ _)  = move parent :: moveup-e e
-  moveup-e (_ ∘₂ e)  = move parent :: moveup-e e
-  moveup-e (e ·+₁ _) = move parent :: moveup-e e
-  moveup-e (_ ·+₂ e) = move parent :: moveup-e e
-  moveup-e <| e |>   = move parent :: moveup-e e
+  moveup-e (e ·:₁ _) = moveup-e e ++ [ move parent ]
+  moveup-e (_ ·:₂ t) = moveup-t t ++ [ move parent ]
+  moveup-e (·λ _ e)  = moveup-e e ++ [ move parent ]
+  moveup-e (e ∘₁ _)  = moveup-e e ++ [ move parent ]
+  moveup-e (_ ∘₂ e)  = moveup-e e ++ [ move parent ]
+  moveup-e (e ·+₁ _) = moveup-e e ++ [ move parent ]
+  moveup-e (_ ·+₂ e) = moveup-e e ++ [ move parent ]
+  moveup-e <| e |>   = moveup-e e ++ [ move parent ]
 
   reachup-type : {t : τ̂} {t' : τ̇} →
               erase-t t t' →
