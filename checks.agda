@@ -160,6 +160,21 @@ module checks where
   runtype++ DoRefl d2 = d2
   runtype++ (DoType x d1) d2 = DoType x (runtype++ d1 d2)
 
+  -- runtype is a congruence; that is, you can replace related subterms and
+  -- preseve relatedness
+  runtype-cong1 : ∀ {t1 t1' t2 L } →
+            runtype t1' L t1 →
+            runtype (t1' ==>₁ t2) L (t1 ==>₁ t2)
+  runtype-cong1 DoRefl = DoRefl
+  runtype-cong1 (DoType x L') = DoType (TMZip1 x) (runtype-cong1 L')
+
+  runtype-cong2 : ∀ {t1 t2 t2' L } →
+            runtype t2' L t2 →
+            runtype (t1 ==>₂ t2') L (t1 ==>₂ t2)
+  runtype-cong2 DoRefl = DoRefl
+  runtype-cong2 (DoType x L') = DoType (TMZip2 x) (runtype-cong2 L')
+
+
   data runsynth :
     (Γ : ·ctx) (e : ê) (t1 : τ̇) (Lα : List action) (e' : ê) (t2 : τ̇) → Set where
      DoRefl  : {Γ : ·ctx} {e : ê} {t : τ̇} → runsynth Γ e t [] e t
@@ -262,7 +277,7 @@ module checks where
   moveup-t : τ̂ → List action
   moveup-t ▹ _ ◃      = []
   moveup-t (t ==>₁ _) = moveup-t t ++ [ move parent ]
-  moveup-t (_ ==>₂ t) = move parent :: moveup-t t
+  moveup-t (_ ==>₂ t) = moveup-t t ++ [ move parent ]
 
   moveup-e : ê → List action
   moveup-e ▹ _ ◃     = []
@@ -279,10 +294,10 @@ module checks where
               erase-t t t' →
               runtype t (moveup-t t) (▹ t' ◃)
   reachup-type ETTop = DoRefl
-  reachup-type (ETArrL {t1 = t1} {t1' = t1'} tr) with reachup-type tr
-  ... | ih = {!runtype++ {L1 = [ move parent ]} {L2 = moveup-t t1} ? ih !}
+  reachup-type (ETArrL tr) with reachup-type tr
+  ... | ih = runtype++ (runtype-cong1 ih) (DoType TMParent1 DoRefl)
   reachup-type (ETArrR tr) with reachup-type tr
-  ... | ih = {!!}
+  ... | ih = runtype++ (runtype-cong2 ih) (DoType TMParent2 DoRefl)
 
   mutual
     reachup-synth : {Γ : ·ctx} {e : ê} {t : τ̇} {L : List action} {e' : ė} →
@@ -317,21 +332,9 @@ module checks where
                      runtype (▹ t ◃) (movedown-t t t' p) t'
   reachdown-type ETTop = DoRefl
   reachdown-type (ETArrL p) with reachdown-type p
-  ... | ih = DoType TMFirstChild (lem ih)
-   where
-     lem : ∀ {t1 t1' t2 L } →
-            runtype t1' L t1 →
-            runtype (t1' ==>₁ t2) L (t1 ==>₁ t2)
-     lem DoRefl = DoRefl
-     lem (DoType x L') = DoType (TMZip1 x) (lem L')
+  ... | ih = DoType TMFirstChild (runtype-cong1 ih)
   reachdown-type (ETArrR p) with reachdown-type p
-  ... | ih = DoType TMFirstChild (DoType TMNextSib (lem ih))
-     where
-     lem : ∀ {t1 t2 t2' L } →
-            runtype t2' L t2 →
-            runtype (t1 ==>₂ t2') L (t1 ==>₂ t2)
-     lem DoRefl = DoRefl
-     lem (DoType x L') = DoType (TMZip2 x) (lem L')
+  ... | ih = DoType TMFirstChild (DoType TMNextSib (runtype-cong2 ih))
 
   -- mutual
   --   reachdown-synth : {Γ : ·ctx} {e : ê} {t : τ̇} {L : List action} {e' : ė} →
