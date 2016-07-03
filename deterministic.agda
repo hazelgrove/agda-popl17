@@ -215,11 +215,16 @@ module deterministic where
       with synthunicity x₁ x₃
     ... | refl with actdet2' E (lem-synth-erase x₁ E) d1 d2
     ... | refl , refl  = refl , refl
-    actdet2' (EEApL E) (SAp wt x) (SAZipAp1 x₁ d1 x₂) (SAZipAp2 x₃ d2 x₄) = {!!}
+    actdet2' (EEApL E) (SAp wt x) (SAZipAp1 x₁ d1 x₂) (SAZipAp2 x₃ d2 x₄) with synthunicity x₁ x₃
+    ... | refl with (actdet2 x₁ d1 d2)
+    ... | refl , ()
     actdet2' (EEApL E) (SAp wt x) (SAZipAp2 x₁ d1 x₂) (SAMove EMApParent1) = abort (lem-nomove-pars d1)
     actdet2' (EEApL E) (SAp wt x) (SAZipAp2 x₁ d1 x₂) (SAMove EMApNextSib) = abort (lem-nomove-nss d1)
-    actdet2' (EEApL E) (SAp wt x) (SAZipAp2 x₁ d1 x₂) (SAZipAp1 x₃ d2 x₄) = {!!}
-    actdet2' (EEApL E) (SAp wt x) (SAZipAp2 x₁ d1 x₂) (SAZipAp2 x₃ d2 x₄) = {!!}
+    actdet2' (EEApL E) (SAp wt x) (SAZipAp2 x₁ d1 x₂) (SAZipAp1 x₃ d2 x₄) with synthunicity x₁ x₃
+    ... | refl with actdet2 x₁ d1 d2
+    ... | refl , ()
+    actdet2' (EEApL E) (SAp wt x) (SAZipAp2 x₁ d1 x₂) (SAZipAp2 x₃ d2 x₄) with synthunicity x₁ x₃
+    ... | refl = ap1 (λ x₅ → x₅ ∘₁ _) (π1 (actdet2 x₃ d1 d2)) , refl
 
     actdet2' (EEApR E) (SAp wt x) (SAMove x₁) (SAMove x₂) = movedet x₁ x₂ , refl
     actdet2' (EEApR E) (SAp wt x) (SAMove EMApParent2) (SAZipAp3 x₂ x₃) = abort (lem-nomove-para x₃)
