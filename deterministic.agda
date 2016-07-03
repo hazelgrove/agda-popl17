@@ -190,17 +190,28 @@ module deterministic where
   lem-mvana (AAMove ()) EMAscNextSib
   lem-mvana (AAZipLam x₁ d1) ()
 
-  lem-nomove-par : ∀{Γ e t e' t'} →
+  -- non-movement lemmas
+  lem-nomove-pars : ∀{Γ e t e' t'} →
          Γ ⊢ ▹ e ◃ => t ~ move parent ~> e' => t' →
          ⊥
-  lem-nomove-par (SAMove ())
+  lem-nomove-pars (SAMove ())
 
-  lem-nomove-ns : ∀{Γ e t e' t'} →
+  lem-nomove-para : ∀{Γ e t e'} →
+         Γ ⊢ ▹ e ◃ ~ move parent ~> e' ⇐ t →
+         ⊥
+  lem-nomove-para (AASubsume x x₁ x₂) = lem-nomove-pars x₁
+  lem-nomove-para (AAMove ())
+
+  lem-nomove-nss : ∀{Γ e t e' t'} →
          Γ ⊢ ▹ e ◃ => t ~ move nextSib ~> e' => t' →
          ⊥
-  lem-nomove-ns (SAMove ())
+  lem-nomove-nss (SAMove ())
 
-
+  lem-nomove-nsa : ∀{Γ e t e'} →
+         Γ ⊢ ▹ e ◃ ~ move nextSib ~> e' ⇐ t →
+         ⊥
+  lem-nomove-nsa (AASubsume x x₁ x₂) = lem-nomove-nss x₁
+  lem-nomove-nsa (AAMove ())
 
   mutual
     -- an action on an expression in a synthetic position produces one
@@ -284,29 +295,29 @@ module deterministic where
     actdet2' EETop (SAp wt x) (SAConPlus2 x₁) (SAConPlus2 x₂) = refl , refl
 
     actdet2' (EEApL E) (SAp wt x) (SAMove x₁) (SAMove x₂) = movedet x₁ x₂ , refl
-    actdet2' (EEApL E) (SAp wt x) (SAMove EMApParent1) (SAZipAp1 x₂ d2 x₃) = abort (lem-nomove-par d2)
-    actdet2' (EEApL E) (SAp wt x) (SAMove EMApNextSib) (SAZipAp1 x₂ d2 x₃) = abort (lem-nomove-ns d2)
-    actdet2' (EEApL E) (SAp wt x) (SAMove EMApParent1) (SAZipAp2 x₂ d2 x₃) = abort (lem-nomove-par d2)
-    actdet2' (EEApL E) (SAp wt x) (SAMove EMApNextSib) (SAZipAp2 x₂ d2 x₃) = abort (lem-nomove-ns d2)
-    actdet2' (EEApL E) (SAp wt x) (SAZipAp1 x₁ d1 x₂) (SAMove EMApParent1) = abort (lem-nomove-par d1)
-    actdet2' (EEApL E) (SAp wt x) (SAZipAp1 x₁ d1 x₂) (SAMove EMApNextSib) = abort (lem-nomove-ns d1)
+    actdet2' (EEApL E) (SAp wt x) (SAMove EMApParent1) (SAZipAp1 x₂ d2 x₃) = abort (lem-nomove-pars d2)
+    actdet2' (EEApL E) (SAp wt x) (SAMove EMApNextSib) (SAZipAp1 x₂ d2 x₃) = abort (lem-nomove-nss d2)
+    actdet2' (EEApL E) (SAp wt x) (SAMove EMApParent1) (SAZipAp2 x₂ d2 x₃) = abort (lem-nomove-pars d2)
+    actdet2' (EEApL E) (SAp wt x) (SAMove EMApNextSib) (SAZipAp2 x₂ d2 x₃) = abort (lem-nomove-nss d2)
+    actdet2' (EEApL E) (SAp wt x) (SAZipAp1 x₁ d1 x₂) (SAMove EMApParent1) = abort (lem-nomove-pars d1)
+    actdet2' (EEApL E) (SAp wt x) (SAZipAp1 x₁ d1 x₂) (SAMove EMApNextSib) = abort (lem-nomove-nss d1)
     actdet2' (EEApL E) (SAp wt x) (SAZipAp1 x₁ d1 x₂) (SAZipAp1 x₃ d2 x₄)
       with synthunicity x₁ x₃
-    ... | refl with actdet2' E {!!} d1 d2
+    ... | refl with actdet2' E {!x₁ E!} d1 d2
     ... | refl , refl  = refl , refl
     actdet2' (EEApL E) (SAp wt x) (SAZipAp1 x₁ d1 x₂) (SAZipAp2 x₃ d2 x₄) = {!!}
-    actdet2' (EEApL E) (SAp wt x) (SAZipAp2 x₁ d1 x₂) (SAMove EMApParent1) = {!!}
-    actdet2' (EEApL E) (SAp wt x) (SAZipAp2 x₁ d1 x₂) (SAMove EMApNextSib) = {!!}
+    actdet2' (EEApL E) (SAp wt x) (SAZipAp2 x₁ d1 x₂) (SAMove EMApParent1) = abort (lem-nomove-pars d1)
+    actdet2' (EEApL E) (SAp wt x) (SAZipAp2 x₁ d1 x₂) (SAMove EMApNextSib) = abort (lem-nomove-nss d1)
     actdet2' (EEApL E) (SAp wt x) (SAZipAp2 x₁ d1 x₂) (SAZipAp1 x₃ d2 x₄) = {!!}
     actdet2' (EEApL E) (SAp wt x) (SAZipAp2 x₁ d1 x₂) (SAZipAp2 x₃ d2 x₄) = {!!}
 
     actdet2' (EEApR E) (SAp wt x) (SAMove x₁) (SAMove x₂) = movedet x₁ x₂ , refl
-    actdet2' (EEApR E) (SAp wt x) (SAMove x₁) (SAZipAp3 x₂ x₃) = {!!}
-    actdet2' (EEApR E) (SAp wt x) (SAMove x₁) (SAZipAp4 x₂ x₃) = {!!}
-    actdet2' (EEApR E) (SAp wt x) (SAZipAp3 x₁ x₂) (SAMove x₃) = {!!}
+    actdet2' (EEApR E) (SAp wt x) (SAMove EMApParent2) (SAZipAp3 x₂ x₃) = {!abort (lem-nomove-para )!}
+    actdet2' (EEApR E) (SAp wt x) (SAMove EMApParent2) (SAZipAp4 x₂ x₃) = {!!}
+    actdet2' (EEApR E) (SAp wt x) (SAZipAp3 x₁ x₂) (SAMove EMApParent2) = {!!}
     actdet2' (EEApR E) (SAp wt x) (SAZipAp3 x₁ x₂) (SAZipAp3 x₃ x₄) = {!!}
     actdet2' (EEApR E) (SAp wt x) (SAZipAp3 x₁ x₂) (SAZipAp4 x₃ x₄) = {!!}
-    actdet2' (EEApR E) (SAp wt x) (SAZipAp4 x₁ x₂) (SAMove x₃) = {!!}
+    actdet2' (EEApR E) (SAp wt x) (SAZipAp4 x₁ x₂) (SAMove EMApParent2) = {!!}
     actdet2' (EEApR E) (SAp wt x) (SAZipAp4 x₁ x₂) (SAZipAp3 x₃ x₄) = {!!}
     actdet2' (EEApR E) (SAp wt x) (SAZipAp4 x₂ x₁) (SAZipAp4 x₃ x₄) = {!!}
 
