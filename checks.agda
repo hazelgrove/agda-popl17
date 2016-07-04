@@ -192,6 +192,14 @@ module checks where
   runsynth++ DoRefl d2 = d2
   runsynth++ (DoSynth x d1) d2 = DoSynth x (runsynth++ d1 d2)
 
+  -- congruence rules for runsynth
+  runsynth-congap1 : ∀{Γ e1 t L e1' e2 t'} →
+                    runsynth Γ e1 t' L e1' t' →
+                    runsynth Γ (e1 ∘₁ e2) t L (e1' ∘₁ e2) t
+  runsynth-congap1 DoRefl = DoRefl
+  runsynth-congap1 (DoSynth x d) = DoSynth (SAZipAp1 {!!} {!x!} {!!})
+                                           (runsynth-congap1 {!d!})
+
   data runana : (Γ : ·ctx) (e : ê) (Lα : List action) (e' : ê) (t : τ̇) → Set where
      DoRefl : {Γ : ·ctx} {e : ê} {t : τ̇} → runana Γ e [] e t
      DoAna : {Γ : ·ctx} {e : ê} {α : action} {e' e'' : ê} {t : τ̇}
@@ -290,6 +298,7 @@ module checks where
   moveup-e (_ ·+₂ e)  = moveup-e e ++ [ move parent ]
   moveup-e <| e |>    = moveup-e e ++ [ move parent ]
 
+
   reachup-type : {t : τ̂} {t' : τ̇} →
               erase-t t t' →
               runtype t (moveup-t t) (▹ t' ◃)
@@ -299,12 +308,33 @@ module checks where
   reachup-type (ETArrR tr) with reachup-type tr
   ... | ih = runtype++ (runtype-cong2 ih) (DoType TMParent2 DoRefl)
 
+  runsynth-type : ∀{t L t' Γ e ter} →
+                  Γ ⊢ e <= ter →
+                  erase-t t ter →
+                  runtype t L t' →
+                  runsynth Γ (e ·:₂ t) ter L (e ·:₂ t') ter
+  runsynth-type _ _ DoRefl = DoRefl
+  runsynth-type wt er (DoType x d) with erase-t◆ er
+  ... | refl = DoSynth {!SAZipAsc2  !} (runsynth-type {!!}  {!!} d)
+
   mutual
     reachup-synth : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
                       erase-e e e' →
                       Γ ⊢ e' => t →
                       runsynth Γ e t (moveup-e e) ▹ e' ◃ t
-    reachup-synth = {!!}
+    reachup-synth (EELam er) ()
+    reachup-synth EETop _ = DoRefl
+    reachup-synth (EEAscL er) (SAsc x) = {!!}
+    reachup-synth (EEAscR x) (SAsc x₁) with reachup-type x
+    ... | ih = runsynth++ (runsynth-type x₁ x ih) (DoSynth (SAMove EMAscParent2) DoRefl)
+    reachup-synth (EEApL er) (SAp wt x) with reachup-synth er wt
+    ... | ih = runsynth++ (runsynth-congap1 ih) (DoSynth (SAMove EMApParent1) DoRefl)
+    reachup-synth (EEApR er) (SAp wt x) = {!!}
+    reachup-synth (EEPlusL er) (SPlus x x₁) = {!!}
+    reachup-synth (EEPlusR er) (SPlus x x₁) = {!!}
+    reachup-synth (EEApL er) (SApHole wt x) = {!!}
+    reachup-synth (EEApR er) (SApHole wt x) = {!!}
+    reachup-synth (EEFHole er) (SFHole wt) = {!!}
 
     reachup-ana : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
                       erase-e e e' →
@@ -318,15 +348,15 @@ module checks where
   movedown-t (t ==> t₁) (.t ==>₂ t') (ETArrR p) = move firstChild :: move nextSib :: movedown-t _ _ p
 
   movedown-e : (e : ė) (e' : ê) (p : erase-e e' e) → List action
-  movedown-e _ ▹ ._ ◃ EETop = []
-  movedown-e (e ·: x) (e' ·:₁ .x)   (EEAscL er) = move firstChild :: movedown-e _ _ er
-  movedown-e (e ·: x) (.e ·:₂ x₁)   (EEAscR tr) = move firstChild :: move nextSib :: movedown-t _ _ tr
-  movedown-e (·λ x e) (·λ .x e')    (EELam er) = move firstChild :: movedown-e _ _ er
+  movedown-e _ ▹ ._ ◃  EETop = []
+  movedown-e (e ·: x)  (e' ·:₁ .x)  (EEAscL er)  = move firstChild :: movedown-e _ _ er
+  movedown-e (e ·: x)  (.e ·:₂ x₁)  (EEAscR tr)  = move firstChild :: move nextSib :: movedown-t _ _ tr
+  movedown-e (·λ x e)  (·λ .x e')   (EELam er)   = move firstChild :: movedown-e _ _ er
   movedown-e (e ·+ e₁) (e' ·+₁ .e₁) (EEPlusL er) = move firstChild :: movedown-e _ _ er
   movedown-e (e ·+ e₁) (.e ·+₂ e')  (EEPlusR er) = move firstChild :: move nextSib ::  movedown-e _ _ er
-  movedown-e <| e |> <| e' |>       (EEFHole er) = move firstChild :: movedown-e _ _ er
-  movedown-e (e ∘ e₁) (e' ∘₁ .e₁)   (EEApL er) = move firstChild :: movedown-e _ _ er
-  movedown-e (e ∘ e₁) (.e ∘₂ e')    (EEApR er) = move firstChild :: move nextSib :: movedown-e _ _ er
+  movedown-e <| e |>   <| e' |>     (EEFHole er) = move firstChild :: movedown-e _ _ er
+  movedown-e (e ∘ e₁)  (e' ∘₁ .e₁)  (EEApL er)   = move firstChild :: movedown-e _ _ er
+  movedown-e (e ∘ e₁)  (.e ∘₂ e')   (EEApR er)   = move firstChild :: move nextSib :: movedown-e _ _ er
 
   reachdown-type : {t : τ̇} {t' : τ̂} → (p : erase-t t' t) →
                      runtype (▹ t ◃) (movedown-t t t' p) t'
@@ -341,14 +371,32 @@ module checks where
                       (p : erase-e e e') →
                       (wt : Γ ⊢ e' => t)
                      → runsynth Γ ▹ e' ◃ t (movedown-e e' e p) e t
-    reachdown-synth = {!!}
+    reachdown-synth (EELam p) ()
+    reachdown-synth EETop _ = DoRefl
+    reachdown-synth (EEAscL p) (SAsc x) = {!!}
+    reachdown-synth (EEAscR x) (SAsc x₁) = {!!}
+    reachdown-synth (EEApL p) (SAp wt x) = {!!}
+    reachdown-synth (EEApL p) (SApHole wt x) = {!!}
+    reachdown-synth (EEApR p) (SAp wt x) = {!!}
+    reachdown-synth (EEApR p) (SApHole wt x) = {!!}
+    reachdown-synth (EEPlusL p) (SPlus x x₁) = {!!}
+    reachdown-synth (EEPlusR p) (SPlus x x₁) = {!!}
+    reachdown-synth (EEFHole p) (SFHole wt) = {!!}
 
     reachdown-ana : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
                       (p : erase-e e e') →
                       (wt : Γ ⊢ e' <= t)
                      → runana Γ ▹ e' ◃ (movedown-e e' e p) e  t
-    reachdown-ana = {!!}
-
+    reachdown-ana EETop _ = DoRefl
+    reachdown-ana (EEAscL p) (ASubsume x x₁) = {!reachdown-synth ? x!}
+    reachdown-ana (EEAscR x) (ASubsume x₁ x₂) = {!!}
+    reachdown-ana (EELam p) (ASubsume x₁ x₂) = {!!}
+    reachdown-ana (EEApL p) (ASubsume x x₁) = {!!}
+    reachdown-ana (EEApR p) (ASubsume x x₁) = {!!}
+    reachdown-ana (EEPlusL p) (ASubsume x x₁) = {!!}
+    reachdown-ana (EEPlusR p) (ASubsume x x₁) = {!!}
+    reachdown-ana (EEFHole p) (ASubsume x x₁) = {!!}
+    reachdown-ana (EELam p) (ALam x₁ wt) = {!!}
 
   -- this is the final statement of the reachability triplet. the movement
   -- between judgemental and metafunctional erasure happens internally to
