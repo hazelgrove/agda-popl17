@@ -216,7 +216,6 @@ module checks where
   runana++ DoRefl d2 = d2
   runana++ (DoAna x d1) d2 = DoAna x (runana++ d1 d2)
 
-
   -- if there is a list of actions that builds a type, running that list
   -- from the empty hole in focus really does produce the target type.
   constructτ : {t : τ̇} {L : List action} →
@@ -225,10 +224,7 @@ module checks where
   constructτ  BuildNum = DoType TMConNum DoRefl
   constructτ  BuildTHole = DoType TMDel DoRefl
   constructτ (BuildArr bt1 bt2) with constructτ bt1 | constructτ bt2
-  ... | DoRefl     | DoRefl       = DoType TMConArrow (DoType TMParent2 DoRefl)
-  ... | DoRefl     | DoType x q   = DoType TMConArrow {!!}
-  ... | DoType x p | DoRefl       = {!!}
-  ... | DoType x p | DoType  x₁ q = {!!}
+  ... | ih1 | ih2 = runtype++ ih1 (DoType TMConArrow (runtype++ (runtype-cong2 ih2) (DoType TMParent2 DoRefl)))
 
   mutual
     constructsynth : {Γ : ·ctx} {e : ė} {t : τ̇} {L : List action} →

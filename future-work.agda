@@ -15,3 +15,6 @@ module future-work where
           → ⊥
   ex5 (._ , DoRefl , (_ , notcomp ) , _) = notcomp
   ex5 (._ , DoSynth Γ ._ ._ α e' e'' t' t'' L x p1 , p2) = {!!}
+
+  cy : ∅ ⊢ ((·λ 0 <||>) ·: <||>) => <||>
+  cy = SAsc {!!}
