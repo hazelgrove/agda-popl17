@@ -69,7 +69,7 @@ module checks where
     BuildAsc : {e : ė} {t : τ̇} {l1 l2 : List action}
                → buildexp ▹ e ◃ l1
                → buildtype ▹ t ◃ l2
-               → buildexp ▹ e ·: t ◃ (l1 ++ (construct asc :: l2 ++ [ move parent ]))
+               → buildexp ▹ e ·: t ◃ (construct asc :: (l2 ++ (move parent :: move firstChild :: (l1 ++ [ move parent ]))))
     BuildX : {x : Nat} → buildexp ▹ X x ◃  [ construct (var x) ]
     BuildLam : {x : Nat} {e : ė} {l : List action}
                → buildexp ▹ e ◃ l
@@ -180,7 +180,7 @@ module checks where
      DoRefl  : {Γ : ·ctx} {e : ê} {t : τ̇} → runsynth Γ e t [] e t
      DoSynth : {Γ : ·ctx} {e : ê} {t : τ̇} {α : action} {e' e'' : ê} {t' t'' : τ̇}
                {L : List action} →
-                Γ ⊢ e => t ~ α ~> e' => t →
+               Γ ⊢ e => t ~ α ~> e' => t' →
                runsynth Γ e' t' L e'' t'' →
                runsynth Γ e t (α :: L) e'' t''
 
@@ -197,8 +197,7 @@ module checks where
                     runsynth Γ e1 t' L e1' t' →
                     runsynth Γ (e1 ∘₁ e2) t L (e1' ∘₁ e2) t
   runsynth-congap1 DoRefl = DoRefl
-  runsynth-congap1 (DoSynth x d) = DoSynth (SAZipAp1 {!!} {!x!} {!!})
-                                           (runsynth-congap1 {!d!})
+  runsynth-congap1 (DoSynth x d) = {!!} -- --  DoSynth (SAZipAp1 {!!} {!x!} {!!}) (runsynth-congap1 {!d!})
 
   data runana : (Γ : ·ctx) (e : ê) (Lα : List action) (e' : ê) (t : τ̇) → Set where
      DoRefl : {Γ : ·ctx} {e : ê} {t : τ̇} → runana Γ e [] e t
@@ -216,14 +215,29 @@ module checks where
   runana++ DoRefl d2 = d2
   runana++ (DoAna x d1) d2 = DoAna x (runana++ d1 d2)
 
+  lem-tscong : ∀ {L t t' Γ} →
+               runtype t L t' →
+               runsynth Γ (<||> ·:₂ t) (t ◆t) L (<||> ·:₂ t') (t' ◆t)
+  lem-tscong DoRefl = DoRefl
+  lem-tscong (DoType x rt) with lem-tscong rt
+  ... | ih = DoSynth (SAZipAsc2 x (ASubsume SEHole TCHole1)) ih
+
+  lem-anasynthasc : ∀{Γ t L e e'} →
+        runana Γ e L e' t →
+        runsynth Γ (e ·:₁ t) t L (e' ·:₁ t) t
+  lem-anasynthasc DoRefl = DoRefl
+  lem-anasynthasc (DoAna a r) = DoSynth (SAZipAsc1 a) (lem-anasynthasc r)
+
+
+
   -- if there is a list of actions that builds a type, running that list
   -- from the empty hole in focus really does produce the target type.
-  constructτ : {t : τ̇} {L : List action} →
+  constructtype : {t : τ̇} {L : List action} →
                         buildtype ▹ t ◃ L →
                         runtype (▹ <||> ◃) L (▹ t ◃)
-  constructτ  BuildNum = DoType TMConNum DoRefl
-  constructτ  BuildTHole = DoType TMDel DoRefl
-  constructτ (BuildArr bt1 bt2) with constructτ bt1 | constructτ bt2
+  constructtype  BuildNum = DoType TMConNum DoRefl
+  constructtype  BuildTHole = DoType TMDel DoRefl
+  constructtype (BuildArr bt1 bt2) with constructtype bt1 | constructtype bt2
   ... | ih1 | ih2 = runtype++ ih1 (DoType TMConArrow (runtype++ (runtype-cong2 ih2) (DoType TMParent2 DoRefl)))
 
   mutual
@@ -231,20 +245,28 @@ module checks where
                        Γ ⊢ e => t
                      → buildexp ▹ e ◃ L
                      → runsynth Γ ▹ <||> ◃ <||> L ▹ e ◃ t
-    constructsynth wt b = {!!}
+    constructsynth (SAsc x) (BuildAsc b x₁) = DoSynth SAConAsc (runsynth++ (lem-tscong (constructtype x₁)) (DoSynth (SAMove EMAscParent2) (DoSynth (SAMove EMAscFirstChild) (runsynth++ (lem-anasynthasc (constructana x b)) (DoSynth (SAMove EMAscParent1) DoRefl)) )))
+    constructsynth (SVar x) BuildX = {!!}
+    constructsynth (SAp wt x) (BuildAp b b₁) = {!!}
+    constructsynth SNum BuildN = {!!}
+    constructsynth (SPlus x x₁) (BuildPlus b b₁) = {!!}
+    constructsynth SEHole BuildEHole = {!!}
+    constructsynth (SFHole wt) (BuildFHole b) = {!!}
+    constructsynth (SApHole wt x) (BuildAp b b₁) = {!!}
 
     constructana : {Γ : ·ctx} {e : ė} {t : τ̇} {L : List action} →
                        Γ ⊢ e <= t
                      → buildexp ▹ e ◃ L
                      → runana Γ ▹ <||> ◃ L ▹ e ◃ t
-    constructana wt b = {!!}
+    constructana (ASubsume x₁ x) build = {!constructsynth x₁ build!}
+    constructana (ALam x₁ wt) (BuildLam b) = {!!}
 
 
   -- tie together the mode theorem and the above to demonstrate that for
   -- any type there is a spcific list of actions that builds it.
   constructability-types : (t : τ̇) → Σ[ L ∈ List action ] runtype (▹ <||> ◃) L (▹ t ◃)
   constructability-types t with buildtype-mode t
-  ... | (L , pf) = L , constructτ pf
+  ... | (L , pf) = L , constructtype pf
 
   constructability-synth : {Γ : ·ctx} {t : τ̇} {e : ė} → (Γ ⊢ e => t) →
                               Σ[ L ∈ List action ]
