@@ -78,13 +78,11 @@ module checks where
     BuildPlus : {e1 e2 : ė} {l1 l2 : List action}
                  → buildexp ▹ e1 ◃ l1
                  → buildexp ▹ e2 ◃ l2
-                 → buildexp ▹ e1 ·+ e2 ◃
-                            (l1 ++ l2 ++ [ move parent ])
+                 → buildexp ▹ e1 ·+ e2 ◃ (l1 ++ l2 ++ [ move parent ])
     BuildAp :  {e1 e2 : ė} {l1 l2 : List action}
                  → buildexp ▹ e1 ◃ l1
                  → buildexp ▹ e2 ◃ l2
-                 → buildexp ▹ e1 ∘ e2 ◃
-                            (l1 ++ l2 ++ [ move parent ])
+                 → buildexp ▹ e1 ∘ e2 ◃ (l1 ++ l2 ++ [ move parent ])
     BuildEHole : buildexp ▹ <||> ◃ [ del ]
     BuildFHole : {e : ė} {l : List action} →
                  buildexp ▹ e ◃ l →
@@ -238,6 +236,13 @@ module checks where
   constructtype  BuildTHole = DoType TMDel DoRefl
   constructtype (BuildArr bt1 bt2) with constructtype bt1 | constructtype bt2
   ... | ih1 | ih2 = runtype++ ih1 (DoType TMConArrow (runtype++ (runtype-cong2 ih2) (DoType TMParent2 DoRefl)))
+
+  run-subsume :  ∀ { Γ L e t t' } →
+                 runsynth Γ e t L e' t' →
+                 runana Γ e L e' t'
+  run-subsume DoRefl = DoRefl
+  run-subsume (DoSynth x act) = {!!}
+
 
   mutual
     constructsynth : {Γ : ·ctx} {e : ė} {t : τ̇} {L : List action} →
