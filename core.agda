@@ -422,7 +422,7 @@ module core where
                  Γ ⊢ (eh ∘₁ e) => t1 ~ α ~> (eh' ∘₁ e) => t4
       SAZipApAna : {Γ : ·ctx} {t' t2 t : τ̇} {e : ė} {eh eh' : ê} {α : action} →
                  (t' ▸arr (t2 ==> t)) →
-                 (Γ ⊢ e => t) →
+                 (Γ ⊢ e => t') →
                  (Γ ⊢ eh ~ α ~> eh' ⇐ t2) →
                  Γ ⊢ (e ∘₂ eh) => t ~ α ~> (e ∘₂ eh') => t
       SAZipPlus1 : {Γ : ·ctx} {e : ė} {eh eh' : ê} {α : action} →
@@ -464,10 +464,11 @@ module core where
                  (t ~̸ t') →
                  (p : (x , t') ∈ Γ) →
                  Γ ⊢ ▹ <||> ◃ ~ construct (var x) ~> <| ▹ X x ◃ |> ⇐ t
-      AAConLam1 : {Γ : ·ctx} {x : Nat} {t1 t2 : τ̇} →
+      AAConLam1 : {Γ : ·ctx} {x : Nat} {t t1 t2 : τ̇} →
                   (x # Γ) →
+                  (t ▸arr (t1 ==> t2)) →
                   Γ ⊢ ▹ <||> ◃ ~ construct (lam x) ~>
-                      ·λ x (▹ <||> ◃) ⇐ (t1 ==> t2)
+                      ·λ x (▹ <||> ◃) ⇐ t
       AAConLam2 : {Γ : ·ctx} {x : Nat} {t : τ̇} →
                   (x # Γ) →
                   (t ~̸ (<||> ==> <||>)) →
@@ -479,7 +480,8 @@ module core where
       AAFinish : {Γ : ·ctx} {e : ė} {t : τ̇} →
                  (Γ ⊢ e <= t) →
                  Γ ⊢ ▹ <| e |> ◃ ~ finish ~> ▹ e ◃ ⇐ t
-      AAZipLam : {Γ : ·ctx} {x : Nat} {t1 t2 : τ̇} {e e' : ê} {α : action} →
+      AAZipLam : {Γ : ·ctx} {x : Nat} {t t1 t2 : τ̇} {e e' : ê} {α : action} →
                  (x # Γ) →
+                 (t ▸arr (t1 ==> t2)) →
                  ((Γ ,, (x , t1)) ⊢ e ~ α ~> e' ⇐ t2) →
-                 Γ ⊢ (·λ x e) ~ α ~> (·λ x e') ⇐ (t1 ==> t2)
+                 Γ ⊢ (·λ x e) ~ α ~> (·λ x e') ⇐ t
