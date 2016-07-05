@@ -74,6 +74,14 @@ module core where
     MAHole :                  <||>     ▸arr (<||> ==> <||>)
     MAArr  : {t1 t2 : τ̇} → (t1 ==> t2) ▸arr (t1 ==> t2)
 
+  -- matching produces unique answers
+  matchunicity : ∀{ t t2 t3 } →
+                 t ▸arr t2 →
+                 t ▸arr t3 →
+                 t2 == t3
+  matchunicity MAHole MAHole = refl
+  matchunicity MAArr MAArr = refl
+
   -- bidirectional type checking judgements for ė
   mutual
     -- synthesis
