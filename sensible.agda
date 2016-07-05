@@ -59,36 +59,31 @@ module sensible where
                 (Γ ⊢ e => t ~ α ~> e' => t') →
                 (Γ ⊢ (e  ◆e) => t) →
                  Γ ⊢ (e' ◆e) => t'
-    actsense1 = {!!}
-  --   actsense1 (SAMove x) D2 = synthmovelem x D2
-  --   actsense1 SADel D2 = SEHole
-  --   actsense1 SAConAsc D2 = SAsc (ASubsume D2 TCRefl)
-  --   actsense1 (SAConVar p) D2 = SVar p
-  --   actsense1 (SAConLam p) D2 = SAsc (ALam p (ASubsume SEHole TCRefl))
-  --   actsense1 SAConAp1 D2 = SAp D2 (ASubsume SEHole TCHole1)
-  --   actsense1 SAConAp2 D2 = ? -- SApHole D2 (ASubsume SEHole TCRefl)
-  --   actsense1 (SAConAp3 x) D2 = SApHole (SFHole D2) (ASubsume SEHole TCRefl)
-  --   actsense1 SAConArg D2 = SApHole SEHole (ASubsume D2 TCHole2)
-  --   actsense1 SAConNumlit D2 = SNum
-  --   actsense1 (SAConPlus1 TCRefl) D2 = SPlus (ASubsume D2 TCRefl) (ASubsume SEHole TCHole1)
-  --   actsense1 (SAConPlus1 TCHole2) D2 = SPlus (ASubsume D2 TCHole1) (ASubsume SEHole TCHole1)
-  --   actsense1 (SAConPlus2 x) D2 = SPlus (ASubsume (SFHole D2) TCHole1) (ASubsume SEHole TCHole1)
-  --   actsense1 (SAFinish x) D2 = x
-  --   actsense1 (SAZipAsc1 x) (SAsc D2) = SAsc (actsense2 x D2)
-  --   actsense1 (SAZipAsc2 x x₁) _ = SAsc x₁
-  --   actsense1 (SAZipAp1 x D1 x₁) D2 = SAp (actsense1 D1 x) x₁
-  --   actsense1 (SAZipAp2 x D1 x₁) D2 = SApHole (actsense1 D1 x) x₁
-  --   actsense1 (SAZipAp3 x x₁) (SAp D2 x₃)     with synthunicity x D2
-  --   ... | refl = SAp x (actsense2 x₁ x₃)
-  --   actsense1 (SAZipAp3 x x₁) (SApHole D2 x₂) with synthunicity x D2
-  --   ... | ()
-  --   actsense1 (SAZipAp4 x x₁) (SAp D2 x₂)     with synthunicity x D2
-  --   ... | ()
-  --   actsense1 (SAZipAp4 x x₁) (SApHole D2 x₂)  = SApHole x (actsense2 x₁ x₂)
-  --   actsense1 (SAZipPlus1 x) (SPlus x₁ x₂) = SPlus (actsense2 x x₁) x₂
-  --   actsense1 (SAZipPlus2 x) (SPlus x₁ x₂) = SPlus x₁ (actsense2 x x₂)
-  --   actsense1 (SAZipHole1 x D1 x₁) D2 = SFHole (actsense1 D1 x)
-  --   actsense1 (SAZipHole2 x D1) D2 = SEHole
+    actsense1 (SAMove x) D2 = synthmovelem x D2
+    actsense1 SADel D2 = SEHole
+    actsense1 SAConAsc D2 = SAsc (ASubsume D2 TCRefl)
+    actsense1 (SAConVar p) D2 = SVar p
+    actsense1 (SAConLam p) D2 = SAsc (ALam p MAArr (ASubsume SEHole TCRefl))
+    actsense1 (SAConApArr m) D2 = SAp D2 m (ASubsume SEHole TCHole1)
+    actsense1 (SAConApOtw m) D2 = SAp (SFHole D2) MAHole (ASubsume SEHole TCRefl)
+    actsense1 SAConArg D2 = SAp SEHole MAHole (ASubsume D2 TCHole2)
+    actsense1 SAConNumlit D2 = SNum
+    actsense1 (SAConPlus1 TCRefl) D2 = SPlus (ASubsume D2 TCRefl) (ASubsume SEHole TCHole1)
+    actsense1 (SAConPlus1 TCHole2) D2 = SPlus (ASubsume D2 TCHole1) (ASubsume SEHole TCHole1)
+    actsense1 (SAConPlus2 x) D2 = SPlus (ASubsume (SFHole D2) TCHole1) (ASubsume SEHole TCHole1)
+    actsense1 (SAFinish x) D2 = x
+    actsense1 (SAZipAsc1 x) (SAsc D2) = SAsc (actsense2 x D2)
+    actsense1 (SAZipAsc2 x x₁) _ = SAsc x₁
+    actsense1 (SAZipApArr a b c d) D2 = SAp (actsense1 c b) a d
+    actsense1 (SAZipApAna a b c) (SAp D2 x x₁)
+      with synthunicity b D2
+    ... | refl with matchunicity a x
+    ... | refl = SAp D2 x (actsense2 c x₁)
+    actsense1 (SAZipPlus1 x) (SPlus x₁ x₂) = SPlus (actsense2 x x₁) x₂
+    actsense1 (SAZipPlus2 x) (SPlus x₁ x₂) = SPlus x₁ (actsense2 x x₂)
+    actsense1 (SAZipHole1 x D1 x₁) D2 = SFHole (actsense1 D1 x)
+    actsense1 (SAZipHole2 x D1) D2 = SEHole
+    actsense1 SAEnvelop D2 = SFHole D2
 
     -- if an action transforms an zexp in an analytic posistion to another
     -- zexp, they have the same type up erasure of focus.
@@ -113,6 +108,7 @@ module sensible where
     -- rule for lambdas synthetically
     actsense2 (AAZipLam _ _ _) (ASubsume () _)
 
+    -- the zipper possibilities
     actsense2 (AAZipLam apt m (AASubsume {p = p} x₁ x₂ x₃)) (ALam x₄ x₅ d2) with matchunicity m x₅
     ... | refl = ALam x₄ x₅ (actsense2 (AASubsume {p = p} x₁ x₂ x₃) d2)
     actsense2 (AAZipLam apt m (AAMove x₁))          (ALam x₂ x₃ d2) = ALam x₂ x₃ (anamovelem x₁ d2)
