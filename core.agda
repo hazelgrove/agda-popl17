@@ -151,7 +151,7 @@ module core where
 
   ----- some theorems about the rules and judgement presented so far.
 
-  -- thrm: a variable is apart from any context from which it is removed
+  -- a variable is apart from any context from which it is removed
   aar : (Γ : ·ctx) (x : Nat) → x # (Γ / x)
   aar Γ x with natEQ x x
   aar Γ x | Inl refl = refl
@@ -388,11 +388,10 @@ module core where
                (x # Γ) →
                 Γ ⊢ ▹ <||> ◃ => <||> ~ construct (lam x) ~>
                    ((·λ x <||>) ·:₂ (▹ <||> ◃ ==>₁ <||>)) => (<||> ==> <||>)
-      SAConAp1 : {Γ : ·ctx} {t1 t2 : τ̇} {e : ė} →
-                Γ ⊢ ▹ e ◃ => (t1 ==> t2) ~ construct ap ~> e ∘₂ ▹ <||> ◃ => t2
-      SAConAp2 : {Γ : ·ctx} {e : ė} →
-                Γ ⊢ ▹ e ◃ => <||> ~ construct ap ~>  e ∘₂ ▹ <||> ◃ => <||>
-      SAConAp3 : {Γ : ·ctx} {t : τ̇} {e : ė} →
+      SAConApArr : {Γ : ·ctx} {t t1 t2 : τ̇} {e : ė} →
+                t ▸arr (t1 ==> t2) →
+                Γ ⊢ ▹ e ◃ => t ~ construct ap ~>  e ∘₂ ▹ <||> ◃ => t2
+      SAConApOtw : {Γ : ·ctx} {t : τ̇} {e : ė} →
                 (t ~̸ (<||> ==> <||>)) →
                 Γ ⊢ ▹ e ◃ => t ~ construct ap ~> <| e |> ∘₂ ▹ <||> ◃ => <||>
       SAConArg : {Γ : ·ctx} {e : ė} {t : τ̇} →
@@ -415,24 +414,17 @@ module core where
                   (t + α +> t') →
                   (Γ ⊢ e <= (t' ◆t)) →
                   Γ ⊢ (e ·:₂ t) => (t ◆t) ~ α ~> (e ·:₂ t') => (t' ◆t)
-      SAZipAp1 : {Γ : ·ctx} {t1 t2 t3 t4 : τ̇} {α : action} {eh eh' : ê} {e : ė} →
+      SAZipApArr : {Γ : ·ctx} {t t1 t2 t3 t4 : τ̇} {α : action} {eh eh' : ê} {e : ė} →
+                 (t ▸arr (t3 ==> t4)) →
                  (Γ ⊢ (eh ◆e) => t2) →
-                 (Γ ⊢ eh => t2 ~ α ~> eh' => (t3 ==> t4)) →
+                 (Γ ⊢ eh => t2 ~ α ~> eh' => t) →
                  (Γ ⊢ e <= t3) →
                  Γ ⊢ (eh ∘₁ e) => t1 ~ α ~> (eh' ∘₁ e) => t4
-      SAZipAp2 : {Γ : ·ctx} {t1 t2 : τ̇} {α : action} {eh eh' : ê} {e : ė} →
-                 (Γ ⊢ (eh ◆e) => t2) →
-                 (Γ ⊢ eh => t2 ~ α ~> eh' => <||>) →
-                 (Γ ⊢ e <= <||>) →
-                 Γ ⊢ (eh ∘₁ e) => t1 ~ α ~> (eh' ∘₁ e) => <||>
-      SAZipAp3 : {Γ : ·ctx} {t2 t : τ̇} {e : ė} {eh eh' : ê} {α : action} →
-                 (Γ ⊢ e => (t2 ==> t)) →
+      SAZipApAna : {Γ : ·ctx} {t' t2 t : τ̇} {e : ė} {eh eh' : ê} {α : action} →
+                 (t' ▸arr (t2 ==> t)) →
+                 (Γ ⊢ e => t) →
                  (Γ ⊢ eh ~ α ~> eh' ⇐ t2) →
                  Γ ⊢ (e ∘₂ eh) => t ~ α ~> (e ∘₂ eh') => t
-      SAZipAp4 : {Γ : ·ctx} {e : ė} {eh eh' : ê} {α : action} →
-                 (Γ ⊢ e => <||>) →
-                 (Γ ⊢ eh ~ α ~> eh' ⇐ <||>) →
-                 Γ ⊢ (e ∘₂ eh) => <||> ~ α ~> (e ∘₂ eh') => <||>
       SAZipPlus1 : {Γ : ·ctx} {e : ė} {eh eh' : ê} {α : action} →
                    (Γ ⊢ eh ~ α ~> eh' ⇐ num) →
                    Γ ⊢ (eh ·+₁ e) => num ~ α ~> (eh' ·+₁ e) => num
