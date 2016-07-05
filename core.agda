@@ -63,6 +63,11 @@ module core where
                t2 ~ t2' →
                (t1 ==> t2) ~ (t1' ==> t2')
 
+  --- matching for arrows
+  data _▸arr_ : τ̇ → τ̇ → Set where
+    MAHole :                  <||>     ▸arr (<||> ==> <||>)
+    MAArr  : {t1 t2 : τ̇} → (t1 ==> t2) ▸arr (t1 ==> t2)
+
   -- type inconsistency. rather than enumerate the types which aren't
   -- consistent, we encode this judgement immediately as the complement of
   -- consistency.
@@ -79,10 +84,11 @@ module core where
       SVar    : {Γ : ·ctx} {t : τ̇} {n : Nat} →
                  (n , t) ∈ Γ →
                  Γ ⊢ X n => t
-      SAp     : {Γ : ·ctx} {e1 e2 : ė} {t t2 : τ̇} →
-                 Γ ⊢ e1 => (t2 ==> t) →
+      SAp     : {Γ : ·ctx} {e1 e2 : ė} {t t' t2 : τ̇} →
+                 Γ ⊢ e1 => t →
+                 t ▸arr (t2 ==> t') →
                  Γ ⊢ e2 <= t2 →
-                 Γ ⊢ (e1 ∘ e2) => t
+                 Γ ⊢ (e1 ∘ e2) => t'
       SNum    :  {Γ : ·ctx} {n : Nat} →
                  Γ ⊢ N n => num
       SPlus   : {Γ : ·ctx} {e1 e2 : ė}  →
@@ -93,10 +99,6 @@ module core where
       SFHole  : {Γ : ·ctx} {e : ė} {t : τ̇} →
                  Γ ⊢ e => t →
                  Γ ⊢ <| e |> => <||>
-      SApHole : {Γ : ·ctx} {e1 e2 : ė} →
-                 Γ ⊢ e1 => <||> →
-                 Γ ⊢ e2 <= <||> →
-                 Γ ⊢ (e1 ∘ e2) => <||>
 
     -- analysis
     data _⊢_<=_ : (Γ : ·ctx) → (e : ė) → (t : τ̇) → Set where
@@ -104,10 +106,11 @@ module core where
                  Γ ⊢ e => t' →
                  t ~ t' →
                  Γ ⊢ e <= t
-      ALam : {Γ : ·ctx} {e : ė} {t1 t2 : τ̇} {n : Nat} →
-                 n # Γ →
-                 (Γ ,, (n , t1)) ⊢ e <= t2 →
-                 Γ ⊢ (·λ n e) <= (t1 ==> t2)
+      ALam : {Γ : ·ctx} {e : ė} {t t1 t2 : τ̇} {x : Nat} →
+                 x # Γ →
+                 t ▸arr (t1 ==> t2) →
+                 (Γ ,, (x , t1)) ⊢ e <= t2 →
+                 Γ ⊢ (·λ x e) <= t
 
   ----- a couple of exmaples to demonstrate how the encoding above works
 
@@ -117,40 +120,33 @@ module core where
 
   -- this is the derivation that fn has type num ==> num
   ex1 : ∅ ⊢ ·λ 0 (X 0 ·+ N 0) <= (num ==> num)
-  ex1 = ALam refl
-         (ASubsume
-          (SPlus (ASubsume (SVar refl) TCRefl) (ASubsume SNum TCRefl))
-          TCRefl)
+  ex1 = ALam refl MAArr (ASubsume
+                           (SPlus (ASubsume (SVar refl) TCRefl) (ASubsume SNum TCRefl))
+                           TCRefl)
 
   -- the derivation that when applied to the numeric argument 10 add0
   -- produces a num.
   ex2 : ∅ ⊢ (add0 ·: (num ==> num)) ∘ (N 10) => num
-  ex2 = SAp (SAsc ex1) (ASubsume SNum TCRefl)
+  ex2 = SAp (SAsc ex1) MAArr (ASubsume SNum TCRefl)
 
   -- the slightly longer derivation that argues that add0 applied to a
   -- variable that's known to be a num produces a num
   ex2b : (∅ ,, (1 , num)) ⊢ (add0 ·: (num ==> num)) ∘ (X 1) => num
-  ex2b = SAp (SAsc
-                (ALam refl
-                 (ASubsume
-                  (SPlus (ASubsume (SVar refl) TCRefl) (ASubsume SNum TCRefl))
-                  TCRefl)))
-              (ASubsume (SVar refl) TCRefl)
+  ex2b = SAp (SAsc (ALam refl MAArr (ASubsume
+                                       (SPlus (ASubsume (SVar refl) TCRefl) (ASubsume SNum TCRefl))
+                                       TCRefl))) MAArr (ASubsume (SVar refl) TCRefl)
 
   -- eta-expanding addition to curry it gets num → num → num
   ex3 : ∅ ⊢ ·λ 0 ( (·λ 1 (X 0 ·+ X 1)) ·: (num ==> num)  )
                <= (num ==> (num ==> num))
-  ex3 = ALam refl (ASubsume (SAsc (ALam refl
-                                    (ASubsume
-                                      (SPlus (ASubsume (SVar refl) TCRefl)
-                                             (ASubsume (SVar refl) TCRefl))
-                                          TCRefl))) TCRefl)
+  ex3 = ALam refl MAArr (ASubsume (SAsc (ALam refl MAArr (ASubsume
+                                                            (SPlus (ASubsume (SVar refl) TCRefl) (ASubsume (SVar refl) TCRefl))
+                                                            TCRefl))) TCRefl)
 
   -- applying three to four has type hole -- but there is no action that
   -- can fill the hole in the type so this term is forever incomplete.
   ex4 : ∅ ⊢ ((N 3) ·: <||>) ∘ (N 4) => <||>
-  ex4 = SApHole (SAsc (ASubsume SNum TCHole2)) (ASubsume SNum TCHole2)
-
+  ex4 = SAp (SAsc (ASubsume SNum TCHole2)) MAHole (ASubsume SNum TCHole2)
 
 
   ----- some theorems about the rules and judgement presented so far.
@@ -219,17 +215,17 @@ module core where
                 → t == t'
   synthunicity (SAsc _) (SAsc _) = refl
   synthunicity {Γ = G} (SVar in1) (SVar in2) = ctxunicity {Γ = G} in1 in2
-  synthunicity (SAp D1 _) (SAp D2 _) with synthunicity D1 D2
-  ... | refl = refl
-  synthunicity (SAp D1 _) (SApHole D2 _) with synthunicity D1 D2
+  synthunicity (SAp D1 MAHole b) (SAp D2 MAHole y) = refl
+  synthunicity (SAp D1 MAHole b) (SAp D2 MAArr y) with synthunicity D1 D2
   ... | ()
+  synthunicity (SAp D1 MAArr b) (SAp D2 MAHole y) with synthunicity D1 D2
+  ... | ()
+  synthunicity (SAp D1 MAArr b) (SAp D2 MAArr y) with synthunicity D1 D2
+  ... | refl = refl
   synthunicity SNum SNum = refl
   synthunicity (SPlus _ _ ) (SPlus _ _ ) = refl
   synthunicity SEHole SEHole = refl
   synthunicity (SFHole _) (SFHole _) = refl
-  synthunicity (SApHole D1 _) (SAp D2 _) with synthunicity D1 D2
-  ... | ()
-  synthunicity (SApHole _ _) (SApHole _ _) = refl
 
 
   ----- the zippered form of the forms above and the rules for actions on them
