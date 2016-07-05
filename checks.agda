@@ -88,7 +88,7 @@ module checks where
     BuildEHole : buildexp ▹ <||> ◃ [ del ]
     BuildFHole : {e : ė} {l : List action} →
                  buildexp ▹ e ◃ l →
-                 buildexp ▹ <| e |> ◃ [] -- stub
+                 buildexp ▹ <| e |> ◃ (l ++ [ envelop ])
 
   -- taken together, these three theorems say that the build judgements
   -- have mode (∀, ∃), which is to say that they effectively define total
@@ -197,7 +197,8 @@ module checks where
                     runsynth Γ e1 t' L e1' t' →
                     runsynth Γ (e1 ∘₁ e2) t L (e1' ∘₁ e2) t
   runsynth-congap1 DoRefl = DoRefl
-  runsynth-congap1 (DoSynth x d) = {!!} -- --  DoSynth (SAZipAp1 {!!} {!x!} {!!}) (runsynth-congap1 {!d!})
+  runsynth-congap1 (DoSynth x d) = {!!}
+                   -- --  DoSynth (SAZipAp1 {!!} {!x!} {!!}) (runsynth-congap1 {!d!})
 
   data runana : (Γ : ·ctx) (e : ê) (Lα : List action) (e' : ê) (t : τ̇) → Set where
      DoRefl : {Γ : ·ctx} {e : ê} {t : τ̇} → runana Γ e [] e t
@@ -228,8 +229,6 @@ module checks where
   lem-anasynthasc DoRefl = DoRefl
   lem-anasynthasc (DoAna a r) = DoSynth (SAZipAsc1 a) (lem-anasynthasc r)
 
-
-
   -- if there is a list of actions that builds a type, running that list
   -- from the empty hole in focus really does produce the target type.
   constructtype : {t : τ̇} {L : List action} →
@@ -246,12 +245,12 @@ module checks where
                      → buildexp ▹ e ◃ L
                      → runsynth Γ ▹ <||> ◃ <||> L ▹ e ◃ t
     constructsynth (SAsc x) (BuildAsc b x₁) = DoSynth SAConAsc (runsynth++ (lem-tscong (constructtype x₁)) (DoSynth (SAMove EMAscParent2) (DoSynth (SAMove EMAscFirstChild) (runsynth++ (lem-anasynthasc (constructana x b)) (DoSynth (SAMove EMAscParent1) DoRefl)) )))
-    constructsynth (SVar x) BuildX = {!!}
+    constructsynth (SVar x) BuildX = DoSynth (SAConVar x) DoRefl
     constructsynth (SAp wt x) (BuildAp b b₁) = {!!}
-    constructsynth SNum BuildN = {!!}
+    constructsynth SNum BuildN = DoSynth SAConNumlit DoRefl
     constructsynth (SPlus x x₁) (BuildPlus b b₁) = {!!}
-    constructsynth SEHole BuildEHole = {!!}
-    constructsynth (SFHole wt) (BuildFHole b) = {!!}
+    constructsynth SEHole BuildEHole = DoSynth SADel DoRefl
+    constructsynth (SFHole wt) (BuildFHole b) = runsynth++ (constructsynth wt b) (DoSynth SAEnvelop DoRefl)
     constructsynth (SApHole wt x) (BuildAp b b₁) = {!!}
 
     constructana : {Γ : ·ctx} {e : ė} {t : τ̇} {L : List action} →
