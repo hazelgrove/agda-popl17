@@ -50,7 +50,28 @@ module checks where
                runtype t' L t'' →
                runtype t (α :: L) t''
 
-  -- runtype lifts to the list monoid as expected
+  data runsynth :
+    (Γ : ·ctx) (e : ê) (t1 : τ̇) (Lα : List action) (e' : ê) (t2 : τ̇) → Set where
+     DoRefl  : {Γ : ·ctx} {e : ê} {t : τ̇} → runsynth Γ e t [] e t
+     DoSynth : {Γ : ·ctx} {e : ê} {t : τ̇} {α : action} {e' e'' : ê} {t' t'' : τ̇}
+               {L : List action} →
+               Γ ⊢ e => t ~ α ~> e' => t' →
+               runsynth Γ e' t' L e'' t'' →
+               runsynth Γ e t (α :: L) e'' t''
+
+  data runana : (Γ : ·ctx) (e : ê) (Lα : List action) (e' : ê) (t : τ̇) → Set where
+     DoRefl : {Γ : ·ctx} {e : ê} {t : τ̇} → runana Γ e [] e t
+     DoAna : {Γ : ·ctx} {e : ê} {α : action} {e' e'' : ê} {t : τ̇}
+              {L : List action} →
+              Γ ⊢ e ~ α ~> e' ⇐ t →
+              runana Γ e' L e'' t →
+              runana Γ e (α :: L) e'' t
+
+  -- all three run judgements lift to the list monoid as expected. these
+  -- theorems are simple because the structure of lists is simple, but they
+  -- amount a reasoning principle about the composition of action sequences
+  -- by letting you split lists in (nearly) arbitrary places and argue
+  -- about the consequences of the splits before composing them together.
   runtype++ : ∀{t t' t'' L1 L2 }
                 → runtype t  L1 t'
                 → runtype t' L2 t''
@@ -58,8 +79,31 @@ module checks where
   runtype++ DoRefl d2 = d2
   runtype++ (DoType x d1) d2 = DoType x (runtype++ d1 d2)
 
-  -- runtype is a congruence; that is, you can replace related subterms and
-  -- preseve relatedness
+  runsynth++ : ∀{Γ e t L1 e' t' L2 e'' t''}
+                → runsynth Γ e t L1 e' t'
+                → runsynth Γ e' t' L2 e'' t''
+                → runsynth Γ e t (L1 ++ L2) e'' t''
+  runsynth++ DoRefl d2 = d2
+  runsynth++ (DoSynth x d1) d2 = DoSynth x (runsynth++ d1 d2)
+
+  runana++ : ∀{Γ e t L1 e' L2 e''}
+                → runana Γ e  L1 e' t
+                → runana Γ e' L2 e'' t
+                → runana Γ e (L1 ++ L2) e'' t
+  runana++ DoRefl d2 = d2
+  runana++ (DoAna x d1) d2 = DoAna x (runana++ d1 d2)
+
+
+  -- the following collection of lemmas asserts that the various runs
+  -- interoperate nicely. in many cases, these amount to observing
+  -- something like congruence: if a subterm is related to something by one
+  -- of the judgements, it can be replaced by the thing to which it is
+  -- related in a larger context without disrupting that larger context.
+  --
+  -- algorithmically, these amount to a checksum on the zipper actions; by
+  -- iterating the action semantics, we need to show that they interplay in
+  -- the right way, which is congruence.
+
   runtype-cong1 : ∀ {t1 t1' t2 L } →
             runtype t1' L t1 →
             runtype (t1' ==>₁ t2) L (t1 ==>₁ t2)
@@ -73,53 +117,13 @@ module checks where
   runtype-cong2 (DoType x L') = DoType (TMZip2 x) (runtype-cong2 L')
 
 
-  data runsynth :
-    (Γ : ·ctx) (e : ê) (t1 : τ̇) (Lα : List action) (e' : ê) (t2 : τ̇) → Set where
-     DoRefl  : {Γ : ·ctx} {e : ê} {t : τ̇} → runsynth Γ e t [] e t
-     DoSynth : {Γ : ·ctx} {e : ê} {t : τ̇} {α : action} {e' e'' : ê} {t' t'' : τ̇}
-               {L : List action} →
-               Γ ⊢ e => t ~ α ~> e' => t' →
-               runsynth Γ e' t' L e'' t'' →
-               runsynth Γ e t (α :: L) e'' t''
-
-  -- runsynth lifts to the list monoid as expected
-  runsynth++ : ∀{Γ e t L1 e' t' L2 e'' t''}
-                → runsynth Γ e t L1 e' t'
-                → runsynth Γ e' t' L2 e'' t''
-                → runsynth Γ e t (L1 ++ L2) e'' t''
-  runsynth++ DoRefl d2 = d2
-  runsynth++ (DoSynth x d1) d2 = DoSynth x (runsynth++ d1 d2)
-
-  -- congruence rules for runsynth
-  runsynth-congap1 : ∀{Γ e1 t L e1' e2 t'} →
-                    runsynth Γ e1 t' L e1' t' →
-                    runsynth Γ (e1 ∘₁ e2) t L (e1' ∘₁ e2) t
-  runsynth-congap1 DoRefl = DoRefl
-  runsynth-congap1 (DoSynth x d) = {!!}
-                   -- --  DoSynth (SAZipAp1 {!!} {!x!} {!!}) (runsynth-congap1 {!d!})
-
-  data runana : (Γ : ·ctx) (e : ê) (Lα : List action) (e' : ê) (t : τ̇) → Set where
-     DoRefl : {Γ : ·ctx} {e : ê} {t : τ̇} → runana Γ e [] e t
-     DoAna : {Γ : ·ctx} {e : ê} {α : action} {e' e'' : ê} {t : τ̇}
-              {L : List action} →
-              Γ ⊢ e ~ α ~> e' ⇐ t →
-              runana Γ e' L e'' t →
-              runana Γ e (α :: L) e'' t
-
-  -- runana lifts to the list monoid as expected
-  runana++ : ∀{Γ e t L1 e' L2 e''}
-                → runana Γ e  L1 e' t
-                → runana Γ e' L2 e'' t
-                → runana Γ e (L1 ++ L2) e'' t
-  runana++ DoRefl d2 = d2
-  runana++ (DoAna x d1) d2 = DoAna x (runana++ d1 d2)
-
   lem-tscong : ∀ {L t t' Γ} →
                runtype t L t' →
                runsynth Γ (<||> ·:₂ t) (t ◆t) L (<||> ·:₂ t') (t' ◆t)
   lem-tscong DoRefl = DoRefl
   lem-tscong (DoType x rt) with lem-tscong rt
   ... | ih = DoSynth (SAZipAsc2 x (ASubsume SEHole TCHole1)) ih
+
 
   lem-anasynthasc : ∀{Γ t L e e'} →
         runana Γ e L e' t →
@@ -129,16 +133,16 @@ module checks where
 
   -- if there is a list of actions that builds a type, running that list
   -- from the empty hole in focus really does produce the target type.
-  constructtype : {t : τ̇} {L : List action} →
-                        buildtype ▹ t ◃ L →
-                        runtype (▹ <||> ◃) L (▹ t ◃)
-  constructtype  BuildNum = DoType TMConNum DoRefl
-  constructtype  BuildTHole = DoType TMDel DoRefl
-  constructtype (BuildArr bt1 bt2) with constructtype bt1 | constructtype bt2
-  ... | ih1 | ih2 = runtype++ ih1 (DoType TMConArrow (runtype++ (runtype-cong2 ih2) (DoType TMParent2 DoRefl)))
-
-  run-subsume :  ∀ { Γ L e t t' } →
+  run-subsume :  ∀ { Γ L e e' t t' } →
                  runsynth Γ e t L e' t' →
                  runana Γ e L e' t'
   run-subsume DoRefl = DoRefl
   run-subsume (DoSynth x act) = {!!}
+
+  -- congruence rules for runsynth
+  runsynth-congap1 : ∀{Γ e1 t L e1' e2 t'} →
+                    runsynth Γ e1 t' L e1' t' →
+                    runsynth Γ (e1 ∘₁ e2) t L (e1' ∘₁ e2) t
+  runsynth-congap1 DoRefl = DoRefl
+  runsynth-congap1 (DoSynth x d) = {!!}
+                   -- --  DoSynth (SAZipAp1 {!!} {!x!} {!!}) (runsynth-congap1 {!d!})

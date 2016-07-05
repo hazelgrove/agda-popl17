@@ -108,6 +108,14 @@ module constructabiltiy where
     buildexp-mode-ana (ALam _ d) with buildexp-mode-ana d
     ... | (_ , p)= _ , BuildLam p
 
+  constructtype : {t : τ̇} {L : List action} →
+                        buildtype ▹ t ◃ L →
+                        runtype (▹ <||> ◃) L (▹ t ◃)
+  constructtype  BuildNum = DoType TMConNum DoRefl
+  constructtype  BuildTHole = DoType TMDel DoRefl
+  constructtype (BuildArr bt1 bt2) with constructtype bt1 | constructtype bt2
+  ... | ih1 | ih2 = runtype++ ih1 (DoType TMConArrow (runtype++ (runtype-cong2 ih2) (DoType TMParent2 DoRefl)))
+
   mutual
     constructsynth : {Γ : ·ctx} {e : ė} {t : τ̇} {L : List action} →
                        Γ ⊢ e => t
