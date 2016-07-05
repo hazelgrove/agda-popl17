@@ -63,16 +63,16 @@ module core where
                t2 ~ t2' →
                (t1 ==> t2) ~ (t1' ==> t2')
 
-  --- matching for arrows
-  data _▸arr_ : τ̇ → τ̇ → Set where
-    MAHole :                  <||>     ▸arr (<||> ==> <||>)
-    MAArr  : {t1 t2 : τ̇} → (t1 ==> t2) ▸arr (t1 ==> t2)
-
   -- type inconsistency. rather than enumerate the types which aren't
   -- consistent, we encode this judgement immediately as the complement of
   -- consistency.
   _~̸_ : τ̇ → τ̇ → Set
   t1 ~̸ t2 = (t1 ~ t2) → ⊥
+
+  --- matching for arrows
+  data _▸arr_ : τ̇ → τ̇ → Set where
+    MAHole :                  <||>     ▸arr (<||> ==> <||>)
+    MAArr  : {t1 t2 : τ̇} → (t1 ==> t2) ▸arr (t1 ==> t2)
 
   -- bidirectional type checking judgements for ė
   mutual
