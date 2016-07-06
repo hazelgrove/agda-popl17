@@ -68,13 +68,11 @@ module reachability where
     reachup-synth (EEAscL er) (SAsc x) = {!!}
     reachup-synth (EEAscR x) (SAsc x₁) with reachup-type x
     ... | ih = runsynth++ (runsynth-type x₁ x ih) (DoSynth (SAMove EMAscParent2) DoRefl)
-    reachup-synth (EEApL er) (SAp wt x) with reachup-synth er wt
-    ... | ih = runsynth++ (runsynth-congap1 ih) (DoSynth (SAMove EMApParent1) DoRefl)
-    reachup-synth (EEApR er) (SAp wt x) = {!!}
+    reachup-synth (EEApL er) (SAp wt m x) with reachup-synth er wt
+    ... | ih = runsynth++ {!ih!} (DoSynth (SAMove EMApParent1) DoRefl)
+    reachup-synth (EEApR er) (SAp wt m x) = {!!}
     reachup-synth (EEPlusL er) (SPlus x x₁) = {!!}
     reachup-synth (EEPlusR er) (SPlus x x₁) = {!!}
-    reachup-synth (EEApL er) (SApHole wt x) = {!!}
-    reachup-synth (EEApR er) (SApHole wt x) = {!!}
     reachup-synth (EEFHole er) (SFHole wt) = {!!}
 
     reachup-ana : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
@@ -116,10 +114,8 @@ module reachability where
     reachdown-synth EETop _ = DoRefl
     reachdown-synth (EEAscL p) (SAsc x) = {!!}
     reachdown-synth (EEAscR x) (SAsc x₁) = {!!}
-    reachdown-synth (EEApL p) (SAp wt x) = {!!}
-    reachdown-synth (EEApL p) (SApHole wt x) = {!!}
-    reachdown-synth (EEApR p) (SAp wt x) = {!!}
-    reachdown-synth (EEApR p) (SApHole wt x) = {!!}
+    reachdown-synth (EEApL p) (SAp wt m  x) = {!!}
+    reachdown-synth (EEApR p) (SAp wt m x) = {!!}
     reachdown-synth (EEPlusL p) (SPlus x x₁) = {!!}
     reachdown-synth (EEPlusR p) (SPlus x x₁) = {!!}
     reachdown-synth (EEFHole p) (SFHole wt) = {!!}
@@ -137,7 +133,7 @@ module reachability where
     reachdown-ana (EEPlusL p) (ASubsume x x₁) = {!!}
     reachdown-ana (EEPlusR p) (ASubsume x x₁) = {!!}
     reachdown-ana (EEFHole p) (ASubsume x x₁) = {!!}
-    reachdown-ana (EELam p) (ALam x₁ wt) = {!!}
+    reachdown-ana (EELam p) (ALam m x₁ wt) = {!!}
 
   -- this is the final statement of the reachability triplet. the movement
   -- between judgemental and metafunctional erasure happens internally to
