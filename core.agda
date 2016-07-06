@@ -65,7 +65,8 @@ module core where
 
   -- type inconsistency. rather than enumerate the types which aren't
   -- consistent, we encode this judgement immediately as the complement of
-  -- consistency.
+  -- consistency. a proof that this is isomorphic to the judmental form is
+  -- in judgemental-inconsistency.agda
   _~̸_ : τ̇ → τ̇ → Set
   t1 ~̸ t2 = (t1 ~ t2) → ⊥
 
@@ -84,8 +85,8 @@ module core where
 
   -- if a type matches, then it's consistent with the least restrictive
   -- function type
-  matchconsist : ∀{t t1 t2} →
-                 t ▸arr (t1 ==> t2) →
+  matchconsist : ∀{t t'} →
+                 t ▸arr t' →
                  t ~ (<||> ==> <||>)
   matchconsist MAHole = TCHole2
   matchconsist MAArr = TCArr TCHole1 TCHole1
@@ -424,7 +425,7 @@ module core where
                 (t ~̸ num) →
                 Γ ⊢ ▹ e ◃ => t ~ construct plus ~> <| e |> ·+₂ ▹ <||> ◃  => num
       SAConNEHole : {Γ : ·ctx} {e : ė} {t : τ̇} →
-                  Γ ⊢ ▹ e ◃ => t ~ construct nehole ~> ▹ <| e |> ◃ => <||>
+                  Γ ⊢ ▹ e ◃ => t ~ construct nehole ~> <| ▹ e ◃ |> => <||>
       SAFinish : {Γ : ·ctx} {e : ė} {t : τ̇} →
                  (Γ ⊢ e => t) →
                  Γ ⊢ ▹ <| e |> ◃ => <||> ~ finish ~> ▹ e ◃ => t
