@@ -13,6 +13,13 @@ module judgemental-inconsistency where
                incon t2 t4 →
                incon (t1 ==> t2) (t3 ==> t4)
 
+  -- inconsistency is symmetric
+  inconsym : ∀ {t1 t2} → incon t1 t2 → incon t2 t1
+  inconsym ICNum1 = ICNum2
+  inconsym ICNum2 = ICNum1
+  inconsym (ICArr1 x) = ICArr1 (inconsym x)
+  inconsym (ICArr2 x) = ICArr2 (inconsym x)
+
   -- if an arrow type is ~̸, either the domain or the range must be ~̸. this
   -- is aggressively classical in flavor BUT happens to be true
   -- constructively, if only because ~ is deciable.
