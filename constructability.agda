@@ -67,7 +67,7 @@ module constructability where
     BuildEHole : buildexp ▹ <||> ◃ [ del ]
     BuildNEHole : {e : ė} {l : List action} →
                  buildexp ▹ e ◃ l →
-                 buildexp ▹ <| e |> ◃ (l ++ [ construct fhole ])
+                 buildexp ▹ <| e |> ◃ (l ++ [ construct nehole ])
 
   -- taken together, these three theorems say that the build judgements
   -- have mode (∀, ∃), which is to say that they effectively define total
