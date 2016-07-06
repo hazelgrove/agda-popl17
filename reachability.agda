@@ -73,7 +73,7 @@ module reachability where
     reachup-synth (EEApR er) (SAp wt m x) = {!!}
     reachup-synth (EEPlusL er) (SPlus x x₁) = {!!}
     reachup-synth (EEPlusR er) (SPlus x x₁) = {!!}
-    reachup-synth (EEFHole er) (SFHole wt) = {!!}
+    reachup-synth (EENEHole er) (SNEHole wt) = {!!}
 
     reachup-ana : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
                       erase-e e e' →
@@ -93,7 +93,7 @@ module reachability where
   movedown-e (·λ x e)  (·λ .x e')   (EELam er)   = move firstChild :: movedown-e _ _ er
   movedown-e (e ·+ e₁) (e' ·+₁ .e₁) (EEPlusL er) = move firstChild :: movedown-e _ _ er
   movedown-e (e ·+ e₁) (.e ·+₂ e')  (EEPlusR er) = move firstChild :: move nextSib ::  movedown-e _ _ er
-  movedown-e <| e |>   <| e' |>     (EEFHole er) = move firstChild :: movedown-e _ _ er
+  movedown-e <| e |>   <| e' |>     (EENEHole er) = move firstChild :: movedown-e _ _ er
   movedown-e (e ∘ e₁)  (e' ∘₁ .e₁)  (EEApL er)   = move firstChild :: movedown-e _ _ er
   movedown-e (e ∘ e₁)  (.e ∘₂ e')   (EEApR er)   = move firstChild :: move nextSib :: movedown-e _ _ er
 
@@ -118,7 +118,7 @@ module reachability where
     reachdown-synth (EEApR p) (SAp wt m x) = {!!}
     reachdown-synth (EEPlusL p) (SPlus x x₁) = {!!}
     reachdown-synth (EEPlusR p) (SPlus x x₁) = {!!}
-    reachdown-synth (EEFHole p) (SFHole wt) = {!!}
+    reachdown-synth (EENEHole p) (SNEHole wt) = {!!}
 
     reachdown-ana : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
                       (p : erase-e e e') →
@@ -132,7 +132,7 @@ module reachability where
     reachdown-ana (EEApR p) (ASubsume x x₁) = {!!}
     reachdown-ana (EEPlusL p) (ASubsume x x₁) = {!!}
     reachdown-ana (EEPlusR p) (ASubsume x x₁) = {!!}
-    reachdown-ana (EEFHole p) (ASubsume x x₁) = {!!}
+    reachdown-ana (EENEHole p) (ASubsume x x₁) = {!!}
     reachdown-ana (EELam p) (ALam m x₁ wt) = {!!}
 
   -- because the point of the reachability theorems is to show that we
@@ -186,7 +186,7 @@ module reachability where
   allmoves-movedown-e (·λ x e) (·λ .x e') (EELam p) = AM:: (allmoves-movedown-e e e' p)
   allmoves-movedown-e (e ·+ e₁) (e' ·+₁ .e₁) (EEPlusL p) = AM:: (allmoves-movedown-e e e' p)
   allmoves-movedown-e (e ·+ e₁) (.e ·+₂ e') (EEPlusR p) = AM:: (AM:: (allmoves-movedown-e e₁ e' p))
-  allmoves-movedown-e <| e |> <| e' |> (EEFHole p) = AM:: (allmoves-movedown-e e e' p)
+  allmoves-movedown-e <| e |> <| e' |> (EENEHole p) = AM:: (allmoves-movedown-e e e' p)
   allmoves-movedown-e (e ∘ e₁) (e' ∘₁ .e₁) (EEApL p) = AM:: (allmoves-movedown-e e e' p)
   allmoves-movedown-e (e ∘ e₁) (.e ∘₂ e') (EEApR p) = AM:: (AM:: (allmoves-movedown-e e₁ e' p))
 

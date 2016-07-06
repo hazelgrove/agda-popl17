@@ -40,7 +40,7 @@ module judgemental-erase where
     EEApR   : ∀{e1 e2 e2'} → erase-e e2 e2' → erase-e (e1 ∘₂ e2) (e1 ∘ e2')
     EEPlusL : ∀{e1 e1' e2} → erase-e e1 e1' → erase-e (e1 ·+₁ e2) (e1' ·+ e2)
     EEPlusR : ∀{e1 e2 e2'} → erase-e e2 e2' → erase-e (e1 ·+₂ e2) (e1 ·+ e2')
-    EEFHole : ∀{e e'}      → erase-e e e'   → erase-e <| e |>  <| e' |>
+    EENEHole : ∀{e e'}      → erase-e e e'   → erase-e <| e |>  <| e' |>
 
 
   -- this pair of theorems moves from the judgmental form to the function form
@@ -58,7 +58,7 @@ module judgemental-erase where
   erase-e◆ (EEApR p)   = ap1 (λ x → _ ∘ x)   (erase-e◆ p)
   erase-e◆ (EEPlusL p) = ap1 (λ x → x ·+ _)  (erase-e◆ p)
   erase-e◆ (EEPlusR p) = ap1 (λ x → _ ·+ x)  (erase-e◆ p)
-  erase-e◆ (EEFHole p) = ap1 (λ x → <| x |>) (erase-e◆ p)
+  erase-e◆ (EENEHole p) = ap1 (λ x → <| x |>) (erase-e◆ p)
 
   -- this pair of theorems moves back from judgmental form to the function form
   ◆erase-t : (t : τ̂) (tr : τ̇) → (t ◆t == tr) → (erase-t t tr)
@@ -77,7 +77,7 @@ module judgemental-erase where
   ◆erase-e (x ∘₂ e) .(x ∘ (e ◆e)) refl = EEApR (◆erase-e e (e ◆e) refl)
   ◆erase-e (e ·+₁ x) .((e ◆e) ·+ x) refl = EEPlusL (◆erase-e e (e ◆e) refl)
   ◆erase-e (x ·+₂ e) .(x ·+ (e ◆e)) refl = EEPlusR (◆erase-e e (e ◆e) refl)
-  ◆erase-e <| e |> .(<| e ◆e |>) refl = EEFHole (◆erase-e e (e ◆e) refl)
+  ◆erase-e <| e |> .(<| e ◆e |>) refl = EENEHole (◆erase-e e (e ◆e) refl)
 
   -- taken together, these two theorems demonstrate that the round-trip of
   -- one of the pairings above is stable. as a consequence of the
@@ -126,7 +126,7 @@ module judgemental-erase where
   rel◆ (x ∘₂ e) = EEApR (rel◆ e)
   rel◆ (e ·+₁ x) = EEPlusL (rel◆ e)
   rel◆ (x ·+₂ e) = EEPlusR (rel◆ e)
-  rel◆ <| e |> = EEFHole (rel◆ e)
+  rel◆ <| e |> = EENEHole (rel◆ e)
 
   lem-erase-ana : ∀{e e' Γ t} → erase-e e e' → Γ ⊢ e' <= t → Γ ⊢ (e ◆e) <= t
   lem-erase-ana er wt = tr (λ x → _ ⊢ x <= _) (! (erase-e◆ er)) wt

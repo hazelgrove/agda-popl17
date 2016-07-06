@@ -65,7 +65,7 @@ module constructability where
                  → buildexp ▹ e2 ◃ l2
                  → buildexp ▹ e1 ∘ e2 ◃ (l1 ++ l2 ++ [ move parent ])
     BuildEHole : buildexp ▹ <||> ◃ [ del ]
-    BuildFHole : {e : ė} {l : List action} →
+    BuildNEHole : {e : ė} {l : List action} →
                  buildexp ▹ e ◃ l →
                  buildexp ▹ <| e |> ◃ (l ++ [ construct fhole ])
 
@@ -98,8 +98,8 @@ module constructability where
     buildexp-mode-synth (SPlus d1 d2) with buildexp-mode-ana d1 | buildexp-mode-ana d2
     ... | (_ , p1) | (_ , p2) = _ , BuildPlus p1 p2
     buildexp-mode-synth SEHole = _ , BuildEHole
-    buildexp-mode-synth (SFHole d) with buildexp-mode-synth d
-    ... | (_ , p)= _ , BuildFHole p
+    buildexp-mode-synth (SNEHole d) with buildexp-mode-synth d
+    ... | (_ , p)= _ , BuildNEHole p
 
     buildexp-mode-ana : {Γ : ·ctx} {e : ė} {t : τ̇} (wt : Γ ⊢ e <= t) →
               Σ[ l ∈ List action ] buildexp ▹ e ◃ l
@@ -126,7 +126,7 @@ module constructability where
     constructsynth SNum BuildN = DoSynth SAConNumlit DoRefl
     constructsynth (SPlus x x₁) (BuildPlus b b₁) = {!!}
     constructsynth SEHole BuildEHole = DoSynth SADel DoRefl
-    constructsynth (SFHole wt) (BuildFHole b) = runsynth++ (constructsynth wt b) (DoSynth {!!} DoRefl)
+    constructsynth (SNEHole wt) (BuildNEHole b) = runsynth++ (constructsynth wt b) (DoSynth {!!} DoRefl)
 
     constructana : {Γ : ·ctx} {e : ė} {t : τ̇} {L : List action} →
                        Γ ⊢ e <= t

@@ -23,8 +23,8 @@ module checks where
   moveerase EMApParent1 = refl
   moveerase EMApParent2 = refl
   moveerase EMApNextSib = refl
-  moveerase EMFHoleFirstChild = refl
-  moveerase EMFHoleParent = refl
+  moveerase EMNEHoleFirstChild = refl
+  moveerase EMNEHoleParent = refl
 
 
   -- these three judmgements lift the action semantics judgements to relate

@@ -12,7 +12,7 @@ module complete-dynamics where
   value ._ _ .num SNum = ⊤
   value ._ _ .num (SPlus _ _) = ⊥
   value .<||> () .<||> SEHole
-  value ._ () .<||> (SFHole _)
+  value ._ () .<||> (SNEHole _)
 
   -- "substitute e1 for x in e2". note that this only works on well typed
   -- terms because of barendrecht's convention. that's a theorem we need to

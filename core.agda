@@ -115,7 +115,7 @@ module core where
                  Γ ⊢ e2 <= num →
                  Γ ⊢ (e1 ·+ e2) => num
       SEHole  : {Γ : ·ctx} → Γ ⊢ <||> => <||>
-      SFHole  : {Γ : ·ctx} {e : ė} {t : τ̇} →
+      SNEHole : {Γ : ·ctx} {e : ė} {t : τ̇} →
                  Γ ⊢ e => t →
                  Γ ⊢ <| e |> => <||>
 
@@ -244,7 +244,7 @@ module core where
   synthunicity SNum SNum = refl
   synthunicity (SPlus _ _ ) (SPlus _ _ ) = refl
   synthunicity SEHole SEHole = refl
-  synthunicity (SFHole _) (SFHole _) = refl
+  synthunicity (SNEHole _) (SNEHole _) = refl
 
 
   ----- the zippered form of the forms above and the rules for actions on them
@@ -318,7 +318,7 @@ module core where
     arg   : shape
     numlit : Nat → shape
     plus  : shape
-    fhole : shape
+    nehole : shape
 
   data action : Set where
     move : direction → action
@@ -384,9 +384,9 @@ module core where
                (▹ e1 ◃ ∘₁ e2) + move nextSib +>e (e1 ∘₂ ▹ e2 ◃)
 
     -- rules for non-empty holes
-    EMFHoleFirstChild : {e : ė} →
+    EMNEHoleFirstChild : {e : ė} →
                (▹ <| e |> ◃) + move firstChild +>e <| ▹ e ◃ |>
-    EMFHoleParent : {e : ė} →
+    EMNEHoleParent : {e : ė} →
                 <| ▹ e ◃ |> + move parent +>e (▹ <| e |> ◃)
 
   mutual
@@ -423,8 +423,8 @@ module core where
       SAConPlus2 : {Γ : ·ctx} {e : ė} {t : τ̇} →
                 (t ~̸ num) →
                 Γ ⊢ ▹ e ◃ => t ~ construct plus ~> <| e |> ·+₂ ▹ <||> ◃  => num
-      SAConFHole : {Γ : ·ctx} {e : ė} {t : τ̇} →
-                  Γ ⊢ ▹ e ◃ => t ~ construct fhole ~> ▹ <| e |> ◃ => <||>
+      SAConNEHole : {Γ : ·ctx} {e : ė} {t : τ̇} →
+                  Γ ⊢ ▹ e ◃ => t ~ construct nehole ~> ▹ <| e |> ◃ => <||>
       SAFinish : {Γ : ·ctx} {e : ė} {t : τ̇} →
                  (Γ ⊢ e => t) →
                  Γ ⊢ ▹ <| e |> ◃ => <||> ~ finish ~> ▹ e ◃ => t

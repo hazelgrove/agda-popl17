@@ -19,7 +19,7 @@ module declarative where
                 Γ ⊢ e2 :: num →
                 Γ ⊢ (e1 ·+ e2) :: num
      DEHole  : {Γ : ·ctx} → Γ ⊢ <||> :: <||>
-     DFHole  : {Γ : ·ctx} {e : ė} {t : τ̇} →
+     DNEHole  : {Γ : ·ctx} {e : ė} {t : τ̇} →
                 Γ ⊢ e :: t →
                 Γ ⊢ <| e |> :: <||>
      DLam : {Γ : ·ctx} {e : ė} {t1 t2 : τ̇} {n : Nat} →
@@ -64,9 +64,9 @@ module declarative where
   -- ... | Inr a1 | Inl s1 = Inl (SPlus a1                   (ASubsume s1 TCRefl))
   -- ... | Inr a1 | Inr a2 = Inl (SPlus a1                   a2)
   -- decbidir DEHole = Inl SEHole
-  -- decbidir (DFHole d) with decbidir d
-  -- ... | Inl synth = Inl (SFHole synth)
-  -- ... | Inr (ASubsume d' _) = Inl (SFHole d')
+  -- decbidir (DNEHole d) with decbidir d
+  -- ... | Inl synth = Inl (SNEHole synth)
+  -- ... | Inr (ASubsume d' _) = Inl (SNEHole d')
   -- ... | Inr (ALam x ana) = Inl {!!}
   -- decbidir (DApHole d1 d2)  with decbidir d1 | decbidir d2
   -- ... | Inl s1 | Inl s2 = Inl (SApHole s1 (ASubsume s2 TCRefl))
@@ -87,7 +87,7 @@ module declarative where
   -- bidirdec (Inl SNum) = DNum
   -- bidirdec (Inl (SPlus d1 d2)) = DPlus (bidirdec (Inr d1)) (bidirdec (Inr d2))
   -- bidirdec (Inl SEHole) = DEHole
-  -- bidirdec (Inl (SFHole d)) = DFHole (bidirdec (Inl d))
+  -- bidirdec (Inl (SNEHole d)) = DNEHole (bidirdec (Inl d))
   -- bidirdec (Inl (SApHole d1 d2)) = DApHole (bidirdec (Inl d1)) (bidirdec (Inr d2))
   --   --analysis cases
   -- bidirdec (Inr (ASubsume x x₁)) = {!synthunicity!}
