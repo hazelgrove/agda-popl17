@@ -82,6 +82,17 @@ module core where
   matchunicity MAHole MAHole = refl
   matchunicity MAArr MAArr = refl
 
+  -- if a type matches, then it's consistent with the least restrictive
+  -- function type
+  matchconsist : ∀{t t1 t2} →
+                 t ▸arr (t1 ==> t2) →
+                 t ~ (<||> ==> <||>)
+  matchconsist MAHole = TCHole2
+  matchconsist MAArr = TCArr TCHole1 TCHole1
+
+  matchnotnum : ∀{t1 t2} → num ▸arr (t1 ==> t2) → ⊥
+  matchnotnum ()
+
   -- bidirectional type checking judgements for ė
   mutual
     -- synthesis
