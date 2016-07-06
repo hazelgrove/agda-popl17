@@ -81,8 +81,7 @@ module sensible where
     ... | refl = SAp D2 x (actsense2 c x₁)
     actsense1 (SAZipPlus1 x) (SPlus x₁ x₂) = SPlus (actsense2 x x₁) x₂
     actsense1 (SAZipPlus2 x) (SPlus x₁ x₂) = SPlus x₁ (actsense2 x x₂)
-    actsense1 (SAZipHole1 x D1 x₁) D2 = SNEHole (actsense1 D1 x)
-    actsense1 (SAZipHole2 x D1) D2 = SEHole
+    actsense1 (SAZipHole x D1) D2 = SNEHole (actsense1 D1 x)
     actsense1 SAConNEHole D2 = SNEHole D2
 
     -- if an action transforms an zexp in an analytic posistion to another

@@ -452,15 +452,10 @@ module core where
       SAZipPlus2 : {Γ : ·ctx} {e : ė} {eh eh' : ê} {α : action} →
                    (Γ ⊢ eh ~ α ~> eh' ⇐ num) →
                    Γ ⊢ (e ·+₂ eh) => num ~ α ~> (e ·+₂ eh') => num
-      SAZipHole1 : {Γ : ·ctx} {e e' : ê} {t t' : τ̇} {α : action} →
+      SAZipHole : {Γ : ·ctx} {e e' : ê} {t t' : τ̇} {α : action} →
                    (Γ ⊢ (e ◆e) => t) →
                    (Γ ⊢ e => t ~ α ~> e' => t') →
-                   ((e' == ▹ <||> ◃) → ⊥) →
                    Γ ⊢ <| e |> => <||> ~ α ~>  <| e' |> => <||>
-      SAZipHole2 : {Γ : ·ctx} {e : ê} {t : τ̇} {α : action} →
-                   (Γ ⊢ (e ◆e) => t) →
-                   (Γ ⊢ e => t ~ α ~> ▹ <||> ◃ => <||>) →
-                   Γ ⊢ <| e |> => <||> ~ α ~> ▹ <||> ◃ => <||>
 
     -- analytic action expressions
     data _⊢_~_~>_⇐_ : (Γ : ·ctx) → (e : ê) → (α : action) →

@@ -100,8 +100,7 @@ module deterministic where
   synthmovedet (SAZipPlus1 x) EMPlusParent1 = abort (lem-nomove-para x)
   synthmovedet (SAZipPlus1 x) EMPlusNextSib = abort (lem-nomove-nsa x)
   synthmovedet (SAZipPlus2 x) EMPlusParent2 = abort (lem-nomove-para x)
-  synthmovedet (SAZipHole1 _ x _) EMNEHoleParent = abort (lem-nomove-pars x)
-  synthmovedet (SAZipHole2 _ x ) EMNEHoleParent = abort (lem-nomove-pars x)
+  synthmovedet (SAZipHole _ x) EMNEHoleParent = abort (lem-nomove-pars x)
 
   -- these are techincal lemmas for the cases of the main theorem
 
@@ -301,18 +300,11 @@ module deterministic where
     actdet2' EETop (SNEHole wt) SAConNEHole SAConNEHole = refl , refl
 
     actdet2' (EENEHole E) (SNEHole wt) (SAMove x) (SAMove x₁) = movedet x x₁ , refl
-    actdet2' (EENEHole E) (SNEHole wt) (SAMove EMNEHoleParent) (SAZipHole1 x₁ d2 x₂) = abort (lem-nomove-pars d2)
-    actdet2' (EENEHole E) (SNEHole wt) (SAMove EMNEHoleParent) (SAZipHole2 x₁ d2) = abort (lem-nomove-pars d2)
-    actdet2' (EENEHole E) (SNEHole wt) (SAZipHole1 x d1 x₁) (SAMove EMNEHoleParent) = abort (lem-nomove-pars d1)
-    actdet2' (EENEHole E) (SNEHole wt) (SAZipHole1 x₁ d1 x) (SAZipHole1 x₂ d2 x₃) with synthunicity x₁ x₂
-    ... | refl = ap1 <|_|> (π1 (actdet2 x₁ d1 d2)) , refl
-    actdet2' (EENEHole E) (SNEHole wt) (SAZipHole1 x₁ d1 x) (SAZipHole2 x₂ d2) with synthunicity x₁ x₂
-    ... | refl = abort (x (π1 (actdet2 x₂ d1 d2)))
-    actdet2' (EENEHole E) (SNEHole wt) (SAZipHole2 x d1) (SAMove EMNEHoleParent) = abort (lem-nomove-pars d1)
-    actdet2' (EENEHole E) (SNEHole wt) (SAZipHole2 x d1) (SAZipHole1 x₁ d2 x₂) with synthunicity x x₁
-    ... | refl = abort (x₂ (! (π1 (actdet2 x d1 d2))))
-    actdet2' (EENEHole E) (SNEHole wt) (SAZipHole2 x d1) (SAZipHole2 x₁ d2) = refl , refl
-
+    actdet2' (EENEHole E) (SNEHole wt) (SAMove EMNEHoleParent) (SAZipHole x₁ d2) = abort (lem-nomove-pars d2)
+    actdet2' (EENEHole E) (SNEHole wt) (SAZipHole x d1) (SAMove EMNEHoleParent) = abort (lem-nomove-pars d1)
+    actdet2' (EENEHole E) (SNEHole wt) (SAZipHole x d1) (SAZipHole x₁ d2) with synthunicity x x₁
+    ... | refl with actdet2 x₁ d1 d2
+    ... | refl , refl = refl , refl
 
     -- an action on an expression in an analytic position produces one
     -- resultant expression and type.
