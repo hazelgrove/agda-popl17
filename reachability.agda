@@ -146,18 +146,49 @@ module reachability where
   -- produce the lists we use have this property.
 
   -- predicate
-  allmoves : List action → Set
-  allmoves [] = ⊤
-  allmoves (move _ :: l) = allmoves l
-  allmoves (del :: l) = ⊥
-  allmoves (construct x :: l) = ⊥
-  allmoves (finish :: l) = ⊥
+  data allmoves : List action → Set where
+    AM:: : {L : List action} {δ : direction}
+              → allmoves L
+              → allmoves ((move δ) :: L)
+    AM[] : allmoves []
 
   allmoves++ : {l1 l2 : List action} → allmoves l1 → allmoves l2 → allmoves (l1 ++ l2)
-  allmoves++ {[]} {[]} am1 am2 = <>
-  allmoves++ {[]} {x :: l2} am1 am2 = am2
-  allmoves++ {x :: l1} {[]} am1 am2 = {!allmoves++ !}
-  allmoves++ {x :: l1} {x₁ :: l2} am1 am2 = {!!}
+  allmoves++ (AM:: am1) (AM:: am2) = AM:: (allmoves++ am1 (AM:: am2))
+  allmoves++ (AM:: am1) AM[] = AM:: (allmoves++ am1 AM[])
+  allmoves++ AM[] (AM:: am2) = AM:: am2
+  allmoves++ AM[] AM[] = AM[]
+
+  allmoves-moveup-t : (t : τ̂) → allmoves (moveup-t t)
+  allmoves-moveup-t ▹ x ◃ = AM[]
+  allmoves-moveup-t (t ==>₁ x) = allmoves++ (allmoves-moveup-t t) (AM:: AM[])
+  allmoves-moveup-t (x ==>₂ t) = allmoves++ (allmoves-moveup-t t) (AM:: AM[])
+
+  allmoves-moveup-e : (e : ê) → allmoves (moveup-e e)
+  allmoves-moveup-e ▹ x ◃ = AM[]
+  allmoves-moveup-e (e ·:₁ x) = allmoves++ (allmoves-moveup-e e) (AM:: AM[])
+  allmoves-moveup-e (x ·:₂ x₁) = allmoves++ (allmoves-moveup-t x₁) (AM:: AM[])
+  allmoves-moveup-e (·λ x e) = allmoves++ (allmoves-moveup-e e) (AM:: AM[])
+  allmoves-moveup-e (e ∘₁ x) = allmoves++ (allmoves-moveup-e e) (AM:: AM[])
+  allmoves-moveup-e (x ∘₂ e) = allmoves++ (allmoves-moveup-e e) (AM:: AM[])
+  allmoves-moveup-e (e ·+₁ x) = allmoves++ (allmoves-moveup-e e) (AM:: AM[])
+  allmoves-moveup-e (x ·+₂ e) = allmoves++ (allmoves-moveup-e e) (AM:: AM[])
+  allmoves-moveup-e <| e |> = allmoves++ (allmoves-moveup-e e) (AM:: AM[])
+
+  allmoves-movedown-t : (t : τ̇) (t' : τ̂) (p : erase-t t' t) → allmoves(movedown-t t t' p)
+  allmoves-movedown-t _ ▹ ._ ◃ ETTop = AM[]
+  allmoves-movedown-t (t ==> t₁) (t' ==>₁ .t₁) (ETArrL p) = AM:: (allmoves-movedown-t t t' p)
+  allmoves-movedown-t (t ==> t₁) (.t ==>₂ t') (ETArrR p) = AM:: (AM:: (allmoves-movedown-t t₁ t' p))
+
+  allmoves-movedown-e :(e : ė) (e' : ê) (p : erase-e e' e) → allmoves(movedown-e e e' p)
+  allmoves-movedown-e _ ▹ ._ ◃ EETop = AM[]
+  allmoves-movedown-e (e ·: x) (e' ·:₁ .x) (EEAscL p) = AM:: (allmoves-movedown-e e e' p)
+  allmoves-movedown-e (e ·: x) (.e ·:₂ x₁) (EEAscR x₂) = AM:: (AM:: (allmoves-movedown-t x x₁ x₂))
+  allmoves-movedown-e (·λ x e) (·λ .x e') (EELam p) = AM:: (allmoves-movedown-e e e' p)
+  allmoves-movedown-e (e ·+ e₁) (e' ·+₁ .e₁) (EEPlusL p) = AM:: (allmoves-movedown-e e e' p)
+  allmoves-movedown-e (e ·+ e₁) (.e ·+₂ e') (EEPlusR p) = AM:: (AM:: (allmoves-movedown-e e₁ e' p))
+  allmoves-movedown-e <| e |> <| e' |> (EEFHole p) = AM:: (allmoves-movedown-e e e' p)
+  allmoves-movedown-e (e ∘ e₁) (e' ∘₁ .e₁) (EEApL p) = AM:: (allmoves-movedown-e e e' p)
+  allmoves-movedown-e (e ∘ e₁) (.e ∘₂ e') (EEApR p) = AM:: (AM:: (allmoves-movedown-e e₁ e' p))
 
   -- this is the final statement of the reachability triplet. the movement
   -- between judgemental and metafunctional erasure happens internally to
@@ -177,7 +208,7 @@ module reachability where
   ... | er1 | er2 with reachup-type er1 | reachdown-type er2
   ... | up  | down = moveup-t t1 ++ movedown-t (t1 ◆t) t2 er2 ,
                      (runtype++ up (tr (λ x → runtype ▹ x ◃ (movedown-t (t1 ◆t) t2 er2) t2) eq down)) ,
-                     {!!}
+                     allmoves++ (allmoves-moveup-t t1) (allmoves-movedown-t (t1 ◆t) t2 er2)
 
   reachability-synth : (Γ : ·ctx) (t : τ̇) (e1 e2 : ê) →
                             Γ ⊢ e1 ◆e => t →
@@ -187,7 +218,7 @@ module reachability where
   ... | er1 | er2 with reachup-synth er1 (tr (λ x → Γ ⊢ x => t) eq wt1) | reachdown-synth er2 wt1
   ... | up  | down = moveup-e e1 ++ movedown-e (e1 ◆e) e2 er2 ,
                      runsynth++ up (tr (λ x → runsynth Γ ▹ x ◃ t (movedown-e (e1 ◆e) e2 er2) e2 t) eq down),
-                     {!!}
+                     allmoves++ (allmoves-moveup-e e1) (allmoves-movedown-e (e1 ◆e) e2 er2)
 
   reachability-ana : (Γ : ·ctx) (t : τ̇) (e1 e2 : ê) →
                             Γ ⊢ e1 ◆e <= t →
@@ -197,7 +228,4 @@ module reachability where
   ... | er1 | er2 with reachup-ana er1 (tr (λ x → Γ ⊢ x <= t) eq wt1) | reachdown-ana er2 wt1
   ... | up  | down = moveup-e e1 ++ movedown-e (e1 ◆e) e2 er2 ,
                      runana++ up (tr (λ x → runana Γ ▹ x ◃ (movedown-e (e1 ◆e) e2 er2) e2 t) eq down) ,
-                     {!!}
-
-
-  -- todo: remove redundant typing premises from the latter two; add the fact that the list is only movements.
+                     allmoves++ (allmoves-moveup-e e1) (allmoves-movedown-e (e1 ◆e) e2 er2)
