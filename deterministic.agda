@@ -103,35 +103,42 @@ module deterministic where
   synthmovedet (SAZipHole1 _ x _) EMFHoleParent = abort (lem-nomove-pars x)
   synthmovedet (SAZipHole2 _ x ) EMFHoleParent = abort (lem-nomove-pars x)
 
-  -- -- these are techincal lemmas for the cases of the main theorem
+  -- these are techincal lemmas for the cases of the main theorem
 
-  -- -- this would not be needed except that currently only one of the two
-  -- -- determinism arguments uses jugemental erasure.
-  -- lem-alam : ∀{Γ x t1 t2 e} →
-  --         Γ ⊢ ·λ x (e ◆e) <= (t1 ==> t2) →
-  --         (Γ ,, (x , t1)) ⊢ e ◆e <= t2
-  -- lem-alam (ASubsume () x₂)
-  -- lem-alam (ALam x₁ d1) = d1
+  -- this two lemmas would not be needed except that currently only one of
+  -- the two determinism arguments uses jugemental erasure.
+  lem-alam : ∀{Γ x t1 t2 e} →
+          Γ ⊢ ·λ x (e ◆e) <= (t1 ==> t2) →
+          (Γ ,, (x , t1)) ⊢ e ◆e <= t2
+  lem-alam (ASubsume () x₂)
+  lem-alam (ALam x MAArr d1) = d1
 
-  -- mutual
-  --   -- an action on an expression in a synthetic position produces one
-  --   -- resultant expression and type.
-  --   actdet2 : {Γ : ·ctx} {e e' e'' : ê} {t t' t'' : τ̇} {α : action} →
-  --             (Γ ⊢ (e ◆e) => t) →
-  --             (Γ ⊢ e => t ~ α ~> e'  => t') →
-  --             (Γ ⊢ e => t ~ α ~> e'' => t'') →
-  --             (e' == e'' × t' == t'')
-  --   actdet2 er d1 d2 = actdet2' (rel◆ _) er d1 d2
+  lem-alamh : ∀{Γ x e} →
+          Γ ⊢ ·λ x (e ◆e) <= <||> →
+          (Γ ,, (x , <||>)) ⊢ e ◆e <= <||>
+  lem-alamh (ASubsume () x₂)
+  lem-alamh (ALam x₁ MAHole d) = d
 
-  --   -- exact same theorem as actdet2, but with the judgemental formulation
-  --   -- of erasure so that we can pattern match and induct on the typing
-  --   -- derivation
-  --   actdet2' : {Γ : ·ctx} {e e' e'' : ê} {er : ė} {t t' t'' : τ̇} {α : action} →
-  --             (E : erase-e e er) →
-  --             (Γ ⊢ er => t) →
-  --             (Γ ⊢ e => t ~ α ~> e'  => t') →
-  --             (Γ ⊢ e => t ~ α ~> e'' => t'') →
-  --             (e' == e'' × t' == t'')
+  mutual
+    -- an action on an expression in a synthetic position produces one
+    -- resultant expression and type.
+    actdet2 : {Γ : ·ctx} {e e' e'' : ê} {t t' t'' : τ̇} {α : action} →
+              (Γ ⊢ (e ◆e) => t) →
+              (Γ ⊢ e => t ~ α ~> e'  => t') →
+              (Γ ⊢ e => t ~ α ~> e'' => t'') →
+              (e' == e'' × t' == t'')
+    actdet2 er d1 d2 = actdet2' (rel◆ _) er d1 d2
+
+    -- exact same theorem as actdet2, but with the judgemental formulation
+    -- of erasure so that we can pattern match and induct on the typing
+    -- derivation
+    actdet2' : {Γ : ·ctx} {e e' e'' : ê} {er : ė} {t t' t'' : τ̇} {α : action} →
+              (E : erase-e e er) →
+              (Γ ⊢ er => t) →
+              (Γ ⊢ e => t ~ α ~> e'  => t') →
+              (Γ ⊢ e => t ~ α ~> e'' => t'') →
+              (e' == e'' × t' == t'')
+    actdet2' = {!!}
   --   actdet2' EETop (SAsc x) (SAMove x₁) (SAMove x₂) = movedet x₁ x₂ , refl
   --   actdet2' EETop (SAsc x) SADel SADel = refl , refl
   --   actdet2' EETop (SAsc x) SAConAsc SAConAsc = refl , refl
@@ -368,60 +375,63 @@ module deterministic where
   --   ... | ih = (ap1 (_∘₂_ _) ih) , refl
 
 
-  --   -- an action on an expression in an analytic position produces one
-  --   -- resultant expression and type.
-  --   actdet3 : {Γ : ·ctx} {e e' e'' : ê} {t : τ̇} {α : action} →
-  --             (Γ ⊢ (e ◆e) <= t) →
-  --             (Γ ⊢ e ~ α ~> e' ⇐ t) →
-  --             (Γ ⊢ e ~ α ~> e'' ⇐ t) →
-  --             (e' == e'')
-  --   actdet3 D1 (AASubsume x x₁ x₂) (AASubsume x₃ x₄ x₅)
-  --    with synthunicity x x₃
-  --   ... | refl = π1 (actdet2 x x₁ x₄)
+    -- an action on an expression in an analytic position produces one
+    -- resultant expression and type.
+    actdet3 : {Γ : ·ctx} {e e' e'' : ê} {t : τ̇} {α : action} →
+              (Γ ⊢ (e ◆e) <= t) →
+              (Γ ⊢ e ~ α ~> e' ⇐ t) →
+              (Γ ⊢ e ~ α ~> e'' ⇐ t) →
+              (e' == e'')
+    actdet3 D1 (AASubsume x x₁ x₂) (AASubsume x₃ x₄ x₅)
+     with synthunicity x x₃
+    ... | refl = π1 (actdet2 x x₁ x₄)
 
-  --   actdet3 D1 (AASubsume _ y _) (AAMove w) = synthmovedet y w
-  --   actdet3 D1 (AASubsume _ SADel _) AADel = refl
-  --   actdet3 D1 (AASubsume {p = p} x SAConAsc x₂) AAConAsc = abort (π1 p refl)
-  --   actdet3 {Γ = G} (ASubsume x x₁) (AASubsume x₂ (SAConVar p) x₄) (AAConVar x₅ p₁)
-  --    with ctxunicity {Γ = G} p p₁
-  --   ... | refl = abort (x₅ x₄)
-  --   actdet3 D1 (AASubsume {p = p} x₁ (SAConLam x₂) x₃) (AAConLam1 x₄) = abort (π2 p _ refl)
-  --   actdet3 D1 (AASubsume x₁ (SAConLam x₃) x₂) (AAConLam2 x₄ x₅) = abort (x₅ x₂)
-  --   actdet3 D1 (AASubsume x SAConNumlit x₂) (AAConNumlit x₃) = abort (x₃ x₂)
-  --   actdet3 D1 (AASubsume x (SAFinish x₁) x₂) (AAFinish x₃) = refl
-  --   actdet3 D1 (AASubsume x₁ (SAMove EMLamParent) x₂) (AAZipLam x₄ x₆) = abort (lem-nomove-para x₆)
+    actdet3 D1 (AASubsume _ y _) (AAMove w) = synthmovedet y w
+    actdet3 D1 (AASubsume _ SADel _) AADel = refl
+    actdet3 D1 (AASubsume {p = p} x SAConAsc x₂) AAConAsc = abort (π1 p refl)
+    actdet3 {Γ = G} (ASubsume x x₁) (AASubsume x₂ (SAConVar p) x₄) (AAConVar x₅ p₁)
+     with ctxunicity {Γ = G} p p₁
+    ... | refl = abort (x₅ x₄)
+    actdet3 D1 (AASubsume {p = p} x₁ (SAConLam x₂) x₃) (AAConLam1 x x₄) = abort (π2 p _ refl)
+    actdet3 D1 (AASubsume x₁ (SAConLam x₃) x₂) (AAConLam2 x₄ x₅) = abort (x₅ x₂)
+    actdet3 D1 (AASubsume x SAConNumlit x₂) (AAConNumlit x₃) = abort (x₃ x₂)
+    actdet3 D1 (AASubsume x (SAFinish x₁) x₂) (AAFinish x₃) = refl
+    actdet3 D1 (AASubsume x₁ (SAMove EMLamParent) x₂) (AAZipLam x x₄ x₆) = abort (lem-nomove-para x₆)
 
-  --   actdet3 D1 (AAMove x) (AASubsume x₁ x₂ x₃) =  ! (synthmovedet x₂ x)
-  --   actdet3 D1 (AAMove x) (AAMove x₁) = movedet x x₁
-  --   actdet3 D1 (AAMove EMLamParent) (AAZipLam x₃ d) = abort (lem-nomove-para d)
+    actdet3 D1 (AAMove x) (AASubsume x₁ x₂ x₃) =  ! (synthmovedet x₂ x)
+    actdet3 D1 (AAMove x) (AAMove x₁) = movedet x x₁
+    actdet3 D1 (AAMove EMLamParent) (AAZipLam x x₃ d) = abort (lem-nomove-para d)
 
-  --   actdet3 D1 AADel (AASubsume _ SADel _) = refl
-  --   actdet3 D1 AADel AADel = refl
+    actdet3 D1 AADel (AASubsume _ SADel _) = refl
+    actdet3 D1 AADel AADel = refl
 
-  --   actdet3 D1 AAConAsc (AASubsume {p = p} x SAConAsc x₂) = abort (π1 p refl)
-  --   actdet3 D1 AAConAsc AAConAsc = refl
+    actdet3 D1 AAConAsc (AASubsume {p = p} x SAConAsc x₂) = abort (π1 p refl)
+    actdet3 D1 AAConAsc AAConAsc = refl
 
-  --   actdet3 {Γ = G} D1 (AAConVar x₁ p) (AASubsume x₂ (SAConVar p₁) x₄)
-  --    with ctxunicity {Γ = G} p p₁
-  --   ... | refl = abort (x₁ x₄)
-  --   actdet3 D1 (AAConVar x₁ p) (AAConVar x₂ p₁) = refl
+    actdet3 {Γ = G} D1 (AAConVar x₁ p) (AASubsume x₂ (SAConVar p₁) x₄)
+     with ctxunicity {Γ = G} p p₁
+    ... | refl = abort (x₁ x₄)
+    actdet3 D1 (AAConVar x₁ p) (AAConVar x₂ p₁) = refl
 
-  --   actdet3 D1 (AAConLam1 x₃) (AASubsume {p = p} SEHole (SAConLam x₅) x₆) = abort (π2 p _ refl)
-  --   actdet3 D1 (AAConLam1 x₁) (AAConLam1 x₂) = refl
-  --   actdet3 D1 (AAConLam1 x₃) (AAConLam2 x₄ x₅) = abort (x₅ (TCArr TCHole1 TCHole1))
+    actdet3 D1 (AAConLam1 x x₃) (AASubsume {p = p} SEHole (SAConLam x₅) x₆) = abort (π2 p _ refl)
+    actdet3 D1 (AAConLam1 x x₁) (AAConLam1 y x₂) = refl
+    actdet3 D1 (AAConLam1 x₁ MAHole) (AAConLam2 x₄ x₅) = abort (x₅ TCHole2)
+    actdet3 D1 (AAConLam1 x₁ MAArr) (AAConLam2 x₄ x₅) = abort (x₅ (TCArr TCHole1 TCHole1))
 
-  --   actdet3 D1 (AAConLam2 x₁ x₂) (AASubsume x₃ (SAConLam x₄) x₅) = abort (x₂ x₅)
-  --   actdet3 D1 (AAConLam2 x₁ x₂) (AAConLam1 x₃) = abort (x₂ (TCArr TCHole1 TCHole1))
-  --   actdet3 D1 (AAConLam2 x₁ x₂) (AAConLam2 x₃ x₄) = refl
+    actdet3 D1 (AAConLam2 x₁ x₂) (AASubsume x₃ (SAConLam x₄) x₅) = abort (x₂ x₅)
+    actdet3 D1 (AAConLam2 x₁ x₂) (AAConLam1 y MAHole) = abort (x₂ TCHole2)
+    actdet3 D1 (AAConLam2 x₁ x₂) (AAConLam1 y MAArr) = abort (x₂ (TCArr TCHole1 TCHole1))
+    actdet3 D1 (AAConLam2 x₁ x₂) (AAConLam2 x₃ x₄) = refl
 
-  --   actdet3 D1 (AAConNumlit x) (AASubsume x₁ SAConNumlit x₃) = abort (x x₃)
-  --   actdet3 D1 (AAConNumlit x) (AAConNumlit x₁) = refl
+    actdet3 D1 (AAConNumlit x) (AASubsume x₁ SAConNumlit x₃) = abort (x x₃)
+    actdet3 D1 (AAConNumlit x) (AAConNumlit x₁) = refl
 
-  --   actdet3 D1 (AAFinish x) (AASubsume x₁ (SAFinish x₂) x₃) = refl
-  --   actdet3 D1 (AAFinish x) (AAFinish x₁) = refl
+    actdet3 D1 (AAFinish x) (AASubsume x₁ (SAFinish x₂) x₃) = refl
+    actdet3 D1 (AAFinish x) (AAFinish x₁) = refl
 
-  --   actdet3 D1 (AAZipLam x₃ D2) (AASubsume x₁ (SAMove EMLamParent) x₄) = abort (lem-nomove-para D2)
-  --   actdet3 D1 (AAZipLam x₃ d) (AAMove EMLamParent) = abort (lem-nomove-para d)
-  --   actdet3 D1 (AAZipLam {e = e} x₃ D2) (AAZipLam x₁ D3)
-  --     with actdet3 (lem-alam {e = e} D1) D2 D3
-  --   ... | refl = refl
+    actdet3 D1 (AAZipLam x x₃ D2) (AASubsume x₁ (SAMove EMLamParent) x₄) = abort (lem-nomove-para D2)
+    actdet3 D1 (AAZipLam x x₃ d) (AAMove EMLamParent) = abort (lem-nomove-para d)
+    actdet3 D1 (AAZipLam {e = e} a1 MAHole D2) (AAZipLam x2 MAHole D3) with actdet3 (lem-alamh {e = e} D1) D2 D3
+    ... | refl = refl
+    actdet3 D1 (AAZipLam {e = e} a1 MAArr D2) (AAZipLam x2 MAArr D3) with actdet3 (lem-alam {e = e} D1) D2 D3
+    ... | refl = refl
