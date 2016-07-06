@@ -204,12 +204,23 @@ module deterministic where
     actdet2' (EEApL E) (SAp m wt x) (SAMove EMApNextSib) (SAZipApArr x₂ x₃ d2 x₄) = abort (lem-nomove-nss d2)
     actdet2' (EEApL E) (SAp m wt x) (SAZipApArr x₁ x₂ d1 x₃) (SAMove EMApParent1) = abort (lem-nomove-pars d1)
     actdet2' (EEApL E) (SAp m wt x) (SAZipApArr x₁ x₂ d1 x₃) (SAMove EMApNextSib) = abort (lem-nomove-nss d1)
-    actdet2' (EEApL E) (SAp m wt x) (SAZipApArr x₁ x₂ d1 x₃) (SAZipApArr x₄ x₅ d2 x₆) = {!!}
+    actdet2' (EEApL E) (SAp m wt x) (SAZipApArr x₁ x₂ d1 x₃) (SAZipApArr x₄ x₅ d2 x₆)
+     with synthunicity x₂ x₅
+    ... | refl with actdet2 x₅ d1 d2
+    ... | refl , refl with matchunicity x₁ x₄
+    ... | refl = refl , refl
 
     actdet2' (EEApR E) (SAp m wt x) (SAMove x₁) (SAMove x₂) = movedet x₁ x₂ , refl
     actdet2' (EEApR E) (SAp m wt x) (SAMove EMApParent2) (SAZipApAna x₂ x₃ x₄) = abort (lem-nomove-para x₄)
     actdet2' (EEApR E) (SAp m wt x) (SAZipApAna x₁ x₂ x₃) (SAMove EMApParent2) = abort (lem-nomove-para x₃)
-    actdet2' (EEApR E) (SAp m wt x) (SAZipApAna x₁ x₂ x₃) (SAZipApAna x₄ x₅ x₆) = {!!}
+    actdet2' (EEApR E) (SAp m wt x) (SAZipApAna x₁ x₂ d1) (SAZipApAna x₄ x₅ d2)
+     with synthunicity m x₂
+    ... | refl with matchunicity x₁ wt
+    ... | refl with synthunicity m x₅
+    ... | refl with matchunicity x₄ wt
+    ... | refl with erase-e◆ E
+    ... | refl with actdet3 x d1 d2
+    ... | refl = refl , refl
 
     actdet2' EETop SNum (SAMove x) (SAMove x₁) = movedet x x₁ , refl
     actdet2' EETop SNum SADel SADel = refl , refl
