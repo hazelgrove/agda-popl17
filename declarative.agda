@@ -8,7 +8,7 @@ module declarative where
      DVar    : {Γ : ·ctx} {t : τ̇} {n : Nat} →
                 (n , t) ∈ Γ →
                 Γ ⊢ X n :: t
-     DAp     : {Γ : ·ctx} {e1 e2 : ė} {t t2 : τ̇} →
+     DAp     : {Γ : ·ctx} {e1 e2 : ė} {t t2 : τ̇} → -- TODO update this to match
                 Γ ⊢ e1 :: (t2 ==> t) →
                 Γ ⊢ e2 :: t2 →
                 Γ ⊢ (e1 ∘ e2) :: t
@@ -22,10 +22,6 @@ module declarative where
      DFHole  : {Γ : ·ctx} {e : ė} {t : τ̇} →
                 Γ ⊢ e :: t →
                 Γ ⊢ <| e |> :: <||>
-     DApHole : {Γ : ·ctx} {e1 e2 : ė} →
-                Γ ⊢ e1 :: <||> →
-                Γ ⊢ e2 :: <||> →
-                Γ ⊢ (e1 ∘ e2) :: <||>
      DLam : {Γ : ·ctx} {e : ė} {t1 t2 : τ̇} {n : Nat} →
                 n # Γ →
                 (Γ ,, (n , t1)) ⊢ e :: t2 →
