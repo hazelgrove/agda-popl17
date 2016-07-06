@@ -133,16 +133,14 @@ module checks where
 
   -- if there is a list of actions that builds a type, running that list
   -- from the empty hole in focus really does produce the target type.
-  run-subsume :  ∀ { Γ L e e' t t' } →
-                 runsynth Γ e t L e' t' →
-                 runana Γ e L e' t'
-  run-subsume DoRefl = DoRefl
-  run-subsume (DoSynth x act) = {!!}
+  -- run-subsume :  ∀ { Γ L e e' t t' } →
+  --                runsynth Γ e t L e' t' →
+  --                runana Γ e L e' t'
+  -- run-subsume DoRefl = DoRefl
+  -- run-subsume (DoSynth x act) = {!!}
 
-  -- congruence rules for runsynth
-  runsynth-congap1 : ∀{Γ e1 t L e1' e2 t'} →
-                    runsynth Γ e1 t' L e1' t' →
-                    runsynth Γ (e1 ∘₁ e2) t L (e1' ∘₁ e2) t
-  runsynth-congap1 DoRefl = DoRefl
-  runsynth-congap1 (DoSynth x d) = {!!}
-                   -- --  DoSynth (SAZipAp1 {!!} {!x!} {!!}) (runsynth-congap1 {!d!})
+  -- runsynth-congap1 : ∀{Γ e1 t L e1' e2 t'} →
+  --                   runsynth Γ e1 t' L e1' t' →
+  --                   runsynth Γ (e1 ∘₁ e2) t L (e1' ∘₁ e2) t
+  -- runsynth-congap1 DoRefl = DoRefl
+  -- runsynth-congap1 (DoSynth x d) = DoSynth {!!} {!!}
