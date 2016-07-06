@@ -307,13 +307,13 @@ module core where
     arg   : shape
     numlit : Nat → shape
     plus  : shape
+    fhole : shape
 
   data action : Set where
     move : direction → action
     del : action
     construct : shape → action
     finish : action
-    envelop : action
 
   -- type actions
   data _+_+>_ : (t : τ̂) → (α : action) → (t' : τ̂) → Set where
@@ -412,6 +412,8 @@ module core where
       SAConPlus2 : {Γ : ·ctx} {e : ė} {t : τ̇} →
                 (t ~̸ num) →
                 Γ ⊢ ▹ e ◃ => t ~ construct plus ~> <| e |> ·+₂ ▹ <||> ◃  => num
+      SAConFHole : {Γ : ·ctx} {e : ė} {t : τ̇} →
+                  Γ ⊢ ▹ e ◃ => t ~ construct fhole ~> ▹ <| e |> ◃ => <||>
       SAFinish : {Γ : ·ctx} {e : ė} {t : τ̇} →
                  (Γ ⊢ e => t) →
                  Γ ⊢ ▹ <| e |> ◃ => <||> ~ finish ~> ▹ e ◃ => t
@@ -448,8 +450,6 @@ module core where
                    (Γ ⊢ (e ◆e) => t) →
                    (Γ ⊢ e => t ~ α ~> ▹ <||> ◃ => <||>) →
                    Γ ⊢ <| e |> => <||> ~ α ~> ▹ <||> ◃ => <||>
-      SAEnvelop : {Γ : ·ctx} {e : ė} {t : τ̇} →
-                  Γ ⊢ ▹ e ◃ => t ~ envelop ~> ▹ <| e |> ◃ => <||>
 
     -- analytic action expressions
     data _⊢_~_~>_⇐_ : (Γ : ·ctx) → (e : ê) → (α : action) →
