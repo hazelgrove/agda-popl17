@@ -23,16 +23,18 @@ module judgemental-inconsistency where
   ... | Inl x = Inr (λ x₁ → ncon (TCArr x x₁))
   ... | Inr x = Inl x
 
+  leminconrefl : ∀{t} → incon t t → ⊥
+  leminconrefl (ICArr1 x) = leminconrefl x
+  leminconrefl (ICArr2 x) = leminconrefl x
+
   -- first half of iso
   to~̸ : (t1 t2 : τ̇) → incon t1 t2 → t1 ~̸ t2
-  to~̸ num .num () TCRefl
-  to~̸ num .<||> () TCHole1
-  to~̸ <||> .<||> () TCRefl
-  to~̸ <||> .<||> () TCHole1
-  to~̸ <||> t2 () TCHole2
-  to~̸ (t1 ==> t2) .(t1 ==> t2) (ICArr1 x) TCRefl = abort (to~̸ _ _ x TCRefl)
-  to~̸ (t1 ==> t2) .(t1 ==> t2) (ICArr2 x) TCRefl = abort (to~̸ _ _ x TCRefl)
-  to~̸ (t1 ==> t2) ._ x (TCArr x₁ x₂) = {!!}
+  to~̸ .num ._ ICNum1 ()
+  to~̸ ._ .num ICNum2 ()
+  to~̸ ._ ._ (ICArr1 incon) TCRefl = abort (leminconrefl incon)
+  to~̸ ._ ._ (ICArr1 incon) (TCArr x x₁) = to~̸ _ _ incon x
+  to~̸ ._ ._ (ICArr2 incon) TCRefl = abort (leminconrefl incon)
+  to~̸ ._ ._ (ICArr2 incon) (TCArr x x₁) = to~̸ _ _ incon x₁
 
   -- second half of iso
   from~̸ : (t1 t2 : τ̇) → t1 ~̸ t2 → incon t1 t2
@@ -49,5 +51,10 @@ module judgemental-inconsistency where
   from~̸ <||> (t2 ==> t3) ncon = abort (ncon TCHole2)
   from~̸ (t1 ==> t2) <||> ncon = abort (ncon TCHole1)
 
-  -- need to display that at least one of the round-trips above is stable
-  -- for this to be structure preserving and really an iso.
+  -- -- need to display that at least one of the round-trips above is stable
+  -- -- for this to be structure preserving and really an iso.
+  -- rt : (t1 t2 : τ̇) → (x : incon t1 t2) → (from~̸ t1 t2 (to~̸ t1 t2 x)) == x
+  -- rt .num ._ ICNum1 = refl
+  -- rt ._ .num ICNum2 = refl
+  -- rt ._ ._ (ICArr1 x) = {!!}
+  -- rt ._ ._ (ICArr2 x) = {!!}
