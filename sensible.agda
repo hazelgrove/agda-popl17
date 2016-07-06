@@ -83,7 +83,7 @@ module sensible where
     actsense1 (SAZipPlus2 x) (SPlus x₁ x₂) = SPlus x₁ (actsense2 x x₂)
     actsense1 (SAZipHole1 x D1 x₁) D2 = SFHole (actsense1 D1 x)
     actsense1 (SAZipHole2 x D1) D2 = SEHole
-    actsense1 SAEnvelop D2 = SFHole D2
+    actsense1 SAConFHole D2 = SFHole D2
 
     -- if an action transforms an zexp in an analytic posistion to another
     -- zexp, they have the same type up erasure of focus.
