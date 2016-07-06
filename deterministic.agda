@@ -146,7 +146,11 @@ module deterministic where
     actdet2' EETop (SAsc x) (SAConPlus1 x₁) (SAConPlus2 x₂) = abort (x₂ x₁)
     actdet2' EETop (SAsc x) (SAConPlus2 x₁) (SAConPlus1 x₂) = abort (x₁ x₂)
     actdet2' EETop (SAsc x) (SAConPlus2 x₁) (SAConPlus2 x₂) = refl , refl
-    actdet2' EETop (SAsc x) d1 d2 = {!!}
+    actdet2' EETop (SAsc x) (SAConApArr x₁) (SAConApArr x₂) = {!!}
+    actdet2' EETop (SAsc x) (SAConApArr x₁) (SAConApOtw x₂) = {!!}
+    actdet2' EETop (SAsc x) (SAConApOtw x₁) (SAConApArr x₂) = {!!}
+    actdet2' EETop (SAsc x) (SAConApOtw x₁) (SAConApOtw x₂) = {!!}
+    actdet2' EETop (SAsc x) SAConFHole SAConFHole = refl , refl
 
     actdet2' (EEAscL E) (SAsc x) (SAMove x₁) (SAMove x₂) = movedet x₁ x₂ , refl
     actdet2' (EEAscL E) (SAsc x) (SAMove EMAscParent1) (SAZipAsc1 x₂) = abort (lem-nomove-para x₂)
@@ -172,7 +176,11 @@ module deterministic where
     actdet2' EETop (SVar x) (SAConPlus1 x₁) (SAConPlus2 x₂) = abort (x₂ x₁)
     actdet2' EETop (SVar x) (SAConPlus2 x₁) (SAConPlus1 x₂) = abort (x₁ x₂)
     actdet2' EETop (SVar x) (SAConPlus2 x₁) (SAConPlus2 x₂) = refl , refl
-    actdet2' EETop (SVar x) d1 d2 = {!!}
+    actdet2' EETop (SVar x) (SAConApArr x₁) (SAConApArr x₂) = {!!}
+    actdet2' EETop (SVar x) (SAConApArr x₁) (SAConApOtw x₂) = {!!}
+    actdet2' EETop (SVar x) (SAConApOtw x₁) (SAConApArr x₂) = {!!}
+    actdet2' EETop (SVar x) (SAConApOtw x₁) (SAConApOtw x₂) = {!!}
+    actdet2' EETop (SVar x) SAConFHole SAConFHole = refl , refl
 
     actdet2' EETop (SAp m wt x) (SAMove x₁) (SAMove x₂) = movedet x₁ x₂ , refl
     actdet2' EETop (SAp m wt x) SADel SADel = refl , refl
@@ -182,11 +190,21 @@ module deterministic where
     actdet2' EETop (SAp m wt x) (SAConPlus1 x₁) (SAConPlus2 x₂) = abort (x₂ x₁)
     actdet2' EETop (SAp m wt x) (SAConPlus2 x₁) (SAConPlus1 x₂) = abort (x₁ x₂)
     actdet2' EETop (SAp m wt x) (SAConPlus2 x₁) (SAConPlus2 x₂) = refl , refl
-    actdet2' EETop (SAp m wt x) d1 d2 = {!!}
+    actdet2' EETop (SAp m wt x) (SAConApArr x₁) (SAConApArr x₂) = {!!}
+    actdet2' EETop (SAp m wt x) (SAConApArr x₁) (SAConApOtw x₂) = {!!}
+    actdet2' EETop (SAp m wt x) (SAConApOtw x₁) (SAConApArr x₂) = {!!}
+    actdet2' EETop (SAp m wt x) (SAConApOtw x₁) (SAConApOtw x₂) = {!!}
+    actdet2' EETop (SAp m wt x) SAConFHole SAConFHole = refl , refl
 
-    actdet2' (EEApL E) (SAp m wt x) d1 d2 = {!!}
+    actdet2' (EEApL E) (SAp m wt x) (SAMove x₁) (SAMove x₂) = movedet x₁ x₂ , refl
+    actdet2' (EEApL E) (SAp m wt x) (SAMove x₁) (SAZipApArr x₂ x₃ d2 x₄) = {!!}
+    actdet2' (EEApL E) (SAp m wt x) (SAZipApArr x₁ x₂ d1 x₃) (SAMove x₄) = {!!}
+    actdet2' (EEApL E) (SAp m wt x) (SAZipApArr x₁ x₂ d1 x₃) (SAZipApArr x₄ x₅ d2 x₆) = {!!}
 
-    actdet2' (EEApR E) (SAp m wt x) d1 d2 = {!!}
+    actdet2' (EEApR E) (SAp m wt x) (SAMove x₁) (SAMove x₂) = movedet x₁ x₂ , refl
+    actdet2' (EEApR E) (SAp m wt x) (SAMove x₁) (SAZipApAna x₂ x₃ x₄) = {!!}
+    actdet2' (EEApR E) (SAp m wt x) (SAZipApAna x₁ x₂ x₃) (SAMove x₄) = {!!}
+    actdet2' (EEApR E) (SAp m wt x) (SAZipApAna x₁ x₂ x₃) (SAZipApAna x₄ x₅ x₆) = {!!}
 
     actdet2' EETop SNum (SAMove x) (SAMove x₁) = movedet x x₁ , refl
     actdet2' EETop SNum SADel SADel = refl , refl
@@ -196,7 +214,11 @@ module deterministic where
     actdet2' EETop SNum (SAConPlus1 x) (SAConPlus2 x₁) = abort (x₁ x)
     actdet2' EETop SNum (SAConPlus2 x) (SAConPlus1 x₁) = abort (x x₁)
     actdet2' EETop SNum (SAConPlus2 x) (SAConPlus2 x₁) = refl , refl
-    actdet2' EETop SNum d1 d2 = {!!}
+    actdet2' EETop SNum (SAConApArr x) (SAConApArr x₁) = {!!}
+    actdet2' EETop SNum (SAConApArr x) (SAConApOtw x₁) = {!!}
+    actdet2' EETop SNum (SAConApOtw x) (SAConApArr x₁) = {!!}
+    actdet2' EETop SNum (SAConApOtw x) (SAConApOtw x₁) = {!!}
+    actdet2' EETop SNum SAConFHole SAConFHole = refl , refl
 
     actdet2' EETop (SPlus x x₁) (SAMove x₂) (SAMove x₃) = movedet x₂ x₃ , refl
     actdet2' EETop (SPlus x x₁) SADel SADel = refl , refl
@@ -206,7 +228,11 @@ module deterministic where
     actdet2' EETop (SPlus x x₁) (SAConPlus1 x₂) (SAConPlus2 x₃) = abort (x₃ x₂)
     actdet2' EETop (SPlus x x₁) (SAConPlus2 x₂) (SAConPlus1 x₃) = abort (x₂ x₃)
     actdet2' EETop (SPlus x x₁) (SAConPlus2 x₂) (SAConPlus2 x₃) = refl , refl
-    actdet2' EETop (SPlus x x₁) d1 d2 = {!!}
+    actdet2' EETop (SPlus x x₁) (SAConApArr x₂) (SAConApArr x₃) = {!!}
+    actdet2' EETop (SPlus x x₁) (SAConApArr x₂) (SAConApOtw x₃) = {!!}
+    actdet2' EETop (SPlus x x₁) (SAConApOtw x₂) (SAConApArr x₃) = {!!}
+    actdet2' EETop (SPlus x x₁) (SAConApOtw x₂) (SAConApOtw x₃) = {!!}
+    actdet2' EETop (SPlus x x₁) SAConFHole SAConFHole = refl , refl
 
     actdet2' (EEPlusL E) (SPlus x x₁) (SAMove x₂) (SAMove x₃) = movedet x₂ x₃ , refl
     actdet2' (EEPlusL E) (SPlus x x₁) (SAMove EMPlusParent1) (SAZipPlus1 d2) = abort (lem-nomove-para d2)
@@ -233,7 +259,11 @@ module deterministic where
     actdet2' EETop SEHole (SAConPlus1 x) (SAConPlus2 x₁) = abort (x₁ x)
     actdet2' EETop SEHole (SAConPlus2 x) (SAConPlus1 x₁) = abort (x x₁)
     actdet2' EETop SEHole (SAConPlus2 x) (SAConPlus2 x₁) = refl , refl
-    actdet2' EETop SEHole d1 d2 = {!!}
+    actdet2' EETop SEHole (SAConApArr x) (SAConApArr x₁) = {!!}
+    actdet2' EETop SEHole (SAConApArr x) (SAConApOtw x₁) = {!!}
+    actdet2' EETop SEHole (SAConApOtw x) (SAConApArr x₁) = {!!}
+    actdet2' EETop SEHole (SAConApOtw x) (SAConApOtw x₁) = {!!}
+    actdet2' EETop SEHole SAConFHole SAConFHole = refl , refl
 
     actdet2' EETop (SFHole wt) (SAMove x) (SAMove x₁) = movedet x x₁ , refl
     actdet2' EETop (SFHole wt) SADel SADel = refl , refl
@@ -244,7 +274,11 @@ module deterministic where
     actdet2' EETop (SFHole wt) (SAConPlus2 x) (SAConPlus1 x₁) = abort (x x₁)
     actdet2' EETop (SFHole wt) (SAConPlus2 x) (SAConPlus2 x₁) = refl , refl
     actdet2' EETop (SFHole wt) (SAFinish x) (SAFinish x₁) = refl , synthunicity x x₁
-    actdet2' EETop (SFHole wt) d1 d2 = {!!}
+    actdet2' EETop (SFHole wt) (SAConApArr x) (SAConApArr x₁) = {!!}
+    actdet2' EETop (SFHole wt) (SAConApArr x) (SAConApOtw x₁) = {!!}
+    actdet2' EETop (SFHole wt) (SAConApOtw x) (SAConApArr x₁) = {!!}
+    actdet2' EETop (SFHole wt) (SAConApOtw x) (SAConApOtw x₁) = {!!}
+    actdet2' EETop (SFHole wt) SAConFHole SAConFHole = refl , refl
 
     actdet2' (EEFHole E) (SFHole wt) (SAMove x) (SAMove x₁) = movedet x x₁ , refl
     actdet2' (EEFHole E) (SFHole wt) (SAMove EMFHoleParent) (SAZipHole1 x₁ d2 x₂) = abort (lem-nomove-pars d2)
