@@ -177,3 +177,4 @@ module reachability where
   ... | er1 | er2 with reachup-ana er1 wt2 | reachdown-ana er2 wt1
   ... | up  | down = moveup-e e1 ++ movedown-e (e1 ◆e) e2 er2 , runana++ up (tr (λ x → runana Γ ▹ x ◃ (movedown-e (e1 ◆e) e2 er2) e2 t) eq
                                                                                  down)
+  -- todo: remove redundant typing premises from the latter two; add the fact that the list is only movements.
