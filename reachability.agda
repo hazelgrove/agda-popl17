@@ -146,49 +146,49 @@ module reachability where
   -- produce the lists we use have this property.
 
   -- predicate
-  data allmoves : List action → Set where
+  data movements : List action → Set where
     AM:: : {L : List action} {δ : direction}
-              → allmoves L
-              → allmoves ((move δ) :: L)
-    AM[] : allmoves []
+              → movements L
+              → movements ((move δ) :: L)
+    AM[] : movements []
 
-  allmoves++ : {l1 l2 : List action} → allmoves l1 → allmoves l2 → allmoves (l1 ++ l2)
-  allmoves++ (AM:: am1) (AM:: am2) = AM:: (allmoves++ am1 (AM:: am2))
-  allmoves++ (AM:: am1) AM[] = AM:: (allmoves++ am1 AM[])
-  allmoves++ AM[] (AM:: am2) = AM:: am2
-  allmoves++ AM[] AM[] = AM[]
+  movements++ : {l1 l2 : List action} → movements l1 → movements l2 → movements (l1 ++ l2)
+  movements++ (AM:: am1) (AM:: am2) = AM:: (movements++ am1 (AM:: am2))
+  movements++ (AM:: am1) AM[] = AM:: (movements++ am1 AM[])
+  movements++ AM[] (AM:: am2) = AM:: am2
+  movements++ AM[] AM[] = AM[]
 
-  allmoves-moveup-t : (t : τ̂) → allmoves (moveup-t t)
-  allmoves-moveup-t ▹ x ◃ = AM[]
-  allmoves-moveup-t (t ==>₁ x) = allmoves++ (allmoves-moveup-t t) (AM:: AM[])
-  allmoves-moveup-t (x ==>₂ t) = allmoves++ (allmoves-moveup-t t) (AM:: AM[])
+  movements-moveup-t : (t : τ̂) → movements (moveup-t t)
+  movements-moveup-t ▹ x ◃ = AM[]
+  movements-moveup-t (t ==>₁ x) = movements++ (movements-moveup-t t) (AM:: AM[])
+  movements-moveup-t (x ==>₂ t) = movements++ (movements-moveup-t t) (AM:: AM[])
 
-  allmoves-moveup-e : (e : ê) → allmoves (moveup-e e)
-  allmoves-moveup-e ▹ x ◃ = AM[]
-  allmoves-moveup-e (e ·:₁ x) = allmoves++ (allmoves-moveup-e e) (AM:: AM[])
-  allmoves-moveup-e (x ·:₂ x₁) = allmoves++ (allmoves-moveup-t x₁) (AM:: AM[])
-  allmoves-moveup-e (·λ x e) = allmoves++ (allmoves-moveup-e e) (AM:: AM[])
-  allmoves-moveup-e (e ∘₁ x) = allmoves++ (allmoves-moveup-e e) (AM:: AM[])
-  allmoves-moveup-e (x ∘₂ e) = allmoves++ (allmoves-moveup-e e) (AM:: AM[])
-  allmoves-moveup-e (e ·+₁ x) = allmoves++ (allmoves-moveup-e e) (AM:: AM[])
-  allmoves-moveup-e (x ·+₂ e) = allmoves++ (allmoves-moveup-e e) (AM:: AM[])
-  allmoves-moveup-e <| e |> = allmoves++ (allmoves-moveup-e e) (AM:: AM[])
+  movements-moveup-e : (e : ê) → movements (moveup-e e)
+  movements-moveup-e ▹ x ◃ = AM[]
+  movements-moveup-e (e ·:₁ x) = movements++ (movements-moveup-e e) (AM:: AM[])
+  movements-moveup-e (x ·:₂ x₁) = movements++ (movements-moveup-t x₁) (AM:: AM[])
+  movements-moveup-e (·λ x e) = movements++ (movements-moveup-e e) (AM:: AM[])
+  movements-moveup-e (e ∘₁ x) = movements++ (movements-moveup-e e) (AM:: AM[])
+  movements-moveup-e (x ∘₂ e) = movements++ (movements-moveup-e e) (AM:: AM[])
+  movements-moveup-e (e ·+₁ x) = movements++ (movements-moveup-e e) (AM:: AM[])
+  movements-moveup-e (x ·+₂ e) = movements++ (movements-moveup-e e) (AM:: AM[])
+  movements-moveup-e <| e |> = movements++ (movements-moveup-e e) (AM:: AM[])
 
-  allmoves-movedown-t : (t : τ̇) (t' : τ̂) (p : erase-t t' t) → allmoves(movedown-t t t' p)
-  allmoves-movedown-t _ ▹ ._ ◃ ETTop = AM[]
-  allmoves-movedown-t (t ==> t₁) (t' ==>₁ .t₁) (ETArrL p) = AM:: (allmoves-movedown-t t t' p)
-  allmoves-movedown-t (t ==> t₁) (.t ==>₂ t') (ETArrR p) = AM:: (AM:: (allmoves-movedown-t t₁ t' p))
+  movements-movedown-t : (t : τ̇) (t' : τ̂) (p : erase-t t' t) → movements(movedown-t t t' p)
+  movements-movedown-t _ ▹ ._ ◃ ETTop = AM[]
+  movements-movedown-t (t ==> t₁) (t' ==>₁ .t₁) (ETArrL p) = AM:: (movements-movedown-t t t' p)
+  movements-movedown-t (t ==> t₁) (.t ==>₂ t') (ETArrR p) = AM:: (AM:: (movements-movedown-t t₁ t' p))
 
-  allmoves-movedown-e :(e : ė) (e' : ê) (p : erase-e e' e) → allmoves(movedown-e e e' p)
-  allmoves-movedown-e _ ▹ ._ ◃ EETop = AM[]
-  allmoves-movedown-e (e ·: x) (e' ·:₁ .x) (EEAscL p) = AM:: (allmoves-movedown-e e e' p)
-  allmoves-movedown-e (e ·: x) (.e ·:₂ x₁) (EEAscR x₂) = AM:: (AM:: (allmoves-movedown-t x x₁ x₂))
-  allmoves-movedown-e (·λ x e) (·λ .x e') (EELam p) = AM:: (allmoves-movedown-e e e' p)
-  allmoves-movedown-e (e ·+ e₁) (e' ·+₁ .e₁) (EEPlusL p) = AM:: (allmoves-movedown-e e e' p)
-  allmoves-movedown-e (e ·+ e₁) (.e ·+₂ e') (EEPlusR p) = AM:: (AM:: (allmoves-movedown-e e₁ e' p))
-  allmoves-movedown-e <| e |> <| e' |> (EENEHole p) = AM:: (allmoves-movedown-e e e' p)
-  allmoves-movedown-e (e ∘ e₁) (e' ∘₁ .e₁) (EEApL p) = AM:: (allmoves-movedown-e e e' p)
-  allmoves-movedown-e (e ∘ e₁) (.e ∘₂ e') (EEApR p) = AM:: (AM:: (allmoves-movedown-e e₁ e' p))
+  movements-movedown-e :(e : ė) (e' : ê) (p : erase-e e' e) → movements(movedown-e e e' p)
+  movements-movedown-e _ ▹ ._ ◃ EETop = AM[]
+  movements-movedown-e (e ·: x) (e' ·:₁ .x) (EEAscL p) = AM:: (movements-movedown-e e e' p)
+  movements-movedown-e (e ·: x) (.e ·:₂ x₁) (EEAscR x₂) = AM:: (AM:: (movements-movedown-t x x₁ x₂))
+  movements-movedown-e (·λ x e) (·λ .x e') (EELam p) = AM:: (movements-movedown-e e e' p)
+  movements-movedown-e (e ·+ e₁) (e' ·+₁ .e₁) (EEPlusL p) = AM:: (movements-movedown-e e e' p)
+  movements-movedown-e (e ·+ e₁) (.e ·+₂ e') (EEPlusR p) = AM:: (AM:: (movements-movedown-e e₁ e' p))
+  movements-movedown-e <| e |> <| e' |> (EENEHole p) = AM:: (movements-movedown-e e e' p)
+  movements-movedown-e (e ∘ e₁) (e' ∘₁ .e₁) (EEApL p) = AM:: (movements-movedown-e e e' p)
+  movements-movedown-e (e ∘ e₁) (.e ∘₂ e') (EEApR p) = AM:: (AM:: (movements-movedown-e e₁ e' p))
 
   -- this is the final statement of the reachability triplet. the movement
   -- between judgemental and metafunctional erasure happens internally to
@@ -203,29 +203,29 @@ module reachability where
   -- the statement. these are lemmas which are currently not proven. TODO?
 
   reachability-types : (t1 t2 : τ̂) → (t1 ◆t) == (t2 ◆t) →
-                           Σ[ L ∈ List action ] runtype t1 L t2 × allmoves L
+                           Σ[ L ∈ List action ] runtype t1 L t2 × movements L
   reachability-types t1 t2 eq with ◆erase-t t1 (t2 ◆t) eq | ◆erase-t t2 (t1 ◆t) (! eq)
   ... | er1 | er2 with reachup-type er1 | reachdown-type er2
   ... | up  | down = moveup-t t1 ++ movedown-t (t1 ◆t) t2 er2 ,
                      (runtype++ up (tr (λ x → runtype ▹ x ◃ (movedown-t (t1 ◆t) t2 er2) t2) eq down)) ,
-                     allmoves++ (allmoves-moveup-t t1) (allmoves-movedown-t (t1 ◆t) t2 er2)
+                     movements++ (movements-moveup-t t1) (movements-movedown-t (t1 ◆t) t2 er2)
 
   reachability-synth : (Γ : ·ctx) (t : τ̇) (e1 e2 : ê) →
                             Γ ⊢ e1 ◆e => t →
                             e1 ◆e == e2 ◆e →
-                            Σ[ L ∈ List action ] runsynth Γ e1 t L e2 t × allmoves L
+                            Σ[ L ∈ List action ] runsynth Γ e1 t L e2 t × movements L
   reachability-synth Γ t e1 e2 wt1 eq with ◆erase-e e1 (e2 ◆e) eq | ◆erase-e e2 (e1 ◆e) (! eq)
   ... | er1 | er2 with reachup-synth er1 (tr (λ x → Γ ⊢ x => t) eq wt1) | reachdown-synth er2 wt1
   ... | up  | down = moveup-e e1 ++ movedown-e (e1 ◆e) e2 er2 ,
                      runsynth++ up (tr (λ x → runsynth Γ ▹ x ◃ t (movedown-e (e1 ◆e) e2 er2) e2 t) eq down),
-                     allmoves++ (allmoves-moveup-e e1) (allmoves-movedown-e (e1 ◆e) e2 er2)
+                     movements++ (movements-moveup-e e1) (movements-movedown-e (e1 ◆e) e2 er2)
 
   reachability-ana : (Γ : ·ctx) (t : τ̇) (e1 e2 : ê) →
                             Γ ⊢ e1 ◆e <= t →
                             e1 ◆e == e2 ◆e →
-                            Σ[ L ∈ List action ] runana Γ e1 L e2 t × allmoves L
+                            Σ[ L ∈ List action ] runana Γ e1 L e2 t × movements L
   reachability-ana Γ t e1 e2 wt1 eq with ◆erase-e e1 (e2 ◆e) eq | ◆erase-e e2 (e1 ◆e) (! eq)
   ... | er1 | er2 with reachup-ana er1 (tr (λ x → Γ ⊢ x <= t) eq wt1) | reachdown-ana er2 wt1
   ... | up  | down = moveup-e e1 ++ movedown-e (e1 ◆e) e2 er2 ,
                      runana++ up (tr (λ x → runana Γ ▹ x ◃ (movedown-e (e1 ◆e) e2 er2) e2 t) eq down) ,
-                     allmoves++ (allmoves-moveup-e e1) (allmoves-movedown-e (e1 ◆e) e2 er2)
+                     movements++ (movements-moveup-e e1) (movements-movedown-e (e1 ◆e) e2 er2)
