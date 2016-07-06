@@ -51,10 +51,15 @@ module judgemental-inconsistency where
   from~̸ <||> (t2 ==> t3) ncon = abort (ncon TCHole2)
   from~̸ (t1 ==> t2) <||> ncon = abort (ncon TCHole1)
 
-  -- -- need to display that at least one of the round-trips above is stable
-  -- -- for this to be structure preserving and really an iso.
-  -- rt : (t1 t2 : τ̇) → (x : incon t1 t2) → (from~̸ t1 t2 (to~̸ t1 t2 x)) == x
-  -- rt .num ._ ICNum1 = refl
-  -- rt ._ .num ICNum2 = refl
-  -- rt ._ ._ (ICArr1 x) = {!!}
-  -- rt ._ ._ (ICArr2 x) = {!!}
+  -- need to display that at least one of the round-trips above is stable
+  -- for this to be structure preserving and really an iso.
+  rt : (t1 t2 : τ̇) → (x : t1 ~̸ t2) → (to~̸ t1 t2 (from~̸ t1 t2 x)) == x
+  rt num (t2 ==> t3) x = funext (λ x₁ → abort (x x₁))
+  rt (t1 ==> t2) num x = funext (λ x₁ → abort (x x₁))
+  rt (t1 ==> t2) (t3 ==> t4) x = funext (λ x₁ → abort (x x₁))
+  rt num num x = abort (x TCRefl)
+  rt num <||> x = abort (x TCHole1)
+  rt <||> num x = abort (x TCHole2)
+  rt <||> <||> x = abort (x TCRefl)
+  rt <||> (t2 ==> t3) x = abort (x TCHole2)
+  rt (t1 ==> t2) <||> x = abort (x TCHole1)
