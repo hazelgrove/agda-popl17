@@ -5,7 +5,7 @@ open import core
 open import judgemental-erase
 open import checks
 
-module constructabiltiy where
+module constructability where
 
   ------- constructability
 
@@ -67,7 +67,7 @@ module constructabiltiy where
     BuildEHole : buildexp ▹ <||> ◃ [ del ]
     BuildFHole : {e : ė} {l : List action} →
                  buildexp ▹ e ◃ l →
-                 buildexp ▹ <| e |> ◃ (l ++ [ envelop ])
+                 buildexp ▹ <| e |> ◃ (l ++ [ construct fhole ])
 
   -- taken together, these three theorems say that the build judgements
   -- have mode (∀, ∃), which is to say that they effectively define total
@@ -91,21 +91,20 @@ module constructabiltiy where
     buildexp-mode-synth (SAsc {t = t} d) with buildexp-mode-ana d | buildtype-mode t
     ... | (_ , p1) | (_ , p2) = _ ,  BuildAsc p1 p2
     buildexp-mode-synth (SVar _) = _ , BuildX
-    buildexp-mode-synth (SAp d1 d2) with buildexp-mode-synth d1 | buildexp-mode-ana d2
-    ... | (_ , p1) | (_ , p2) = _ , BuildAp p1 p2
+    buildexp-mode-synth (SAp m d1 d2) = {!!}
+    --   with buildexp-mode-synth d1 | buildexp-mode-ana d2
+    -- ... | (_ , p1) | (_ , p2) = _ , BuildAp p1 p2
     buildexp-mode-synth SNum = _ , BuildN
     buildexp-mode-synth (SPlus d1 d2) with buildexp-mode-ana d1 | buildexp-mode-ana d2
     ... | (_ , p1) | (_ , p2) = _ , BuildPlus p1 p2
     buildexp-mode-synth SEHole = _ , BuildEHole
     buildexp-mode-synth (SFHole d) with buildexp-mode-synth d
     ... | (_ , p)= _ , BuildFHole p
-    buildexp-mode-synth (SApHole d1 d2) with buildexp-mode-synth d1 | buildexp-mode-ana d2
-    ... | (_ , p1) | (_ , p2) = _ , BuildAp p1 p2
 
     buildexp-mode-ana : {Γ : ·ctx} {e : ė} {t : τ̇} (wt : Γ ⊢ e <= t) →
               Σ[ l ∈ List action ] buildexp ▹ e ◃ l
     buildexp-mode-ana (ASubsume x _) = buildexp-mode-synth x
-    buildexp-mode-ana (ALam _ d) with buildexp-mode-ana d
+    buildexp-mode-ana (ALam m _ d) with buildexp-mode-ana d
     ... | (_ , p)= _ , BuildLam p
 
   constructtype : {t : τ̇} {L : List action} →
@@ -123,19 +122,18 @@ module constructabiltiy where
                      → runsynth Γ ▹ <||> ◃ <||> L ▹ e ◃ t
     constructsynth (SAsc x) (BuildAsc b x₁) = DoSynth SAConAsc (runsynth++ (lem-tscong (constructtype x₁)) (DoSynth (SAMove EMAscParent2) (DoSynth (SAMove EMAscFirstChild) (runsynth++ (lem-anasynthasc (constructana x b)) (DoSynth (SAMove EMAscParent1) DoRefl)) )))
     constructsynth (SVar x) BuildX = DoSynth (SAConVar x) DoRefl
-    constructsynth (SAp wt x) (BuildAp b b₁) = {!!}
+    constructsynth (SAp m wt x) (BuildAp b b₁) = {!!}
     constructsynth SNum BuildN = DoSynth SAConNumlit DoRefl
     constructsynth (SPlus x x₁) (BuildPlus b b₁) = {!!}
     constructsynth SEHole BuildEHole = DoSynth SADel DoRefl
-    constructsynth (SFHole wt) (BuildFHole b) = runsynth++ (constructsynth wt b) (DoSynth SAEnvelop DoRefl)
-    constructsynth (SApHole wt x) (BuildAp b b₁) = {!!}
+    constructsynth (SFHole wt) (BuildFHole b) = runsynth++ (constructsynth wt b) (DoSynth {!!} DoRefl)
 
     constructana : {Γ : ·ctx} {e : ė} {t : τ̇} {L : List action} →
                        Γ ⊢ e <= t
                      → buildexp ▹ e ◃ L
                      → runana Γ ▹ <||> ◃ L ▹ e ◃ t
     constructana (ASubsume x₁ x) build = {!constructsynth x₁ build!}
-    constructana (ALam x₁ wt) (BuildLam b) = {!!}
+    constructana (ALam m x₁ wt) (BuildLam b) = {!!}
 
 
   -- tie together the mode theorem and the above to demonstrate that for
