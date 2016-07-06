@@ -135,6 +135,30 @@ module reachability where
     reachdown-ana (EEFHole p) (ASubsume x x₁) = {!!}
     reachdown-ana (EELam p) (ALam m x₁ wt) = {!!}
 
+  -- because the point of the reachability theorems is to show that we
+  -- didn't forget to define any of the action semantic cases, it's
+  -- important that theorems include the fact that the witness only uses
+  -- move -- otherwise, you could prepend [ del ] to the list produced by
+  -- constructability. constructability does also use some, but not all, of
+  -- the possible movements, so this would no longer demonstrate the
+  -- property we really want. to that end, we define a predicate on lists
+  -- that they contain only (move _) and that the various things above that
+  -- produce the lists we use have this property.
+
+  -- predicate
+  allmoves : List action → Set
+  allmoves [] = ⊤
+  allmoves (move _ :: l) = allmoves l
+  allmoves (del :: l) = ⊥
+  allmoves (construct x :: l) = ⊥
+  allmoves (finish :: l) = ⊥
+
+  allmoves++ : {l1 l2 : List action} → allmoves l1 → allmoves l2 → allmoves (l1 ++ l2)
+  allmoves++ {[]} {[]} am1 am2 = <>
+  allmoves++ {[]} {x :: l2} am1 am2 = am2
+  allmoves++ {x :: l1} {[]} am1 am2 = {!allmoves++ !}
+  allmoves++ {x :: l1} {x₁ :: l2} am1 am2 = {!!}
+
   -- this is the final statement of the reachability triplet. the movement
   -- between judgemental and metafunctional erasure happens internally to
   -- theses statements to present a consistent interface with the text of
@@ -148,29 +172,32 @@ module reachability where
   -- the statement. these are lemmas which are currently not proven. TODO?
 
   reachability-types : (t1 t2 : τ̂) → (t1 ◆t) == (t2 ◆t) →
-                           Σ[ L ∈ List action ] runtype t1 L t2
+                           Σ[ L ∈ List action ] runtype t1 L t2 × allmoves L
   reachability-types t1 t2 eq with ◆erase-t t1 (t2 ◆t) eq | ◆erase-t t2 (t1 ◆t) (! eq)
   ... | er1 | er2 with reachup-type er1 | reachdown-type er2
   ... | up  | down = moveup-t t1 ++ movedown-t (t1 ◆t) t2 er2 ,
-                     runtype++ up (tr (λ x → runtype ▹ x ◃ (movedown-t (t1 ◆t) t2 er2 ) t2 ) eq down)
+                     (runtype++ up (tr (λ x → runtype ▹ x ◃ (movedown-t (t1 ◆t) t2 er2) t2) eq down)) ,
+                     {!!}
 
   reachability-synth : (Γ : ·ctx) (t : τ̇) (e1 e2 : ê) →
                             Γ ⊢ e1 ◆e => t →
-                            Γ ⊢ e2 ◆e => t →
                             e1 ◆e == e2 ◆e →
-                            Σ[ L ∈ List action ] runsynth Γ e1 t L e2 t
-  reachability-synth Γ t e1 e2 wt1 wt2 eq with ◆erase-e e1 (e2 ◆e) eq | ◆erase-e e2 (e1 ◆e) (! eq)
-  ... | er1 | er2 with reachup-synth er1 wt2 | reachdown-synth er2 wt1
-  ... | up  | down = moveup-e e1 ++ movedown-e (e1 ◆e) e2 er2 , runsynth++ up (tr (λ x → runsynth Γ ▹ x ◃ t (movedown-e (e1 ◆e) e2 er2) e2 t) eq
-                                                                                 down)
+                            Σ[ L ∈ List action ] runsynth Γ e1 t L e2 t × allmoves L
+  reachability-synth Γ t e1 e2 wt1 eq with ◆erase-e e1 (e2 ◆e) eq | ◆erase-e e2 (e1 ◆e) (! eq)
+  ... | er1 | er2 with reachup-synth er1 (tr (λ x → Γ ⊢ x => t) eq wt1) | reachdown-synth er2 wt1
+  ... | up  | down = moveup-e e1 ++ movedown-e (e1 ◆e) e2 er2 ,
+                     runsynth++ up (tr (λ x → runsynth Γ ▹ x ◃ t (movedown-e (e1 ◆e) e2 er2) e2 t) eq down),
+                     {!!}
 
   reachability-ana : (Γ : ·ctx) (t : τ̇) (e1 e2 : ê) →
                             Γ ⊢ e1 ◆e <= t →
-                            Γ ⊢ e2 ◆e <= t →
                             e1 ◆e == e2 ◆e →
-                            Σ[ L ∈ List action ] runana Γ e1 L e2 t
-  reachability-ana Γ t e1 e2 wt1 wt2 eq with ◆erase-e e1 (e2 ◆e) eq | ◆erase-e e2 (e1 ◆e) (! eq)
-  ... | er1 | er2 with reachup-ana er1 wt2 | reachdown-ana er2 wt1
-  ... | up  | down = moveup-e e1 ++ movedown-e (e1 ◆e) e2 er2 , runana++ up (tr (λ x → runana Γ ▹ x ◃ (movedown-e (e1 ◆e) e2 er2) e2 t) eq
-                                                                                 down)
+                            Σ[ L ∈ List action ] runana Γ e1 L e2 t × allmoves L
+  reachability-ana Γ t e1 e2 wt1 eq with ◆erase-e e1 (e2 ◆e) eq | ◆erase-e e2 (e1 ◆e) (! eq)
+  ... | er1 | er2 with reachup-ana er1 (tr (λ x → Γ ⊢ x <= t) eq wt1) | reachdown-ana er2 wt1
+  ... | up  | down = moveup-e e1 ++ movedown-e (e1 ◆e) e2 er2 ,
+                     runana++ up (tr (λ x → runana Γ ▹ x ◃ (movedown-e (e1 ◆e) e2 er2) e2 t) eq down) ,
+                     {!!}
+
+
   -- todo: remove redundant typing premises from the latter two; add the fact that the list is only movements.
