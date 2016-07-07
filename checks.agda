@@ -130,6 +130,32 @@ module checks where
   lem-anasynthasc DoRefl = DoRefl
   lem-anasynthasc (DoAna a r) = DoSynth (SAZipAsc1 a) (lem-anasynthasc r)
 
+  ana-lam-cong : ∀ {Γ x e t t1 t2 L e'} →
+                   x # Γ →
+                   t ▸arr (t1 ==> t2) →
+                   runana (Γ ,, (x , t1)) e L e' t2 →
+                   runana Γ (·λ x e) L (·λ x e') t
+  ana-lam-cong a m DoRefl = DoRefl
+  ana-lam-cong a m (DoAna x₁ d) =  DoAna (AAZipLam a m x₁) (ana-lam-cong a m d)
+
+  synth-ana-plus2-cong : ∀{ Γ e L e' f} →
+                       runana Γ e L e' num →
+                       runsynth Γ (f ·+₂ e) num L (f ·+₂ e') num
+  synth-ana-plus2-cong DoRefl = DoRefl
+  synth-ana-plus2-cong (DoAna x d) = DoSynth (SAZipPlus2 x) (synth-ana-plus2-cong d)
+
+  synth-ana-ap2-cong : ∀{ Γ e L e' t t' f tf} →
+                       Γ ⊢ f => t' →
+                       t' ▸arr (t ==> tf) →
+                       runana Γ e L e' t →
+                       runsynth Γ (f ∘₂ e) tf L (f ∘₂ e') tf
+  synth-ana-ap2-cong wt m DoRefl = DoRefl
+  synth-ana-ap2-cong wt m (DoAna x d) = DoSynth (SAZipApAna m wt x) (synth-ana-ap2-cong wt m d)
+
+
+
+
+
   -- if there is a list of actions that builds a type, running that list
   -- from the empty hole in focus really does produce the target type.
   -- run-subsume :  ∀ { Γ L e e' t t' } →

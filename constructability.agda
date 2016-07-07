@@ -106,26 +106,11 @@ module constructability where
   constructtype (BuildArr bt1 bt2) with constructtype bt1 | constructtype bt2
   ... | ih1 | ih2 = runtype++ ih1 (DoType TMConArrow (runtype++ (runtype-cong2 ih2) (DoType TMParent2 DoRefl)))
 
-  synth-ana-ap2-cong : ∀{ Γ e L e' t f tf} →
-                       runana Γ e L e' t →
-                       runsynth Γ (f ∘₂ e) tf L (f ∘₂ e') tf
-  synth-ana-ap2-cong = {!!}
-
-  synth-ana-plus2-cong : ∀{ Γ e L e' t f tf} →
-                       runana Γ e L e' t →
-                       runsynth Γ (f ·+₂ e) tf L (f ·+₂ e') tf
-  synth-ana-plus2-cong = {!!}
-
-  synth-ana-plus1-cong : ∀{ Γ e L e' t tf } →
-                       runana Γ e L e' t →
-                       runsynth Γ ▹ <||> ◃ <||> L (e') tf
-  synth-ana-plus1-cong = {!!}
-
-  ana-lam-cong : ∀ {Γ x e t t1 t2 L e'} →
-                   t ▸arr (t1 ==> t2) →
-                   runana (Γ ,, (x , t1)) e L e' t2 →
-                   runana Γ (·λ x ▹ <||> ◃) L (·λ x e') t
-  ana-lam-cong m d = {!!}
+  synth-ana-plus1-cong : ∀{ Γ e L e' } →
+                       runana Γ e L e' num →
+                       runsynth Γ e <||> L e' num
+  synth-ana-plus1-cong DoRefl = {!!}
+  synth-ana-plus1-cong (DoAna x d) = {!!}
 
   mutual
     constructsynth : {Γ : ·ctx} {e : ė} {t : τ̇} {L : List action} →
@@ -136,10 +121,10 @@ module constructability where
     ... | ih1 | ih2 = DoSynth SAConAsc (runsynth++ (lem-tscong ih1) (DoSynth (SAMove EMAscParent2) (DoSynth (SAMove EMAscFirstChild) (runsynth++ (lem-anasynthasc ih2) (DoSynth (SAMove EMAscParent1) DoRefl)))))
     constructsynth (SVar x) BuildX = DoSynth (SAConVar x) DoRefl
     constructsynth (SAp wt m x) (BuildAp b b₁) with constructsynth wt b | constructana x b₁
-    ... | ih1 | ih2 = runsynth++ ih1 (DoSynth (SAConApArr m) (runsynth++ (synth-ana-ap2-cong ih2) (DoSynth (SAMove EMApParent2) DoRefl)))
+    ... | ih1 | ih2 = runsynth++ ih1 (DoSynth (SAConApArr m) (runsynth++ (synth-ana-ap2-cong wt m ih2) (DoSynth (SAMove EMApParent2) DoRefl)))
     constructsynth SNum BuildN = DoSynth SAConNumlit DoRefl
     constructsynth (SPlus x x₁) (BuildPlus b b₁) with constructana x b | constructana x₁ b₁
-    ... | ih1 | ih2 = runsynth++ (synth-ana-plus1-cong ih1) (DoSynth (SAConPlus1 TCRefl) (runsynth++ (synth-ana-plus2-cong ih2) (DoSynth (SAMove EMPlusParent2) DoRefl)))
+    ... | ih1 | ih2 = {!!} --  runsynth++ ({!ih1!}) (DoSynth (SAConPlus1 TCRefl) (runsynth++ (synth-ana-plus2-cong ih2) (DoSynth (SAMove EMPlusParent2) DoRefl)))
     constructsynth SEHole BuildEHole = DoSynth SADel DoRefl
     constructsynth (SNEHole wt) (BuildNEHole b) = runsynth++ (constructsynth wt b) (DoSynth SAConNEHole (DoSynth (SAMove EMNEHoleParent) DoRefl))
 
@@ -150,7 +135,7 @@ module constructability where
     constructana (ASubsume x₁ x) build with constructsynth x₁ build
     ... | ih = {!!}
     constructana (ALam m x₁ wt) (BuildLam b) with constructana wt b
-    ... | ih = DoAna (AAConLam1 m x₁) (runana++ (ana-lam-cong x₁ ih) (DoAna (AAMove EMLamParent) DoRefl))
+    ... | ih = DoAna (AAConLam1 m x₁) (runana++ (ana-lam-cong m x₁ ih) (DoAna (AAMove EMLamParent) DoRefl))
 
 
   -- tie together the mode theorem and the above to demonstrate that for
