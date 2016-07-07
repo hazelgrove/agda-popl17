@@ -50,9 +50,7 @@ module constructability where
     BuildPlus : {e1 e2 : ė} {l1 l2 : List action}
                  → buildexp ▹ e1 ◃ l1
                  → buildexp ▹ e2 ◃ l2
-                 -- → buildexp ▹ e1 ·+ e2 ◃ (l1 ++ (construct plus :: (l2 ++ [ move parent ])))
-                 → buildexp ▹ e1 ·+ e2 ◃
-                            ((construct plus :: (l2 ++ (move parent :: move firstChild :: (l1 ++ [ move parent ])))))
+                 → buildexp ▹ e1 ·+ e2 ◃ ((construct plus :: (l2 ++ (move parent :: move firstChild :: (l1 ++ [ move parent ])))))
     BuildAp :  {e1 e2 : ė} {l1 l2 : List action}
                  → buildexp ▹ e1 ◃ l1
                  → buildexp ▹ e2 ◃ l2
@@ -151,18 +149,46 @@ module constructability where
 
   -- tie together the mode theorem and the above to demonstrate that for
   -- any type there is a spcific list of actions that builds it.
+  -- constructability-types : (t : τ̇) → Σ[ L ∈ List action ] runtype (▹ <||> ◃) L (▹ t ◃)
+  -- constructability-types t with buildtype-mode t
+  -- ... | (L , pf) = L , constructtype pf
   constructability-types : (t : τ̇) → Σ[ L ∈ List action ] runtype (▹ <||> ◃) L (▹ t ◃)
-  constructability-types t with buildtype-mode t
-  ... | (L , pf) = L , constructtype pf
+  constructability-types num = [ construct num ] , (DoType TMConNum DoRefl)
+  constructability-types <||> = [ del ] , DoType TMDel DoRefl
+  constructability-types (t1 ==> t2) with constructability-types t1 | constructability-types t2
+  ... | (l1 , ih1) | (l2 , ih2) =
+      l1 ++ construct arrow :: l2 ++ [ move parent ] ,
+      runtype++ ih1
+        (DoType TMConArrow
+         (runtype++ (runtype-cong2 ih2) (DoType TMParent2 DoRefl)))
 
-  constructability-synth : {Γ : ·ctx} {t : τ̇} {e : ė} → (Γ ⊢ e => t) →
-                              Σ[ L ∈ List action ]
-                                 runsynth Γ ▹ <||> ◃ <||> L ▹ e ◃ t
-  constructability-synth wt with buildexp-mode-synth wt
-  ... | (L , pf) = L , constructsynth wt pf
+  mutual
+    constructability-synth : {Γ : ·ctx} {t : τ̇} {e : ė} → (Γ ⊢ e => t) →
+                                Σ[ L ∈ List action ]
+                                   runsynth Γ ▹ <||> ◃ <||> L ▹ e ◃ t
+    constructability-synth wt with buildexp-mode-synth wt
+    ... | (L , pf) = L , constructsynth wt pf
 
-  constructability-ana : {Γ : ·ctx} {t : τ̇} {e : ė} → (Γ ⊢ e <= t) →
-                              Σ[ L ∈ List action ]
-                                 runana Γ ▹ <||> ◃ L ▹ e ◃ t
-  constructability-ana wt with buildexp-mode-ana wt
-  ... | (L , pf) = L , constructana wt pf
+  -- constructability-ana : {Γ : ·ctx} {t : τ̇} {e : ė} → (Γ ⊢ e <= t) →
+  --                             Σ[ L ∈ List action ]
+  --                                runana Γ ▹ <||> ◃ L ▹ e ◃ t
+  -- constructability-ana wt with buildexp-mode-ana wt
+  -- ... | (L , pf) = L , constructana wt pf
+
+    lem-nehole-cong : ∀{Γ e L e' t'} →
+                    runsynth Γ e <||> L e' t' →
+                    runana Γ <| e |> L <| e' |> t'
+    lem-nehole-cong DoRefl = DoRefl
+    lem-nehole-cong (DoSynth x d) = {!!}
+
+
+    constructability-ana : {Γ : ·ctx} {t : τ̇} {e : ė} → (Γ ⊢ e <= t) →
+                                Σ[ L ∈ List action ]
+                                   runana Γ ▹ <||> ◃ L ▹ e ◃ t
+    constructability-ana (ASubsume x x₁) with constructability-synth x
+    ... | (l1 , ih1) =
+        construct nehole :: l1 ++ (finish :: move parent :: []) ,
+              DoAna (AASubsume {p = {!!}} SEHole SAConNEHole TCHole1)
+                (runana++ {L1 = l1} {L2 = finish :: move parent :: []}
+                  {!lem-nehole-cong ih1 !} (DoAna {!!} (DoAna {!!} DoRefl)))
+    constructability-ana (ALam x₁ x₂ wt) = {!!}
