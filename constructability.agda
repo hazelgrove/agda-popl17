@@ -104,7 +104,10 @@ module constructability where
   constructtype  BuildNum = DoType TMConNum DoRefl
   constructtype  BuildTHole = DoType TMDel DoRefl
   constructtype (BuildArr bt1 bt2) with constructtype bt1 | constructtype bt2
-  ... | ih1 | ih2 = runtype++ ih1 (DoType TMConArrow (runtype++ (runtype-cong2 ih2) (DoType TMParent2 DoRefl)))
+  ... | ih1 | ih2 = runtype++ ih1
+                        (DoType TMConArrow
+                          (runtype++ (runtype-cong2 ih2)
+                            (DoType TMParent2 DoRefl)))
 
   mutual
     constructsynth : {Γ : ·ctx} {e : ė} {t : τ̇} {L : List action} →
@@ -144,51 +147,25 @@ module constructability where
     constructana (ASubsume x₁ x) build with constructsynth x₁ build
     ... | ih = {!!}
     constructana (ALam m x₁ wt) (BuildLam b) with constructana wt b
-    ... | ih = DoAna (AAConLam1 m x₁) (runana++ (ana-lam-cong m x₁ ih) (DoAna (AAMove EMLamParent) DoRefl))
+    ... | ih = DoAna (AAConLam1 m x₁)
+                (runana++ (ana-lam-cong m x₁ ih)
+                  (DoAna (AAMove EMLamParent) DoRefl))
 
 
   -- tie together the mode theorem and the above to demonstrate that for
   -- any type there is a spcific list of actions that builds it.
-  -- constructability-types : (t : τ̇) → Σ[ L ∈ List action ] runtype (▹ <||> ◃) L (▹ t ◃)
-  -- constructability-types t with buildtype-mode t
-  -- ... | (L , pf) = L , constructtype pf
   constructability-types : (t : τ̇) → Σ[ L ∈ List action ] runtype (▹ <||> ◃) L (▹ t ◃)
-  constructability-types num = [ construct num ] , (DoType TMConNum DoRefl)
-  constructability-types <||> = [ del ] , DoType TMDel DoRefl
-  constructability-types (t1 ==> t2) with constructability-types t1 | constructability-types t2
-  ... | (l1 , ih1) | (l2 , ih2) =
-      l1 ++ construct arrow :: l2 ++ [ move parent ] ,
-      runtype++ ih1
-        (DoType TMConArrow
-         (runtype++ (runtype-cong2 ih2) (DoType TMParent2 DoRefl)))
+  constructability-types t with buildtype-mode t
+  ... | (L , pf) = L , constructtype pf
 
-  mutual
-    constructability-synth : {Γ : ·ctx} {t : τ̇} {e : ė} → (Γ ⊢ e => t) →
+  constructability-synth : {Γ : ·ctx} {t : τ̇} {e : ė} → (Γ ⊢ e => t) →
                                 Σ[ L ∈ List action ]
                                    runsynth Γ ▹ <||> ◃ <||> L ▹ e ◃ t
-    constructability-synth wt with buildexp-mode-synth wt
-    ... | (L , pf) = L , constructsynth wt pf
+  constructability-synth wt with buildexp-mode-synth wt
+  ... | (L , pf) = L , constructsynth wt pf
 
-  -- constructability-ana : {Γ : ·ctx} {t : τ̇} {e : ė} → (Γ ⊢ e <= t) →
-  --                             Σ[ L ∈ List action ]
-  --                                runana Γ ▹ <||> ◃ L ▹ e ◃ t
-  -- constructability-ana wt with buildexp-mode-ana wt
-  -- ... | (L , pf) = L , constructana wt pf
-
-    lem-nehole-cong : ∀{Γ e L e' t'} →
-                    runsynth Γ e <||> L e' t' →
-                    runana Γ <| e |> L <| e' |> t'
-    lem-nehole-cong DoRefl = DoRefl
-    lem-nehole-cong (DoSynth x d) = {!!}
-
-
-    constructability-ana : {Γ : ·ctx} {t : τ̇} {e : ė} → (Γ ⊢ e <= t) →
-                                Σ[ L ∈ List action ]
-                                   runana Γ ▹ <||> ◃ L ▹ e ◃ t
-    constructability-ana (ASubsume x x₁) with constructability-synth x
-    ... | (l1 , ih1) =
-        construct nehole :: l1 ++ (finish :: move parent :: []) ,
-              DoAna (AASubsume {p = {!!}} SEHole SAConNEHole TCHole1)
-                (runana++ {L1 = l1} {L2 = finish :: move parent :: []}
-                  {!lem-nehole-cong ih1 !} (DoAna {!!} (DoAna {!!} DoRefl)))
-    constructability-ana (ALam x₁ x₂ wt) = {!!}
+  constructability-ana : {Γ : ·ctx} {t : τ̇} {e : ė} → (Γ ⊢ e <= t) →
+                              Σ[ L ∈ List action ]
+                                 runana Γ ▹ <||> ◃ L ▹ e ◃ t
+  constructability-ana wt with buildexp-mode-ana wt
+  ... | (L , pf) = L , constructana wt pf
