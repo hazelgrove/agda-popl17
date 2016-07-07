@@ -462,8 +462,6 @@ module core where
     data _⊢_~_~>_⇐_ : (Γ : ·ctx) → (e : ê) → (α : action) →
                       (e' : ê) → (t : τ̇) → Set where
       AASubsume : {Γ : ·ctx} {e e' : ê} {t t' t'' : τ̇} {α : action} →
-                  {p : (α == construct asc → ⊥) ×
-                       ((x : Nat) → (α == construct (lam x) → ⊥))} →
                   (Γ ⊢ (e ◆e) => t') →
                   (Γ ⊢ e => t' ~ α ~> e' => t'') →
                   (t ~ t'') →

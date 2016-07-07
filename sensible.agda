@@ -108,8 +108,8 @@ module sensible where
     actsense2 (AAZipLam _ _ _) (ASubsume () _)
 
     -- the zipper possibilities
-    actsense2 (AAZipLam apt m (AASubsume {p = p} x₁ x₂ x₃)) (ALam x₄ x₅ d2) with matchunicity m x₅
-    ... | refl = ALam x₄ x₅ (actsense2 (AASubsume {p = p} x₁ x₂ x₃) d2)
+    actsense2 (AAZipLam apt m (AASubsume x₁ x₂ x₃)) (ALam x₄ x₅ d2) with matchunicity m x₅
+    ... | refl = ALam x₄ x₅ (actsense2 (AASubsume x₁ x₂ x₃) d2)
     actsense2 (AAZipLam apt m (AAMove x₁))          (ALam x₂ x₃ d2) = ALam x₂ x₃ (anamovelem x₁ d2)
     actsense2 (AAZipLam apt m AADel)                _               = ALam apt m (ASubsume SEHole TCHole1)
     actsense2 (AAZipLam apt m AAConAsc) (ALam x₁ x₂ (ASubsume x₃ x₄)) with matchunicity m x₂
