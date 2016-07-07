@@ -6,9 +6,6 @@ open import judgemental-erase
 open import checks
 
 module reachability where
-
-------- reachability
-
   -- algorithmically, we break reachability into two halves: first you
   -- produce a list of actions that are all "move parent" to pull the focus
   -- to the very top of the expression in question. then, you go back down

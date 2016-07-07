@@ -6,15 +6,6 @@ open import judgemental-erase
 open import checks
 
 module constructability where
-
-  ------- constructability
-
-  -- todo: should there be construct hole forms? currently hole isn't a
-  -- shape so you can't create it with an action, only by using the action
-  -- semantics. but that means you can't build something like num ==> <||>,
-  -- which is troubling. maybe the right thing to do in the build hole
-  -- cases is just nothing at all.
-
   data buildtype : (t : τ̂) → List action → Set where
     BuildNum   : buildtype ▹ num ◃  [ construct num ]
     BuildTHole : buildtype ▹ <||> ◃ [ del ]
@@ -54,20 +45,20 @@ module constructability where
     BuildX : {x : Nat} → buildexp ▹ X x ◃  [ construct (var x) ]
     BuildLam : {x : Nat} {e : ė} {l : List action}
                → buildexp ▹ e ◃ l
-               → buildexp ▹ ·λ x e ◃ [] -- stub
+               → buildexp ▹ ·λ x e ◃ ((construct (lam x)) :: (l ++ [ move parent ]))
     BuildN : {n : Nat} → buildexp ▹ N n ◃ [ construct (numlit n) ]
     BuildPlus : {e1 e2 : ė} {l1 l2 : List action}
                  → buildexp ▹ e1 ◃ l1
                  → buildexp ▹ e2 ◃ l2
-                 → buildexp ▹ e1 ·+ e2 ◃ (l1 ++ l2 ++ [ move parent ])
+                 → buildexp ▹ e1 ·+ e2 ◃ (l1 ++ (construct plus :: (l2 ++ [ move parent ])))
     BuildAp :  {e1 e2 : ė} {l1 l2 : List action}
                  → buildexp ▹ e1 ◃ l1
                  → buildexp ▹ e2 ◃ l2
-                 → buildexp ▹ e1 ∘ e2 ◃ (l1 ++ l2 ++ [ move parent ])
+                 → buildexp ▹ e1 ∘ e2 ◃ (l1 ++ (construct ap :: (l2 ++ [ move parent ])))
     BuildEHole : buildexp ▹ <||> ◃ [ del ]
     BuildNEHole : {e : ė} {l : List action} →
                  buildexp ▹ e ◃ l →
-                 buildexp ▹ <| e |> ◃ (l ++ [ construct nehole ])
+                 buildexp ▹ <| e |> ◃ (l ++ (construct nehole :: move parent :: []))
 
   -- taken together, these three theorems say that the build judgements
   -- have mode (∀, ∃), which is to say that they effectively define total
@@ -91,9 +82,9 @@ module constructability where
     buildexp-mode-synth (SAsc {t = t} d) with buildexp-mode-ana d | buildtype-mode t
     ... | (_ , p1) | (_ , p2) = _ ,  BuildAsc p1 p2
     buildexp-mode-synth (SVar _) = _ , BuildX
-    buildexp-mode-synth (SAp m d1 d2) = {!!}
-    --   with buildexp-mode-synth d1 | buildexp-mode-ana d2
-    -- ... | (_ , p1) | (_ , p2) = _ , BuildAp p1 p2
+    buildexp-mode-synth (SAp d1 m d2)
+      with buildexp-mode-synth d1 | buildexp-mode-ana d2
+    ... | (_ , p1) | (_ , p2) = _ , BuildAp p1 p2
     buildexp-mode-synth SNum = _ , BuildN
     buildexp-mode-synth (SPlus d1 d2) with buildexp-mode-ana d1 | buildexp-mode-ana d2
     ... | (_ , p1) | (_ , p2) = _ , BuildPlus p1 p2
@@ -115,25 +106,51 @@ module constructability where
   constructtype (BuildArr bt1 bt2) with constructtype bt1 | constructtype bt2
   ... | ih1 | ih2 = runtype++ ih1 (DoType TMConArrow (runtype++ (runtype-cong2 ih2) (DoType TMParent2 DoRefl)))
 
+  synth-ana-ap2-cong : ∀{ Γ e L e' t f tf} →
+                       runana Γ e L e' t →
+                       runsynth Γ (f ∘₂ e) tf L (f ∘₂ e') tf
+  synth-ana-ap2-cong = {!!}
+
+  synth-ana-plus2-cong : ∀{ Γ e L e' t f tf} →
+                       runana Γ e L e' t →
+                       runsynth Γ (f ·+₂ e) tf L (f ·+₂ e') tf
+  synth-ana-plus2-cong = {!!}
+
+  synth-ana-plus1-cong : ∀{ Γ e L e' t tf } →
+                       runana Γ e L e' t →
+                       runsynth Γ ▹ <||> ◃ <||> L (e') tf
+  synth-ana-plus1-cong = {!!}
+
+  ana-lam-cong : ∀ {Γ x e t t1 t2 L e'} →
+                   t ▸arr (t1 ==> t2) →
+                   runana (Γ ,, (x , t1)) e L e' t2 →
+                   runana Γ (·λ x ▹ <||> ◃) L (·λ x e') t
+  ana-lam-cong m d = {!!}
+
   mutual
     constructsynth : {Γ : ·ctx} {e : ė} {t : τ̇} {L : List action} →
                        Γ ⊢ e => t
                      → buildexp ▹ e ◃ L
                      → runsynth Γ ▹ <||> ◃ <||> L ▹ e ◃ t
-    constructsynth (SAsc x) (BuildAsc b x₁) = DoSynth SAConAsc (runsynth++ (lem-tscong (constructtype x₁)) (DoSynth (SAMove EMAscParent2) (DoSynth (SAMove EMAscFirstChild) (runsynth++ (lem-anasynthasc (constructana x b)) (DoSynth (SAMove EMAscParent1) DoRefl)) )))
+    constructsynth (SAsc x) (BuildAsc b x₁) with constructtype x₁ | constructana x b
+    ... | ih1 | ih2 = DoSynth SAConAsc (runsynth++ (lem-tscong ih1) (DoSynth (SAMove EMAscParent2) (DoSynth (SAMove EMAscFirstChild) (runsynth++ (lem-anasynthasc ih2) (DoSynth (SAMove EMAscParent1) DoRefl)))))
     constructsynth (SVar x) BuildX = DoSynth (SAConVar x) DoRefl
-    constructsynth (SAp m wt x) (BuildAp b b₁) = {!!}
+    constructsynth (SAp wt m x) (BuildAp b b₁) with constructsynth wt b | constructana x b₁
+    ... | ih1 | ih2 = runsynth++ ih1 (DoSynth (SAConApArr m) (runsynth++ (synth-ana-ap2-cong ih2) (DoSynth (SAMove EMApParent2) DoRefl)))
     constructsynth SNum BuildN = DoSynth SAConNumlit DoRefl
-    constructsynth (SPlus x x₁) (BuildPlus b b₁) = {!!}
+    constructsynth (SPlus x x₁) (BuildPlus b b₁) with constructana x b | constructana x₁ b₁
+    ... | ih1 | ih2 = runsynth++ (synth-ana-plus1-cong ih1) (DoSynth (SAConPlus1 TCRefl) (runsynth++ (synth-ana-plus2-cong ih2) (DoSynth (SAMove EMPlusParent2) DoRefl)))
     constructsynth SEHole BuildEHole = DoSynth SADel DoRefl
-    constructsynth (SNEHole wt) (BuildNEHole b) = runsynth++ (constructsynth wt b) (DoSynth {!!} DoRefl)
+    constructsynth (SNEHole wt) (BuildNEHole b) = runsynth++ (constructsynth wt b) (DoSynth SAConNEHole (DoSynth (SAMove EMNEHoleParent) DoRefl))
 
     constructana : {Γ : ·ctx} {e : ė} {t : τ̇} {L : List action} →
                        Γ ⊢ e <= t
                      → buildexp ▹ e ◃ L
                      → runana Γ ▹ <||> ◃ L ▹ e ◃ t
-    constructana (ASubsume x₁ x) build = {!constructsynth x₁ build!}
-    constructana (ALam m x₁ wt) (BuildLam b) = {!!}
+    constructana (ASubsume x₁ x) build with constructsynth x₁ build
+    ... | ih = {!!}
+    constructana (ALam m x₁ wt) (BuildLam b) with constructana wt b
+    ... | ih = DoAna (AAConLam1 m x₁) (runana++ (ana-lam-cong x₁ ih) (DoAna (AAMove EMLamParent) DoRefl))
 
 
   -- tie together the mode theorem and the above to demonstrate that for

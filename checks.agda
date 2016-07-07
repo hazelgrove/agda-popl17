@@ -116,7 +116,6 @@ module checks where
   runtype-cong2 DoRefl = DoRefl
   runtype-cong2 (DoType x L') = DoType (TMZip2 x) (runtype-cong2 L')
 
-
   lem-tscong : ∀ {L t t' Γ} →
                runtype t L t' →
                runsynth Γ (<||> ·:₂ t) (t ◆t) L (<||> ·:₂ t') (t' ◆t)
