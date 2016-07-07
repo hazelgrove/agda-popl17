@@ -93,16 +93,23 @@ module checks where
   runana++ DoRefl d2 = d2
   runana++ (DoAna x d1) d2 = DoAna x (runana++ d1 d2)
 
-
   -- the following collection of lemmas asserts that the various runs
   -- interoperate nicely. in many cases, these amount to observing
   -- something like congruence: if a subterm is related to something by one
   -- of the judgements, it can be replaced by the thing to which it is
-  -- related in a larger context without disrupting that larger context.
+  -- related in a larger context without disrupting that larger
+  -- context.
+  --
+  -- taken together, this is a little messier than a proper congruence,
+  -- because the action semantics demand well-typedness at each step, and
+  -- therefore there are enough premises to each lemma to supply to the
+  -- action semantics rules.
   --
   -- algorithmically, these amount to a checksum on the zipper actions; by
   -- iterating the action semantics, we need to show that they interplay in
-  -- the right way, which is congruence.
+  -- the right way, which is congruence. the only check the zipper actions
+  -- they happen to be include, however, which is driven by the particular
+  -- lists we use in the proof of contructability.
 
   runtype-cong1 : ∀ {t1 t1' t2 L } →
             runtype t1' L t1 →
@@ -157,21 +164,3 @@ module checks where
                        runsynth Γ (f ∘₂ e) tf L (f ∘₂ e') tf
   synth-ana-ap2-cong wt m DoRefl = DoRefl
   synth-ana-ap2-cong wt m (DoAna x d) = DoSynth (SAZipApAna m wt x) (synth-ana-ap2-cong wt m d)
-
-
-
-
-
-  -- if there is a list of actions that builds a type, running that list
-  -- from the empty hole in focus really does produce the target type.
-  -- run-subsume :  ∀ { Γ L e e' t t' } →
-  --                runsynth Γ e t L e' t' →
-  --                runana Γ e L e' t'
-  -- run-subsume DoRefl = DoRefl
-  -- run-subsume (DoSynth x act) = {!!}
-
-  -- runsynth-congap1 : ∀{Γ e1 t L e1' e2 t'} →
-  --                   runsynth Γ e1 t' L e1' t' →
-  --                   runsynth Γ (e1 ∘₁ e2) t L (e1' ∘₁ e2) t
-  -- runsynth-congap1 DoRefl = DoRefl
-  -- runsynth-congap1 (DoSynth x d) = DoSynth {!!} {!!}
