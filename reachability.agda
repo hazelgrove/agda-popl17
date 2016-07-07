@@ -36,7 +36,6 @@ module reachability where
   moveup-e (_ ·+₂ e)  = moveup-e e ++ [ move parent ]
   moveup-e <| e |>    = moveup-e e ++ [ move parent ]
 
-
   reachup-type : {t : τ̂} {t' : τ̇} →
               erase-t t t' →
               runtype t (moveup-t t) (▹ t' ◃)
@@ -76,7 +75,7 @@ module reachability where
                       erase-e e e' →
                       Γ ⊢ e' <= t →
                       runana Γ e (moveup-e e) ▹ e' ◃ t
-    reachup-ana = {!!}
+    reachup-ana er wt = {!!}
 
   movedown-t : (t : τ̇) (t' : τ̂) (p : erase-t t' t) → List action
   movedown-t _ ▹ ._ ◃ ETTop = []
@@ -122,7 +121,7 @@ module reachability where
                       (wt : Γ ⊢ e' <= t)
                      → runana Γ ▹ e' ◃ (movedown-e e' e p) e  t
     reachdown-ana EETop _ = DoRefl
-    reachdown-ana (EEAscL p) (ASubsume x x₁) = {!reachdown-synth ? x!}
+    reachdown-ana (EEAscL p) (ASubsume x x₁) = {!!}
     reachdown-ana (EEAscR x) (ASubsume x₁ x₂) = {!!}
     reachdown-ana (EELam p) (ASubsume x₁ x₂) = {!!}
     reachdown-ana (EEApL p) (ASubsume x x₁) = {!!}
@@ -135,12 +134,12 @@ module reachability where
   -- because the point of the reachability theorems is to show that we
   -- didn't forget to define any of the action semantic cases, it's
   -- important that theorems include the fact that the witness only uses
-  -- move -- otherwise, you could prepend [ del ] to the list produced by
-  -- constructability. constructability does also use some, but not all, of
-  -- the possible movements, so this would no longer demonstrate the
-  -- property we really want. to that end, we define a predicate on lists
-  -- that they contain only (move _) and that the various things above that
-  -- produce the lists we use have this property.
+  -- move -- otherwise, you could cheat by just prepending [ del ] to the
+  -- list produced by constructability. constructability does also use
+  -- some, but not all, of the possible movements, so this would no longer
+  -- demonstrate the property we really want. to that end, we define a
+  -- predicate on lists that they contain only (move _) and that the
+  -- various things above that produce the lists we use have this property.
 
   -- predicate
   data movements : List action → Set where
@@ -149,12 +148,15 @@ module reachability where
               → movements ((move δ) :: L)
     AM[] : movements []
 
+  -- movements breaks over the list monoid, as expected
   movements++ : {l1 l2 : List action} → movements l1 → movements l2 → movements (l1 ++ l2)
   movements++ (AM:: am1) (AM:: am2) = AM:: (movements++ am1 (AM:: am2))
   movements++ (AM:: am1) AM[] = AM:: (movements++ am1 AM[])
   movements++ AM[] (AM:: am2) = AM:: am2
   movements++ AM[] AM[] = AM[]
 
+
+  -- move up (on types and expressions) only contains movements
   movements-moveup-t : (t : τ̂) → movements (moveup-t t)
   movements-moveup-t ▹ x ◃ = AM[]
   movements-moveup-t (t ==>₁ x) = movements++ (movements-moveup-t t) (AM:: AM[])
@@ -171,6 +173,7 @@ module reachability where
   movements-moveup-e (x ·+₂ e) = movements++ (movements-moveup-e e) (AM:: AM[])
   movements-moveup-e <| e |> = movements++ (movements-moveup-e e) (AM:: AM[])
 
+  -- move down (on types and expressions) only contains movements
   movements-movedown-t : (t : τ̇) (t' : τ̂) (p : erase-t t' t) → movements(movedown-t t t' p)
   movements-movedown-t _ ▹ ._ ◃ ETTop = AM[]
   movements-movedown-t (t ==> t₁) (t' ==>₁ .t₁) (ETArrL p) = AM:: (movements-movedown-t t t' p)
