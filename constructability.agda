@@ -135,7 +135,9 @@ module constructability where
                                (runsynth++ (synth-ana-plus1-cong ih1)
                                  (DoSynth (SAMove EMPlusParent1) DoRefl)))))
     constructsynth SEHole BuildEHole = DoSynth SADel DoRefl
-    constructsynth (SNEHole wt) (BuildNEHole b) = runsynth++ (constructsynth wt b) (DoSynth SAConNEHole (DoSynth (SAMove EMNEHoleParent) DoRefl))
+    constructsynth (SNEHole wt) (BuildNEHole b) = runsynth++ (constructsynth wt b)
+                                                    (DoSynth SAConNEHole
+                                                      (DoSynth (SAMove EMNEHoleParent) DoRefl))
 
     constructana : {Γ : ·ctx} {e : ė} {t : τ̇} {L : List action} →
                        Γ ⊢ e <= t
