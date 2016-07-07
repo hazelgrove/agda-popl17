@@ -1,3 +1,0 @@
-longer term ideas
------------------
-
