@@ -50,7 +50,9 @@ module constructability where
     BuildPlus : {e1 e2 : ė} {l1 l2 : List action}
                  → buildexp ▹ e1 ◃ l1
                  → buildexp ▹ e2 ◃ l2
-                 → buildexp ▹ e1 ·+ e2 ◃ (l1 ++ (construct plus :: (l2 ++ [ move parent ])))
+                 -- → buildexp ▹ e1 ·+ e2 ◃ (l1 ++ (construct plus :: (l2 ++ [ move parent ])))
+                 → buildexp ▹ e1 ·+ e2 ◃
+                            ((construct plus :: (l2 ++ (move parent :: move firstChild :: (l1 ++ [ move parent ])))))
     BuildAp :  {e1 e2 : ė} {l1 l2 : List action}
                  → buildexp ▹ e1 ◃ l1
                  → buildexp ▹ e2 ◃ l2
@@ -106,25 +108,32 @@ module constructability where
   constructtype (BuildArr bt1 bt2) with constructtype bt1 | constructtype bt2
   ... | ih1 | ih2 = runtype++ ih1 (DoType TMConArrow (runtype++ (runtype-cong2 ih2) (DoType TMParent2 DoRefl)))
 
-  synth-ana-plus1-cong : ∀{ Γ e L e' } →
-                       runana Γ e L e' num →
-                       runsynth Γ e <||> L e' num
-  synth-ana-plus1-cong DoRefl = {!!}
-  synth-ana-plus1-cong (DoAna x d) = {!!}
-
   mutual
     constructsynth : {Γ : ·ctx} {e : ė} {t : τ̇} {L : List action} →
                        Γ ⊢ e => t
                      → buildexp ▹ e ◃ L
                      → runsynth Γ ▹ <||> ◃ <||> L ▹ e ◃ t
     constructsynth (SAsc x) (BuildAsc b x₁) with constructtype x₁ | constructana x b
-    ... | ih1 | ih2 = DoSynth SAConAsc (runsynth++ (lem-tscong ih1) (DoSynth (SAMove EMAscParent2) (DoSynth (SAMove EMAscFirstChild) (runsynth++ (lem-anasynthasc ih2) (DoSynth (SAMove EMAscParent1) DoRefl)))))
+    ... | ih1 | ih2 = DoSynth SAConAsc
+                       (runsynth++ (lem-tscong ih1)
+                         (DoSynth (SAMove EMAscParent2)
+                           (DoSynth (SAMove EMAscFirstChild)
+                             (runsynth++ (lem-anasynthasc ih2)
+                               (DoSynth (SAMove EMAscParent1) DoRefl)))))
     constructsynth (SVar x) BuildX = DoSynth (SAConVar x) DoRefl
     constructsynth (SAp wt m x) (BuildAp b b₁) with constructsynth wt b | constructana x b₁
-    ... | ih1 | ih2 = runsynth++ ih1 (DoSynth (SAConApArr m) (runsynth++ (synth-ana-ap2-cong wt m ih2) (DoSynth (SAMove EMApParent2) DoRefl)))
+    ... | ih1 | ih2 = runsynth++ ih1
+                       (DoSynth (SAConApArr m)
+                        (runsynth++ (synth-ana-ap2-cong wt m ih2)
+                          (DoSynth (SAMove EMApParent2) DoRefl)))
     constructsynth SNum BuildN = DoSynth SAConNumlit DoRefl
     constructsynth (SPlus x x₁) (BuildPlus b b₁) with constructana x b | constructana x₁ b₁
-    ... | ih1 | ih2 = {!!} --  runsynth++ ({!ih1!}) (DoSynth (SAConPlus1 TCRefl) (runsynth++ (synth-ana-plus2-cong ih2) (DoSynth (SAMove EMPlusParent2) DoRefl)))
+    ... | ih1 | ih2 = DoSynth (SAConPlus1 TCHole2)
+                       (runsynth++ (synth-ana-plus2-cong ih2)
+                         (DoSynth (SAMove EMPlusParent2)
+                            (DoSynth (SAMove EMPlusFirstChild)
+                               (runsynth++ (synth-ana-plus1-cong ih1)
+                                 (DoSynth (SAMove EMPlusParent1) DoRefl)))))
     constructsynth SEHole BuildEHole = DoSynth SADel DoRefl
     constructsynth (SNEHole wt) (BuildNEHole b) = runsynth++ (constructsynth wt b) (DoSynth SAConNEHole (DoSynth (SAMove EMNEHoleParent) DoRefl))
 

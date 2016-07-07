@@ -138,6 +138,12 @@ module checks where
   ana-lam-cong a m DoRefl = DoRefl
   ana-lam-cong a m (DoAna x₁ d) =  DoAna (AAZipLam a m x₁) (ana-lam-cong a m d)
 
+  synth-ana-plus1-cong : ∀{ Γ e L e' f} →
+                       runana Γ e L e' num →
+                       runsynth Γ (e ·+₁ f) num L (e' ·+₁ f) num
+  synth-ana-plus1-cong DoRefl = DoRefl
+  synth-ana-plus1-cong (DoAna x d) = DoSynth (SAZipPlus1 x) (synth-ana-plus1-cong d)
+
   synth-ana-plus2-cong : ∀{ Γ e L e' f} →
                        runana Γ e L e' num →
                        runsynth Γ (f ·+₂ e) num L (f ·+₂ e') num
