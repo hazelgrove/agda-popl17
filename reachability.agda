@@ -51,8 +51,20 @@ module reachability where
                   runtype t L t' →
                   runsynth Γ (e ·:₂ t) ter L (e ·:₂ t') ter
   runsynth-type _ _ DoRefl = DoRefl
-  runsynth-type wt er (DoType x d) with erase-t◆ er
-  ... | refl = DoSynth {!SAZipAsc2  !} (runsynth-type {!!}  {!!} d)
+  runsynth-type wt er (DoType x d) = {!!}
+
+  synth-ap1-cong : ∀{Γ e t t1 t2 L e' f er qq} →
+                       erase-e e er →
+                       Γ ⊢ er => t →
+                       Γ ⊢ f <= t2 →
+                       t ▸arr (t2 ==> t1) →
+                       runsynth Γ e t L e' t →
+                       runsynth Γ (e ∘₁ f) t1 L (e' ∘₁ f) t1
+  synth-ap1-cong _ _ _ _ DoRefl = DoRefl
+  synth-ap1-cong er s a m (DoSynth x d) =
+                 DoSynth (SAZipApArr m er s {!x!} a)
+                   {!!}
+
 
   mutual
     reachup-synth : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
@@ -61,21 +73,28 @@ module reachability where
                       runsynth Γ e t (moveup-e e) ▹ e' ◃ t
     reachup-synth (EELam er) ()
     reachup-synth EETop _ = DoRefl
-    reachup-synth (EEAscL er) (SAsc x) = {!!}
+    reachup-synth (EEAscL er) (SAsc x) with reachup-ana er x
+    ... | ih = runsynth++ (lem-anasynthasc ih) (DoSynth (SAMove EMAscParent1) DoRefl)
     reachup-synth (EEAscR x) (SAsc x₁) with reachup-type x
     ... | ih = runsynth++ (runsynth-type x₁ x ih) (DoSynth (SAMove EMAscParent2) DoRefl)
     reachup-synth (EEApL er) (SAp wt m x) with reachup-synth er wt
-    ... | ih = runsynth++ {!ih!} (DoSynth (SAMove EMApParent1) DoRefl)
-    reachup-synth (EEApR er) (SAp wt m x) = {!!}
-    reachup-synth (EEPlusL er) (SPlus x x₁) = {!!}
-    reachup-synth (EEPlusR er) (SPlus x x₁) = {!!}
+    ... | ih =  runsynth++ (synth-ap1-cong er wt x m ih) (DoSynth (SAMove EMApParent1) DoRefl)
+    reachup-synth (EEApR er) (SAp wt m x) with reachup-ana er x
+    ... | ih =  runsynth++ (synth-ana-ap2-cong wt m ih) (DoSynth (SAMove EMApParent2) DoRefl)
+    reachup-synth (EEPlusL er) (SPlus x x₁) with reachup-ana er x
+    ... | ih = runsynth++ (synth-ana-plus1-cong ih) (DoSynth (SAMove EMPlusParent1) DoRefl)
+    reachup-synth (EEPlusR er) (SPlus x x₁) with reachup-ana er x₁
+    ... | ih = runsynth++ (synth-ana-plus2-cong ih) (DoSynth (SAMove EMPlusParent2) DoRefl)
     reachup-synth (EENEHole er) (SNEHole wt) = {!!}
 
     reachup-ana : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
                       erase-e e e' →
                       Γ ⊢ e' <= t →
                       runana Γ e (moveup-e e) ▹ e' ◃ t
-    reachup-ana er wt = {!!}
+    reachup-ana er (ASubsume x x₁) = {!reachup-synth er x!}
+    reachup-ana er (ALam x₁ x₂ wt) = {!!}
+
+
 
   movedown-t : (t : τ̇) (t' : τ̂) (p : erase-t t' t) → List action
   movedown-t _ ▹ ._ ◃ ETTop = []

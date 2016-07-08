@@ -123,12 +123,14 @@ module checks where
   runtype-cong2 DoRefl = DoRefl
   runtype-cong2 (DoType x L') = DoType (TMZip2 x) (runtype-cong2 L')
 
-  lem-tscong : ∀ {L t t' Γ} →
-               runtype t L t' →
-               runsynth Γ (<||> ·:₂ t) (t ◆t) L (<||> ·:₂ t') (t' ◆t)
-  lem-tscong DoRefl = DoRefl
-  lem-tscong (DoType x rt) with lem-tscong rt
-  ... | ih = DoSynth (SAZipAsc2 x (ASubsume SEHole TCHole1)) ih
+  -- lem-tscong : ∀ {L t t' Γ t◆ t'◆} → {et : erase-t t t◆} → {et' : erase-t t' t'◆} →
+  --              runtype t L t' →
+  --              runsynth Γ (<||> ·:₂ t) t◆ L (<||> ·:₂ t') t◆
+  -- lem-tscong = {!!}
+
+-- DoRefl = DoRefl
+--   lem-tscong (DoType x rt) with lem-tscong rt
+--   ... | ih = DoSynth (SAZipAsc2 x (ASubsume SEHole TCHole1)) ih
 
 
   lem-anasynthasc : ∀{Γ t L e e'} →
