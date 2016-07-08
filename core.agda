@@ -285,23 +285,24 @@ module core where
     _·+₂_ : ė → ê → ê
     <|_|> : ê → ê
 
-  --focus erasure for types
-  _◆t : τ̂ → τ̇
-  ▹ t ◃ ◆t =  t
-  (t1 ==>₁ t2) ◆t = (t1 ◆t) ==> t2
-  (t1 ==>₂ t2) ◆t = t1 ==> (t2 ◆t)
+  -- erasure of focus cursor for types and expressions, judgementally. see
+  -- jugemental-erase for an argument that this defines an isomorphic
+  -- object to the direct metafunction provided in the text of the paper
+  data erase-t : τ̂ → τ̇ → Set where
+    ETTop  : ∀{t} → erase-t (▹ t ◃) t
+    ETArrL : ∀{t1 t1' t2} → erase-t t1 t1' → erase-t (t1 ==>₁ t2) (t1' ==> t2)
+    ETArrR : ∀{t1 t2 t2'} → erase-t t2 t2' → erase-t (t1 ==>₂ t2) (t1 ==> t2')
 
-  --focus erasure for expressions
-  _◆e : ê → ė
-  ▹ x ◃ ◆e       = x
-  (e ·:₁ t) ◆e   = (e ◆e) ·: t
-  (e ·:₂ t) ◆e   = e      ·: (t ◆t)
-  ·λ x e ◆e      = ·λ x (e ◆e)
-  (e1 ∘₁ e2) ◆e  = (e1 ◆e) ∘ e2
-  (e1 ∘₂ e2) ◆e  = e1      ∘ (e2 ◆e)
-  (e1 ·+₁ e2) ◆e = (e1 ◆e) ·+ e2
-  (e1 ·+₂ e2) ◆e = e1      ·+ (e2 ◆e)
-  <| e |> ◆e     = <| e ◆e |>
+  data erase-e : ê → ė → Set where
+    EETop   : ∀{x}         → erase-e (▹ x ◃) x
+    EEAscL  : ∀{e e' t}    → erase-e e e'   → erase-e (e ·:₁ t) (e' ·: t)
+    EEAscR  : ∀{e t t'}    → erase-t t t'   → erase-e (e ·:₂ t) (e ·: t')
+    EELam   : ∀{x e e'}    → erase-e e e'   → erase-e (·λ x e) (·λ x e')
+    EEApL   : ∀{e1 e1' e2} → erase-e e1 e1' → erase-e (e1 ∘₁ e2) (e1' ∘ e2)
+    EEApR   : ∀{e1 e2 e2'} → erase-e e2 e2' → erase-e (e1 ∘₂ e2) (e1 ∘ e2')
+    EEPlusL : ∀{e1 e1' e2} → erase-e e1 e1' → erase-e (e1 ·+₁ e2) (e1' ·+ e2)
+    EEPlusR : ∀{e1 e2 e2'} → erase-e e2 e2' → erase-e (e1 ·+₂ e2) (e1 ·+ e2')
+    EENEHole : ∀{e e'}      → erase-e e e'   → erase-e <| e |>  <| e' |>
 
   -- the three grammars that define actions
   data direction : Set where
@@ -432,13 +433,16 @@ module core where
       SAZipAsc1 : {Γ : ·ctx} {e e' : ê} {α : action} {t : τ̇} →
                   (Γ ⊢ e ~ α ~> e' ⇐ t) →
                   Γ ⊢ (e ·:₁ t) => t ~ α ~> (e' ·:₁ t) => t
-      SAZipAsc2 : {Γ : ·ctx} {e : ė} {α : action} {t t' : τ̂} →
+      SAZipAsc2 : {Γ : ·ctx} {e : ė} {α : action} {t t' : τ̂} {t◆ t'◆ : τ̇} →
                   (t + α +> t') →
-                  (Γ ⊢ e <= (t' ◆t)) →
-                  Γ ⊢ (e ·:₂ t) => (t ◆t) ~ α ~> (e ·:₂ t') => (t' ◆t)
-      SAZipApArr : {Γ : ·ctx} {t t1 t2 t3 t4 : τ̇} {α : action} {eh eh' : ê} {e : ė} →
+                  (erase-t t' t'◆) →
+                  (erase-t t t◆) →
+                  (Γ ⊢ e <= t'◆) →
+                  Γ ⊢ (e ·:₂ t) => t◆ ~ α ~> (e ·:₂ t') => t'◆
+      SAZipApArr : {Γ : ·ctx} {t t1 t2 t3 t4 : τ̇} {α : action} {eh eh' : ê} {e eh◆ : ė} →
                  (t ▸arr (t3 ==> t4)) →
-                 (Γ ⊢ (eh ◆e) => t2) →
+                 (erase-e eh eh◆) →
+                 (Γ ⊢ (eh◆) => t2) →
                  (Γ ⊢ eh => t2 ~ α ~> eh' => t) →
                  (Γ ⊢ e <= t3) →
                  Γ ⊢ (eh ∘₁ e) => t1 ~ α ~> (eh' ∘₁ e) => t4
@@ -453,16 +457,18 @@ module core where
       SAZipPlus2 : {Γ : ·ctx} {e : ė} {eh eh' : ê} {α : action} →
                    (Γ ⊢ eh ~ α ~> eh' ⇐ num) →
                    Γ ⊢ (e ·+₂ eh) => num ~ α ~> (e ·+₂ eh') => num
-      SAZipHole : {Γ : ·ctx} {e e' : ê} {t t' : τ̇} {α : action} →
-                   (Γ ⊢ (e ◆e) => t) →
+      SAZipHole : {Γ : ·ctx} {e e' : ê} {t t' : τ̇} {α : action} {e◆ : ė} →
+                   (erase-e e e◆) →
+                   (Γ ⊢ e◆ => t) →
                    (Γ ⊢ e => t ~ α ~> e' => t') →
                    Γ ⊢ <| e |> => <||> ~ α ~>  <| e' |> => <||>
 
     -- analytic action expressions
     data _⊢_~_~>_⇐_ : (Γ : ·ctx) → (e : ê) → (α : action) →
                       (e' : ê) → (t : τ̇) → Set where
-      AASubsume : {Γ : ·ctx} {e e' : ê} {t t' t'' : τ̇} {α : action} →
-                  (Γ ⊢ (e ◆e) => t') →
+      AASubsume : {Γ : ·ctx} {e e' : ê} {t t' t'' : τ̇} {α : action} {e◆ : ė} →
+                  (erase-e e e◆) →
+                  (Γ ⊢ e◆ => t') →
                   (Γ ⊢ e => t' ~ α ~> e' => t'') →
                   (t ~ t'') →
                   Γ ⊢ e ~ α ~> e' ⇐ t

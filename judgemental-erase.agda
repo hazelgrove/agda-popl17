@@ -24,24 +24,23 @@ open import core
 -- associated work done in agda.
 module judgemental-erase where
 
-  -- jugemental type erasure
-  data erase-t : τ̂ → τ̇ → Set where
-    ETTop  : ∀{t} → erase-t (▹ t ◃) t
-    ETArrL : ∀{t1 t1' t2} → erase-t t1 t1' → erase-t (t1 ==>₁ t2) (t1' ==> t2)
-    ETArrR : ∀{t1 t2 t2'} → erase-t t2 t2' → erase-t (t1 ==>₂ t2) (t1 ==> t2')
+  --focus erasure for types, as written in the paper
+  _◆t : τ̂ → τ̇
+  ▹ t ◃ ◆t =  t
+  (t1 ==>₁ t2) ◆t = (t1 ◆t) ==> t2
+  (t1 ==>₂ t2) ◆t = t1 ==> (t2 ◆t)
 
-  -- judgemental expression erasure
-  data erase-e : ê → ė → Set where
-    EETop   : ∀{x}         → erase-e (▹ x ◃) x
-    EEAscL  : ∀{e e' t}    → erase-e e e'   → erase-e (e ·:₁ t) (e' ·: t)
-    EEAscR  : ∀{e t t'}    → erase-t t t'   → erase-e (e ·:₂ t) (e ·: t')
-    EELam   : ∀{x e e'}    → erase-e e e'   → erase-e (·λ x e) (·λ x e')
-    EEApL   : ∀{e1 e1' e2} → erase-e e1 e1' → erase-e (e1 ∘₁ e2) (e1' ∘ e2)
-    EEApR   : ∀{e1 e2 e2'} → erase-e e2 e2' → erase-e (e1 ∘₂ e2) (e1 ∘ e2')
-    EEPlusL : ∀{e1 e1' e2} → erase-e e1 e1' → erase-e (e1 ·+₁ e2) (e1' ·+ e2)
-    EEPlusR : ∀{e1 e2 e2'} → erase-e e2 e2' → erase-e (e1 ·+₂ e2) (e1 ·+ e2')
-    EENEHole : ∀{e e'}      → erase-e e e'   → erase-e <| e |>  <| e' |>
-
+  --focus erasure for expressions, as written in the paper
+  _◆e : ê → ė
+  ▹ x ◃ ◆e       = x
+  (e ·:₁ t) ◆e   = (e ◆e) ·: t
+  (e ·:₂ t) ◆e   = e      ·: (t ◆t)
+  ·λ x e ◆e      = ·λ x (e ◆e)
+  (e1 ∘₁ e2) ◆e  = (e1 ◆e) ∘ e2
+  (e1 ∘₂ e2) ◆e  = e1      ∘ (e2 ◆e)
+  (e1 ·+₁ e2) ◆e = (e1 ◆e) ·+ e2
+  (e1 ·+₂ e2) ◆e = e1      ·+ (e2 ◆e)
+  <| e |> ◆e     = <| e ◆e |>
 
   -- this pair of theorems moves from the judgmental form to the function form
   erase-t◆ : {t : τ̂} {tr : τ̇} → (erase-t t tr) → (t ◆t == tr)
