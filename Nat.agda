@@ -22,8 +22,3 @@ module Nat where
   natEQ (1+ x) (1+ y) with natEQ x y
   natEQ (1+ x) (1+ .x) | Inl refl = Inl refl
   ... | Inr b = Inr (λ x₁ → b (1+inj x y x₁))
-
-  max : Nat → Nat → Nat
-  max Z m = m
-  max n Z = n
-  max (1+ n) (1+ m) = max n m
