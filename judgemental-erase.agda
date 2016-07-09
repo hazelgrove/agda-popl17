@@ -136,3 +136,11 @@ module judgemental-erase where
   lem-synth-erase : ∀{Γ e t e' } → Γ ⊢ e ◆e => t → erase-e e e' → Γ ⊢ e' => t
   lem-synth-erase d1 d2 with erase-e◆ d2
   ... | refl = d1
+
+  eraset-det : ∀{t t' t''} → erase-t t t' → erase-t t t'' → t' == t''
+  eraset-det e1 e2 with erase-t◆ e1
+  ... | refl = erase-t◆ e2
+
+  erasee-det : ∀{e e' e''} → erase-e e e' → erase-e e e'' → e' == e''
+  erasee-det e1 e2 with erase-e◆ e1
+  ... | refl = erase-e◆ e2

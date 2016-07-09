@@ -91,16 +91,16 @@ module deterministic where
   synthmovedet (SAMove EMNEHoleFirstChild) EMNEHoleFirstChild = refl
   synthmovedet (SAMove EMNEHoleParent) EMNEHoleParent = refl
   -- all these cases lead to absurdities based on movement
-  synthmovedet (SAZipAsc1 x) EMAscParent1 = abort (lem-nomove-para x)
-  synthmovedet (SAZipAsc1 x) EMAscNextSib = abort (lem-nomove-nsa x)
-  synthmovedet (SAZipAsc2 e1 e2 x _) EMAscParent2 = {!!} -- abort (lem-nomove-part x)
-  synthmovedet (SAZipApArr e _ _ x _) EMApParent1 = {!!} --  abort (lem-nomove-pars x)
-  synthmovedet (SAZipApArr e _ _ x _) EMApNextSib = {!!} -- abort (lem-nomove-nss x)
-  synthmovedet (SAZipApAna _ _ x) EMApParent2   = abort (lem-nomove-para x)
-  synthmovedet (SAZipPlus1 x) EMPlusParent1 = abort (lem-nomove-para x)
-  synthmovedet (SAZipPlus1 x) EMPlusNextSib = abort (lem-nomove-nsa x)
-  synthmovedet (SAZipPlus2 x) EMPlusParent2 = abort (lem-nomove-para x)
-  synthmovedet (SAZipHole e _ x) EMNEHoleParent = {!!} -- abort (lem-nomove-pars x)
+  synthmovedet (SAZipAsc1 x) EMAscParent1         = abort (lem-nomove-para x)
+  synthmovedet (SAZipAsc1 x) EMAscNextSib         = abort (lem-nomove-nsa x)
+  synthmovedet (SAZipAsc2 x _ _ _) EMAscParent2   = abort (lem-nomove-part x)
+  synthmovedet (SAZipApArr _ _ _ x _) EMApParent1 = abort (lem-nomove-pars x)
+  synthmovedet (SAZipApArr _ _ _ x _) EMApNextSib = abort (lem-nomove-nss x)
+  synthmovedet (SAZipApAna _ _ x) EMApParent2     = abort (lem-nomove-para x)
+  synthmovedet (SAZipPlus1 x) EMPlusParent1       = abort (lem-nomove-para x)
+  synthmovedet (SAZipPlus1 x) EMPlusNextSib       = abort (lem-nomove-nsa x)
+  synthmovedet (SAZipPlus2 x) EMPlusParent2       = abort (lem-nomove-para x)
+  synthmovedet (SAZipHole _ _ x) EMNEHoleParent   = abort (lem-nomove-pars x)
 
   -- these are techincal lemmas for the cases of the main theorem
 
@@ -148,15 +148,15 @@ module deterministic where
     actdet2 (EEAscL E) (SAsc x) (SAZipAsc1 x₁) (SAMove EMAscParent1) = abort (lem-nomove-para x₁)
     actdet2 (EEAscL E) (SAsc x) (SAZipAsc1 x₁) (SAMove EMAscNextSib) = abort (lem-nomove-nsa x₁)
     actdet2 (EEAscL E) (SAsc x) (SAZipAsc1 x₁) (SAZipAsc1 x₂)
-      with actdet3 {!!} (lem-erase-ana E x) x₁ x₂
+     with actdet3 E x x₁ x₂
     ... | refl = refl , refl
 
     actdet2 (EEAscR x) (SAsc x₁) (SAMove x₂) (SAMove x₃) = movedet x₂ x₃ , refl
-    actdet2 (EEAscR x) (SAsc x₁) (SAMove EMAscParent2) (SAZipAsc2 _ _ _ x₄) = {!!}
-    actdet2 (EEAscR x) (SAsc x₁) (SAZipAsc2 _ _ _ x₂) (SAMove EMAscParent2) = {!!}
-    actdet2 (EEAscR x) (SAsc x₂) (SAZipAsc2 _ _ x₁ x₃) (SAZipAsc2 _ _ x₄ x₅) = {!!}
-    --   with actdet1 x₁ x₄
-    -- ... | refl = refl , refl
+    actdet2 (EEAscR x) (SAsc x₁) (SAMove EMAscParent2) (SAZipAsc2 a _ _ _) = abort (lem-nomove-part a)
+    actdet2 (EEAscR x) (SAsc x₁) (SAZipAsc2 a _ _ _) (SAMove EMAscParent2) = abort (lem-nomove-part a)
+    actdet2 (EEAscR x) (SAsc x₂) (SAZipAsc2 a e1 _ _) (SAZipAsc2 b e2 _ _)
+      with actdet1 a b
+    ... | refl = refl , eraset-det e1 e2
 
     actdet2 EETop (SVar x) (SAMove x₁) (SAMove x₂) = movedet x₁ x₂ , refl
     actdet2 EETop (SVar x) SADel SADel = refl , refl
@@ -193,11 +193,13 @@ module deterministic where
     actdet2 (EEApL E) (SAp m wt x) (SAMove EMApNextSib) (SAZipApArr _ x₂ x₃ d2 x₄) = abort (lem-nomove-nss d2)
     actdet2 (EEApL E) (SAp m wt x) (SAZipApArr _ x₁ x₂ d1 x₃) (SAMove EMApParent1) = abort (lem-nomove-pars d1)
     actdet2 (EEApL E) (SAp m wt x) (SAZipApArr _ x₁ x₂ d1 x₃) (SAMove EMApNextSib) = abort (lem-nomove-nss d1)
-    actdet2 (EEApL E) (SAp m wt x) (SAZipApArr _ x₁ x₂ d1 x₃) (SAZipApArr _ x₄ x₅ d2 x₆) = {!!}
-    --  with synthunicity x₂ x₅
-    -- ... | refl with actdet2 x₅ d1 d2
-    -- ... | refl , refl with matchunicity x₁ x₄
-    -- ... | refl = refl , refl
+    actdet2 (EEApL E) (SAp m wt x) (SAZipApArr a x₁ x₂ d1 x₃) (SAZipApArr b x₄ x₅ d2 x₆)
+      with erasee-det x₁ x₄
+    ... | refl with synthunicity x₂ x₅
+    ... | refl with erasee-det E x₁
+    ... | refl with actdet2 E x₅ d1 d2
+    ... | refl , refl with matchunicity a b
+    ... | refl = refl , refl
 
     actdet2 (EEApR E) (SAp m wt x) (SAMove x₁) (SAMove x₂) = movedet x₁ x₂ , refl
     actdet2 (EEApR E) (SAp m wt x) (SAMove EMApParent2) (SAZipApAna x₂ x₃ x₄) = abort (lem-nomove-para x₄)
@@ -207,8 +209,7 @@ module deterministic where
     ... | refl with matchunicity x₁ wt
     ... | refl with synthunicity m x₅
     ... | refl with matchunicity x₄ wt
-    ... | refl with erase-e◆ E
-    ... | refl with actdet3 {!!} x d1 d2
+    ... | refl with actdet3 E x d1 d2
     ... | refl = refl , refl
 
     actdet2 EETop SNum (SAMove x) (SAMove x₁) = movedet x x₁ , refl
@@ -247,13 +248,13 @@ module deterministic where
     actdet2 (EEPlusL E) (SPlus x x₁) (SAZipPlus1 x₂) (SAMove EMPlusParent1) = abort (lem-nomove-para x₂)
     actdet2 (EEPlusL E) (SPlus x x₁) (SAZipPlus1 x₂) (SAMove EMPlusNextSib) = abort (lem-nomove-nsa x₂)
     actdet2 (EEPlusL E) (SPlus x x₁) (SAZipPlus1 x₂) (SAZipPlus1 x₃)
-      = ap1 (λ x₄ → x₄ ·+₁ _) (actdet3 {!!} (lem-erase-ana E x) x₂ x₃) , refl
+      = ap1 (λ x₄ → x₄ ·+₁ _) (actdet3 E x x₂ x₃) , refl
 
     actdet2 (EEPlusR E) (SPlus x x₁) (SAMove x₂) (SAMove x₃) = movedet x₂ x₃ , refl
     actdet2 (EEPlusR E) (SPlus x x₁) (SAMove EMPlusParent2) (SAZipPlus2 x₃) = abort (lem-nomove-para x₃)
     actdet2 (EEPlusR E) (SPlus x x₁) (SAZipPlus2 x₂) (SAMove EMPlusParent2) = abort (lem-nomove-para x₂)
     actdet2 (EEPlusR E) (SPlus x x₁) (SAZipPlus2 x₂) (SAZipPlus2 x₃)
-      = ap1 (_·+₂_ _) (actdet3 {!!} (lem-erase-ana E x₁) x₂ x₃) , refl
+      = ap1 (_·+₂_ _) (actdet3 E x₁ x₂ x₃) , refl
 
     actdet2 EETop SEHole (SAMove x) (SAMove x₁) = movedet x x₁ , refl
     actdet2 EETop SEHole SADel SADel = refl , refl
@@ -292,71 +293,65 @@ module deterministic where
     actdet2 (EENEHole E) (SNEHole wt) (SAMove x) (SAMove x₁) = movedet x x₁ , refl
     actdet2 (EENEHole E) (SNEHole wt) (SAMove EMNEHoleParent) (SAZipHole _ x₁ d2) = abort (lem-nomove-pars d2)
     actdet2 (EENEHole E) (SNEHole wt) (SAZipHole _ x d1) (SAMove EMNEHoleParent) = abort (lem-nomove-pars d1)
-    actdet2 (EENEHole E) (SNEHole wt) (SAZipHole _ x d1) (SAZipHole _ x₁ d2) = {!!}
-    --   with synthunicity x x₁
-    -- ... | refl with actdet2 x₁ d1 d2
-    -- ... | refl , refl = refl , refl
+    actdet2 (EENEHole E) (SNEHole wt) (SAZipHole a x d1) (SAZipHole b x₁ d2)
+      with erasee-det a b
+    ... | refl with synthunicity x x₁
+    ... | refl with actdet2 a x d1 d2
+    ... | refl , refl = refl , refl
+
 
     -- an action on an expression in an analytic position produces one
     -- resultant expression and type.
     actdet3 : {Γ : ·ctx} {e e' e'' : ê} {e◆ : ė} {t : τ̇} {α : action} →
-              -- (Γ ⊢ (e ◆e) <= t) →
               (erase-e e e◆) →
               (Γ ⊢ e◆ <= t) →
               (Γ ⊢ e ~ α ~> e' ⇐ t) →
               (Γ ⊢ e ~ α ~> e'' ⇐ t) →
               (e' == e'')
-    actdet3 = {!!}
-    -- actdet3 D1 (AASubsume x x₁ x₂) (AASubsume x₃ x₄ x₅)
-    --  with synthunicity x x₃
-    -- ... | refl = π1 (actdet2 x x₁ x₄)
+    actdet3 EETop (ASubsume (SAsc x) x₁) d1 d2 = {!!}
+    actdet3 (EEAscL er) (ASubsume (SAsc x) x₁) d1 d2 = {!!}
+    actdet3 (EEAscR x) (ASubsume (SAsc x₁) x₂) d1 d2 = {!!}
 
-    -- actdet3 D1 (AASubsume _ y _) (AAMove w) = synthmovedet y w
-    -- actdet3 D1 (AASubsume _ SADel _) AADel = refl
-    -- actdet3 D1 (AASubsume x SAConAsc x₂) AAConAsc = {!!}
-    -- actdet3 {Γ = G} (ASubsume x x₁) (AASubsume x₂ (SAConVar p) x₄) (AAConVar x₅ p₁)
-    --  with ctxunicity {Γ = G} p p₁
-    -- ... | refl = abort (x₅ x₄)
-    -- actdet3 D1 (AASubsume x₁ (SAConLam x₂) x₃) (AAConLam1 x x₄) = {!!}
-    -- actdet3 D1 (AASubsume x₁ (SAConLam x₃) x₂) (AAConLam2 x₄ x₅) = abort (x₅ x₂)
-    -- actdet3 D1 (AASubsume x SAConNumlit x₂) (AAConNumlit x₃) = abort (x₃ x₂)
-    -- actdet3 D1 (AASubsume x (SAFinish x₁) x₂) (AAFinish x₃) = refl
-    -- actdet3 D1 (AASubsume x₁ (SAMove EMLamParent) x₂) (AAZipLam x x₄ x₆) = abort (lem-nomove-para x₆)
+    actdet3 EETop (ASubsume (SVar x) x₁) d1 d2 = {!d1!}
 
-    -- actdet3 D1 (AAMove x) (AASubsume x₁ x₂ x₃) =  ! (synthmovedet x₂ x)
-    -- actdet3 D1 (AAMove x) (AAMove x₁) = movedet x x₁
-    -- actdet3 D1 (AAMove EMLamParent) (AAZipLam x x₃ d) = abort (lem-nomove-para d)
+    actdet3 EETop (ASubsume (SAp x x₁ x₂) x₃) d1 d2 = {!!}
+    actdet3 (EEApL er) (ASubsume (SAp x x₁ x₂) x₃) d1 d2 = {!!}
+    actdet3 (EEApR er) (ASubsume (SAp x x₁ x₂) x₃) d1 d2 = {!!}
 
-    -- actdet3 D1 AADel (AASubsume _ SADel _) = refl
-    -- actdet3 D1 AADel AADel = refl
+    actdet3 EETop (ASubsume SNum x₁) d1 d2 = {!!}
 
-    -- actdet3 D1 AAConAsc (AASubsume x SAConAsc x₂) = {!!}
-    -- actdet3 D1 AAConAsc AAConAsc = refl
+    actdet3 EETop (ASubsume (SPlus x x₁) x₂) d1 d2 = {!!}
+    actdet3 (EEPlusL er) (ASubsume (SPlus x x₁) x₂) d1 d2 = {!!}
+    actdet3 (EEPlusR er) (ASubsume (SPlus x x₁) x₂) d1 d2 = {!!}
 
-    -- actdet3 {Γ = G} D1 (AAConVar x₁ p) (AASubsume x₂ (SAConVar p₁) x₄)
-    --  with ctxunicity {Γ = G} p p₁
-    -- ... | refl = abort (x₁ x₄)
-    -- actdet3 D1 (AAConVar x₁ p) (AAConVar x₂ p₁) = refl
+    actdet3 EETop (ASubsume SEHole x₁) d1 d2 = {!d1 d2!}
 
-    -- actdet3 D1 (AAConLam1 x x₃) (AASubsume SEHole (SAConLam x₅) x₆) = {!!}
-    -- actdet3 D1 (AAConLam1 x x₁) (AAConLam1 y x₂) = refl
-    -- actdet3 D1 (AAConLam1 x₁ MAHole) (AAConLam2 x₄ x₅) = abort (x₅ TCHole2)
-    -- actdet3 D1 (AAConLam1 x₁ MAArr) (AAConLam2 x₄ x₅) = abort (x₅ (TCArr TCHole1 TCHole1))
+    actdet3 EETop (ASubsume (SNEHole x) x₁) d1 d2 = {!!}
+    actdet3 (EENEHole er) (ASubsume (SNEHole x) x₁) d1 d2 = {!!}
 
-    -- actdet3 D1 (AAConLam2 x₁ x₂) (AASubsume x₃ (SAConLam x₄) x₅) = abort (x₂ x₅)
-    -- actdet3 D1 (AAConLam2 x₁ x₂) (AAConLam1 y MAHole) = abort (x₂ TCHole2)
-    -- actdet3 D1 (AAConLam2 x₁ x₂) (AAConLam1 y MAArr) = abort (x₂ (TCArr TCHole1 TCHole1))
-    -- actdet3 D1 (AAConLam2 x₁ x₂) (AAConLam2 x₃ x₄) = refl
+    -- an erased lambda can't be typechecked with subsume
+    actdet3 (EELam _) (ASubsume () _) _ _
 
-    -- actdet3 D1 (AAConNumlit x) (AASubsume x₁ SAConNumlit x₃) = abort (x x₃)
-    -- actdet3 D1 (AAConNumlit x) (AAConNumlit x₁) = refl
+    -- lambdas never match with subsumption actions, because it won't be well typed.
+    actdet3 EETop      (ALam x₁ x₂ wt) (AASubsume EETop () x₅ x₆) _
+    actdet3 (EELam _) (ALam x₁ x₂ wt) (AASubsume (EELam x₃) () x₅ x₆) _
+    actdet3 EETop      (ALam x₁ x₂ wt) _ (AASubsume EETop () x₅ x₆)
+    actdet3 (EELam _) (ALam x₁ x₂ wt) _ (AASubsume (EELam x₃) () x₅ x₆)
 
-    -- actdet3 D1 (AAFinish x) (AASubsume x₁ (SAFinish x₂) x₃) = refl
-    -- actdet3 D1 (AAFinish x) (AAFinish x₁) = refl
+    -- movements are the same reguardless of erasure
+    actdet3 _ (ALam x₁ x₂ wt) (AAMove x₃) (AAMove x₄) = movedet x₃ x₄
 
-    -- actdet3 D1 (AAZipLam x x₃ D2) (AASubsume x₁ (SAMove EMLamParent) x₄) = abort (lem-nomove-para D2)
-    -- actdet3 D1 (AAZipLam x x₃ d) (AAMove EMLamParent) = abort (lem-nomove-para d)
-    -- actdet3 D1 (AAZipLam {e = e} a1 MAHole D2) (AAZipLam x2 MAHole D3) with actdet3 (lem-alamh {e = e} D1) D2 D3
-    -- ... | refl = refl
-    -- actdet3 D1 (AAZipLam {e = e} a1 MAArr D2) (AAZipLam x2 MAArr D3) with actdet3 (lem-alam {e = e} D1) D2 D3
-    -- ... | refl = refl
+    -- with the cursor at the top, there are only two possible actions
+    actdet3 EETop (ALam x₁ x₂ wt) AADel AADel = refl
+    actdet3 EETop (ALam x₁ x₂ wt) AAConAsc AAConAsc = refl
+
+    -- otherwise, it has to be a zip. movement doesnt' cohere..
+    actdet3 (EELam er) (ALam x₁ x₂ wt) (AAMove EMLamParent) (AAZipLam x₄ x₅ d2) = abort (lem-nomove-para d2)
+    actdet3 (EELam er) (ALam x₁ x₂ wt) (AAZipLam x₃ x₄ d1) (AAMove EMLamParent) = abort (lem-nomove-para d1)
+
+    -- and for the remaining case, recurr on the smaller derivations
+    actdet3 (EELam er) (ALam x₁ x₂ wt) (AAZipLam x₃ x₄ d1) (AAZipLam x₅ x₆ d2)
+       with matchunicity x₄ x₆
+    ... | refl with matchunicity x₄ x₂
+    ... | refl with actdet3 er wt d1 d2
+    ... | refl = refl
