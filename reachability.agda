@@ -53,7 +53,7 @@ module reachability where
   runsynth-type _ _ DoRefl = DoRefl
   runsynth-type wt er (DoType x d) = {!!}
 
-  synth-ap1-cong : ∀{Γ e t t1 t2 L e' f er qq} →
+  synth-ap1-cong : ∀{Γ e t t1 t2 L e' f er} →
                        erase-e e er →
                        Γ ⊢ er => t →
                        Γ ⊢ f <= t2 →
@@ -64,6 +64,15 @@ module reachability where
   synth-ap1-cong er s a m (DoSynth x d) =
                  DoSynth (SAZipApArr m er s {!x!} a)
                    {!!}
+
+  nehole-cong : ∀{Γ e e' L t e'◆ t'} →
+                erase-e e' e'◆ →
+                Γ ⊢ e'◆ => t →
+                runsynth Γ e t L e' t' →
+                runsynth Γ <| e |> <||> L <| e' |> <||>
+  nehole-cong er wt DoRefl = DoRefl
+  nehole-cong er wt (DoSynth x d) = {!!}
+              -- DoSynth (SAZipHole {!!} {!wt!} x) (nehole-cong {!!} {!!} d)
 
 
   mutual
@@ -85,14 +94,17 @@ module reachability where
     ... | ih = runsynth++ (synth-ana-plus1-cong ih) (DoSynth (SAMove EMPlusParent1) DoRefl)
     reachup-synth (EEPlusR er) (SPlus x x₁) with reachup-ana er x₁
     ... | ih = runsynth++ (synth-ana-plus2-cong ih) (DoSynth (SAMove EMPlusParent2) DoRefl)
-    reachup-synth (EENEHole er) (SNEHole wt) = {!!}
+    reachup-synth (EENEHole er) (SNEHole wt) with reachup-synth er wt
+    ... | ih = runsynth++ {!!} (DoSynth (SAMove EMNEHoleParent) DoRefl)
 
     reachup-ana : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
                       erase-e e e' →
                       Γ ⊢ e' <= t →
                       runana Γ e (moveup-e e) ▹ e' ◃ t
-    reachup-ana er (ASubsume x x₁) = {!reachup-synth er x!}
-    reachup-ana er (ALam x₁ x₂ wt) = {!!}
+    reachup-ana EETop _ = DoRefl
+    reachup-ana er (ASubsume x x₁) = {!!}
+    reachup-ana (EELam er) (ALam x₁ x₂ wt) with reachup-ana er wt
+    ... | ih = runana++ (ana-lam-cong x₁ x₂ ih) (DoAna (AAMove EMLamParent) DoRefl)
 
 
 
@@ -220,6 +232,12 @@ module reachability where
   -- to erasure, they must have the exact same type in the same context,
   -- not merely a compatible one in an extension or any other weakening of
   -- the statement. these are lemmas which are currently not proven. TODO?
+
+  movements-synth : ∀{e e' t t' Γ} →
+    (L : List action) (p : movements L) →
+                    runsynth Γ e t L e' t' → t == t'
+  movements-synth ._ (AM:: p) (DoSynth x x₁) = {!synthmovedet!}
+  movements-synth .[] AM[] DoRefl = refl
 
   reachability-types : (t1 t2 : τ̂) → (t1 ◆t) == (t2 ◆t) →
                            Σ[ L ∈ List action ] runtype t1 L t2 × movements L

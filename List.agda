@@ -21,3 +21,7 @@ module List where
   ++assoc : {A : Set} (l1 l2 l3 : List A) → (l1 ++ (l2 ++ l3)) == ((l1 ++ l2) ++ l3)
   ++assoc [] l2 l3 = refl
   ++assoc (x :: l1) l2 l3 = ap1 (_::_ x) (++assoc l1 l2 l3)
+
+  rev : {A : Set} → List A → List A
+  rev [] = []
+  rev (x :: xs) = rev xs ++ [ x ]
