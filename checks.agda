@@ -6,7 +6,7 @@ open import judgemental-erase
 
 module checks where
   -- theorem: movement doesn't change the term other than moving the focus around.
-  moveerase : {e e' : ê} {δ : direction} {t : τ̇} →
+  moveerase : {e e' : ê} {δ : direction} →
             (e + move δ +>e e') →
             (e ◆e) == (e' ◆e)
   moveerase EMAscFirstChild = refl
@@ -25,6 +25,28 @@ module checks where
   moveerase EMApNextSib = refl
   moveerase EMNEHoleFirstChild = refl
   moveerase EMNEHoleParent = refl
+
+  moveerase' : {e e' : ê} {e◆ : ė} {δ : direction} →
+            erase-e e e◆ →
+            (e + move δ +>e e') →
+            erase-e e' e◆
+  moveerase' EETop EMAscFirstChild = EEAscL EETop
+  moveerase' EETop EMLamFirstChild = EELam EETop
+  moveerase' EETop EMPlusFirstChild = EEPlusL EETop
+  moveerase' EETop EMApFirstChild = EEApL EETop
+  moveerase' EETop EMNEHoleFirstChild = EENEHole EETop
+  moveerase' (EEAscL EETop) EMAscParent1 = EETop
+  moveerase' (EEAscL EETop) EMAscNextSib = EEAscR ETTop
+  moveerase' (EEAscR ETTop) EMAscParent2 = EETop
+  moveerase' (EELam EETop) EMLamParent = EETop
+  moveerase' (EEApL EETop) EMApParent1 = EETop
+  moveerase' (EEApL EETop) EMApNextSib = EEApR EETop
+  moveerase' (EEApR EETop) EMApParent2 = EETop
+  moveerase' (EEPlusL EETop) EMPlusParent1 = EETop
+  moveerase' (EEPlusL EETop) EMPlusNextSib = EEPlusR EETop
+  moveerase' (EEPlusR EETop) EMPlusParent2 = EETop
+  moveerase' (EENEHole EETop) EMNEHoleParent = EETop
+
 
 
   -- these three judmgements lift the action semantics judgements to relate

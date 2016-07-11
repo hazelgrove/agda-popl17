@@ -312,16 +312,37 @@ module deterministic where
     actdet3 (EEAscL er) (ASubsume (SAsc x) x₁) d1 d2 = {!!}
     actdet3 (EEAscR x) (ASubsume (SAsc x₁) x₂) d1 d2 = {!!}
 
-    actdet3 EETop (ASubsume (SVar x) x₁) d1 d2 = {!d1!}
+    actdet3 EETop (ASubsume (SVar x) x₁) (AASubsume EETop (SVar x₂) x₄ x₅) (AASubsume EETop (SVar x₃) x₈ x₉) = {!!}
+    actdet3 EETop (ASubsume (SVar x) x₁) (AASubsume x₂ x₃ x₅ x₄) (AAMove ())
+    actdet3 EETop (ASubsume (SVar x) x₁) (AASubsume x₂ x₃ SADel x₅) AADel = refl
+    actdet3 EETop (ASubsume {Γ = Γ} (SVar x) x₁) (AASubsume EETop (SVar x₂) SAConAsc x₅) AAConAsc with ctxunicity {Γ = Γ} x x₂
+    ... | refl = {!!}
+    actdet3 EETop (ASubsume (SVar x) x₁) (AAMove ()) (AASubsume x₃ x₄ x₅ x₆)
+    actdet3 EETop (ASubsume (SVar x) x₁) (AAMove x₂) (AAMove x₃) = movedet x₂ x₃
+    actdet3 EETop (ASubsume (SVar x) x₁) AADel (AASubsume x₂ x₃ SADel x₅) = refl
+    actdet3 EETop (ASubsume (SVar x) x₁) AADel AADel = refl
+    actdet3 EETop (ASubsume (SVar x) x₁) AAConAsc (AASubsume x₂ x₃ x₄ x₅) = {!!}
+    actdet3 EETop (ASubsume (SVar x) x₁) AAConAsc AAConAsc = refl
 
     actdet3 EETop (ASubsume (SAp x x₁ x₂) x₃) d1 d2 = {!!}
     actdet3 (EEApL er) (ASubsume (SAp x x₁ x₂) x₃) d1 d2 = {!!}
     actdet3 (EEApR er) (ASubsume (SAp x x₁ x₂) x₃) d1 d2 = {!!}
 
-    actdet3 EETop (ASubsume SNum x₁) d1 d2 = {!!}
+    actdet3 EETop (ASubsume SNum c) (AASubsume EETop SNum x₂ x₃) (AASubsume EETop SNum x₄ x₅) = π1 (actdet2 EETop SNum x₂ x₄)
+    actdet3 EETop (ASubsume SNum c) (AASubsume EETop SNum x₂ x₃) (AAMove ())
+    actdet3 EETop (ASubsume SNum c) (AASubsume EETop SNum SADel x₃) AADel = refl
+    actdet3 EETop (ASubsume SNum TCRefl) (AASubsume EETop SNum SAConAsc TCRefl) AAConAsc = refl
+    actdet3 EETop (ASubsume SNum TCHole2) (AASubsume EETop SNum SAConAsc TCHole2) AAConAsc = {!!}
+    actdet3 EETop (ASubsume SNum c) (AAMove x) (AASubsume EETop SNum (SAMove x₁) x₅) = movedet x x₁
+    actdet3 EETop (ASubsume SNum c) (AAMove x) (AAMove x₁) = movedet x x₁
+    actdet3 EETop (ASubsume SNum c) AADel (AASubsume EETop SNum SADel x₃) = refl
+    actdet3 EETop (ASubsume SNum c) AADel AADel = refl
+    actdet3 EETop (ASubsume SNum TCRefl) AAConAsc (AASubsume EETop SNum SAConAsc TCRefl) = refl
+    actdet3 EETop (ASubsume SNum TCHole2) AAConAsc (AASubsume EETop SNum SAConAsc TCHole2) = {!!}
+    actdet3 EETop (ASubsume SNum c) AAConAsc AAConAsc = refl
 
     actdet3 EETop (ASubsume (SPlus x x₁) x₂) d1 d2 = {!!}
-    actdet3 (EEPlusL er) (ASubsume (SPlus x x₁) x₂) d1 d2 = {!!}
+    actdet3 (EEPlusL er) (ASubsume (SPlus x x₁) x₂) d1 d2 = {!x₂!}
     actdet3 (EEPlusR er) (ASubsume (SPlus x x₁) x₂) d1 d2 = {!!}
 
     actdet3 EETop (ASubsume SEHole x₁) d1 d2 = {!d1 d2!}
