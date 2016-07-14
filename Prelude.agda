@@ -86,6 +86,9 @@ module Prelude where
   someinj : {A : Set} {x y : A} → Some x == Some y → x == y
   someinj refl = refl
 
+  somenotnone : {A : Set} {x : A} → Some x == None → ⊥
+  somenotnone ()
+
   -- order
   data Order : Set where
     Less : Order
