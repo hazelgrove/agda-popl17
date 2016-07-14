@@ -40,15 +40,16 @@ module structural where
                     x # Γ →
                     Γ ⊢ e => t →
                     (Γ ,, (x , t')) ⊢ e => t
-    wt-weak-synth A (SAsc x₁) = SAsc (wt-weak-ana A x₁)
-    wt-weak-synth {x = x} A (SVar {n = n} x₁) with natEQ n x
-    wt-weak-synth A (SVar x₁) | Inl refl = abort (somenotnone (! x₁ · A))
-    ... | Inr qq = SVar (lem-extend qq x₁)
-    wt-weak-synth A (SAp wt x₁ x₂) = SAp (wt-weak-synth A wt) x₁ (wt-weak-ana A x₂)
-    wt-weak-synth A SNum = SNum
-    wt-weak-synth A (SPlus x₁ x₂) = SPlus (wt-weak-ana A x₁) (wt-weak-ana A x₂)
-    wt-weak-synth A SEHole = SEHole
-    wt-weak-synth A (SNEHole wt) = SNEHole (wt-weak-synth A wt)
+    wt-weak-synth a wt = {!!}
+    -- wt-weak-synth A (SAsc x₁) = SAsc (wt-weak-ana A x₁)
+    -- wt-weak-synth {x = x} A (SVar {n = n} x₁) with natEQ n x
+    -- wt-weak-synth A (SVar x₁) | Inl refl = abort (somenotnone (! x₁ · A))
+    -- ... | Inr qq = SVar (lem-extend qq x₁)
+    -- wt-weak-synth A (SAp wt x₁ x₂) = SAp (wt-weak-synth A wt) x₁ (wt-weak-ana A x₂)
+    -- wt-weak-synth A SNum = SNum
+    -- wt-weak-synth A (SPlus x₁ x₂) = SPlus (wt-weak-ana A x₁) (wt-weak-ana A x₂)
+    -- wt-weak-synth A SEHole = SEHole
+    -- wt-weak-synth A (SNEHole wt) = SNEHole (wt-weak-synth A wt)
 
     wt-weak-ana : {Γ : ·ctx} {x : Nat} {t t' : τ̇} {e : ė} → (x # Γ) →
                     Γ ⊢ e <= t →
