@@ -376,3 +376,11 @@ module deterministic where
     ... | refl with matchunicity x₄ x₂
     ... | refl with actdet3 er wt d1 d2
     ... | refl = refl
+
+    pseudodet : {Γ : ·ctx} {e e' e'' : ê} {e◆ : ė} {t t' : τ̇} {α : action} →
+              (erase-e e e◆) →
+              (Γ ⊢ e◆ <= t) →
+              (Γ ⊢ e ~ α ~> e' ⇐ t) →
+              (Γ ⊢ e ~ α ~> e'' ⇐ t') →
+              (e' == e'' × t ~ t')
+    pseudodet = {!!}
