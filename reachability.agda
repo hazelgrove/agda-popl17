@@ -65,15 +65,17 @@ module reachability where
                  DoSynth (SAZipApArr m er s {!x!} a)
                    {!!}
 
-  nehole-cong : ∀{Γ e e' L t e'◆ t'} →
-                erase-e e' e'◆ →
-                Γ ⊢ e'◆ => t →
-                runsynth Γ e t L e' t' →
+  nehole-cong : ∀{Γ e e' L t} →
+                runsynth Γ e t L e' t →
                 runsynth Γ <| e |> <||> L <| e' |> <||>
-  nehole-cong er wt DoRefl = DoRefl
-  nehole-cong er wt (DoSynth x d) = {!!}
-              -- DoSynth (SAZipHole {!!} {!wt!} x) (nehole-cong {!!} {!!} d)
+  nehole-cong DoRefl = DoRefl
+  nehole-cong (DoSynth x d) = {!!}
 
+  -- movements-synth : ∀{e e' t t' Γ} →
+  --   (L : List action) (p : movements L) →
+  --                   runsynth Γ e t L e' t' → t == t'
+  -- movements-synth ._ (AM:: p) (DoSynth x x₁) = {!synthmovedet!}
+  -- movements-synth .[] AM[] DoRefl = refl
 
   mutual
     reachup-synth : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
@@ -95,7 +97,7 @@ module reachability where
     reachup-synth (EEPlusR er) (SPlus x x₁) with reachup-ana er x₁
     ... | ih = runsynth++ (synth-ana-plus2-cong ih) (DoSynth (SAMove EMPlusParent2) DoRefl)
     reachup-synth (EENEHole er) (SNEHole wt) with reachup-synth er wt
-    ... | ih = runsynth++ {!!} (DoSynth (SAMove EMNEHoleParent) DoRefl)
+    ... | ih = runsynth++ (nehole-cong ih) (DoSynth (SAMove EMNEHoleParent) DoRefl)
 
     reachup-ana : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
                       erase-e e e' →
@@ -139,28 +141,29 @@ module reachability where
                      → runsynth Γ ▹ e' ◃ t (movedown-e e' e p) e t
     reachdown-synth (EELam p) ()
     reachdown-synth EETop _ = DoRefl
-    reachdown-synth (EEAscL p) (SAsc x) = {!!}
-    reachdown-synth (EEAscR x) (SAsc x₁) = {!!}
-    reachdown-synth (EEApL p) (SAp wt m  x) = {!!}
-    reachdown-synth (EEApR p) (SAp wt m x) = {!!}
-    reachdown-synth (EEPlusL p) (SPlus x x₁) = {!!}
-    reachdown-synth (EEPlusR p) (SPlus x x₁) = {!!}
-    reachdown-synth (EENEHole p) (SNEHole wt) = {!!}
+    reachdown-synth (EEAscL p) (SAsc x) with reachdown-ana p x
+    ... | ih = DoSynth (SAMove EMAscFirstChild) (lem-anasynthasc ih)
+    reachdown-synth (EEAscR x) (SAsc x₁) with reachdown-type x
+    ... | ih = DoSynth (SAMove EMAscFirstChild) (DoSynth (SAMove {!EMAscNextSib!}) {!!})
+    reachdown-synth (EEApL p) (SAp wt m  x) with reachdown-synth p wt
+    ... | ih = DoSynth (SAMove EMApFirstChild) (synth-ap1-cong EETop wt x m ih)
+    reachdown-synth (EEApR p) (SAp wt m x) with reachdown-ana p x
+    ... | ih = DoSynth (SAMove EMApFirstChild) (DoSynth (SAMove EMApNextSib) (synth-ana-ap2-cong wt m ih))
+    reachdown-synth (EEPlusL p) (SPlus x x₁) with reachdown-ana p x
+    ... | ih = DoSynth (SAMove EMPlusFirstChild) (synth-ana-plus1-cong ih)
+    reachdown-synth (EEPlusR p) (SPlus x x₁) with reachdown-ana p x₁
+    ... | ih = DoSynth (SAMove EMPlusFirstChild) (DoSynth (SAMove EMPlusNextSib) (synth-ana-plus2-cong ih))
+    reachdown-synth (EENEHole p) (SNEHole wt) with reachdown-synth p wt
+    ... | ih = DoSynth (SAMove EMNEHoleFirstChild) (nehole-cong ih)
 
     reachdown-ana : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
                       (p : erase-e e e') →
                       (wt : Γ ⊢ e' <= t)
                      → runana Γ ▹ e' ◃ (movedown-e e' e p) e  t
     reachdown-ana EETop _ = DoRefl
-    reachdown-ana (EEAscL p) (ASubsume x x₁) = {!!}
-    reachdown-ana (EEAscR x) (ASubsume x₁ x₂) = {!!}
-    reachdown-ana (EELam p) (ASubsume x₁ x₂) = {!!}
-    reachdown-ana (EEApL p) (ASubsume x x₁) = {!!}
-    reachdown-ana (EEApR p) (ASubsume x x₁) = {!!}
-    reachdown-ana (EEPlusL p) (ASubsume x x₁) = {!!}
-    reachdown-ana (EEPlusR p) (ASubsume x x₁) = {!!}
-    reachdown-ana (EENEHole p) (ASubsume x x₁) = {!!}
-    reachdown-ana (EELam p) (ALam m x₁ wt) = {!!}
+    reachdown-ana er (ASubsume x x₁) = {!!}
+    reachdown-ana (EELam p) (ALam m x₁ wt) with reachdown-ana p wt
+    ... | ih = DoAna (AAMove EMLamFirstChild) (ana-lam-cong m x₁ ih)
 
   -- because the point of the reachability theorems is to show that we
   -- didn't forget to define any of the action semantic cases, it's
@@ -232,12 +235,6 @@ module reachability where
   -- to erasure, they must have the exact same type in the same context,
   -- not merely a compatible one in an extension or any other weakening of
   -- the statement. these are lemmas which are currently not proven. TODO?
-
-  movements-synth : ∀{e e' t t' Γ} →
-    (L : List action) (p : movements L) →
-                    runsynth Γ e t L e' t' → t == t'
-  movements-synth ._ (AM:: p) (DoSynth x x₁) = {!synthmovedet!}
-  movements-synth .[] AM[] DoRefl = refl
 
   reachability-types : (t1 t2 : τ̂) → (t1 ◆t) == (t2 ◆t) →
                            Σ[ L ∈ List action ] runtype t1 L t2 × movements L
