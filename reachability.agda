@@ -144,7 +144,7 @@ module reachability where
     reachdown-synth (EEAscL p) (SAsc x) with reachdown-ana p x
     ... | ih = DoSynth (SAMove EMAscFirstChild) (lem-anasynthasc ih)
     reachdown-synth (EEAscR x) (SAsc x₁) with reachdown-type x
-    ... | ih = DoSynth (SAMove EMAscFirstChild) (DoSynth (SAMove {!EMAscNextSib!}) {!!})
+    ... | ih = DoSynth (SAMove EMAscFirstChild) (DoSynth (SAMove EMAscNextSib) (runsynth-type x₁ ETTop ih))
     reachdown-synth (EEApL p) (SAp wt m  x) with reachdown-synth p wt
     ... | ih = DoSynth (SAMove EMApFirstChild) (synth-ap1-cong EETop wt x m ih)
     reachdown-synth (EEApR p) (SAp wt m x) with reachdown-ana p x
