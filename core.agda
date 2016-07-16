@@ -248,6 +248,8 @@ module core where
   synthunicity (SNEHole _) (SNEHole _) = refl
 
 
+
+
   ----- the zippered form of the forms above and the rules for actions on them
 
   -- those types without holes anywhere
