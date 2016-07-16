@@ -45,13 +45,25 @@ module reachability where
   reachup-type (ETArrR tr) with reachup-type tr
   ... | ih = runtype++ (runtype-cong2 ih) (DoType TMParent2 DoRefl)
 
+  lem-erase-step : ∀{ t t' t'' δ} →
+                 erase-t t t' →
+                 t + move δ +> t'' →
+                 erase-t t'' t'
+  lem-erase-step ETTop TMFirstChild = ETArrL ETTop
+  lem-erase-step (ETArrL ETTop) TMParent1 = ETTop
+  lem-erase-step (ETArrL ETTop) TMNextSib = ETArrR ETTop
+  lem-erase-step (ETArrL er) (TMZip1 m) = ETArrL (lem-erase-step er m)
+  lem-erase-step (ETArrR ETTop) TMParent2 = ETTop
+  lem-erase-step (ETArrR er) (TMZip2 m) = ETArrR (lem-erase-step er m)
+
   runsynth-type : ∀{t L t' Γ e ter} →
                   Γ ⊢ e <= ter →
                   erase-t t ter →
                   runtype t L t' →
                   runsynth Γ (e ·:₂ t) ter L (e ·:₂ t') ter
   runsynth-type _ _ DoRefl = DoRefl
-  runsynth-type wt er (DoType x d) = {!!}
+  runsynth-type wt er (DoType x d) with lem-erase-step er {!!}
+  ... | er' = DoSynth (SAZipAsc2 x er' er wt) (runsynth-type wt er' d)
 
   synth-ap1-cong : ∀{Γ e t t1 t2 L e' f er} →
                        erase-e e er →
@@ -69,13 +81,8 @@ module reachability where
                 runsynth Γ e t L e' t →
                 runsynth Γ <| e |> <||> L <| e' |> <||>
   nehole-cong DoRefl = DoRefl
-  nehole-cong (DoSynth x d) = {!!}
+  nehole-cong (DoSynth x d) = DoSynth (SAZipHole {!!} {!!} x) (nehole-cong {!!})
 
-  -- movements-synth : ∀{e e' t t' Γ} →
-  --   (L : List action) (p : movements L) →
-  --                   runsynth Γ e t L e' t' → t == t'
-  -- movements-synth ._ (AM:: p) (DoSynth x x₁) = {!synthmovedet!}
-  -- movements-synth .[] AM[] DoRefl = refl
 
   mutual
     reachup-synth : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
@@ -263,3 +270,17 @@ module reachability where
   ... | up  | down = moveup-e e1 ++ movedown-e (e1 ◆e) e2 er2 ,
                      runana++ up (tr (λ x → runana Γ ▹ x ◃ (movedown-e (e1 ◆e) e2 er2) e2 t) eq down) ,
                      movements++ (movements-moveup-e e1) (movements-movedown-e (e1 ◆e) e2 er2)
+
+  movements-synth : ∀{e e' t t' Γ} →
+    (L : List action) (p : movements L) →
+                    runsynth Γ e t L e' t' → t == t'
+  movements-synth .[] AM[] DoRefl = refl
+  movements-synth ._ (AM:: p) (DoSynth x x₁) with movements-synth _ p x₁ | x
+  ... | refl | SAMove x₂ = refl
+  ... | refl | SAZipAsc1 x₂ = refl
+  ... | refl | SAZipAsc2 x₂ x₃ x₄ x₅ = {!x₂!}
+  ... | refl | SAZipApArr x₂ x₃ x₄ qq x₅ = {!!}
+  ... | refl | SAZipApAna x₂ x₃ x₄ = refl
+  ... | refl | SAZipPlus1 x₂ = refl
+  ... | refl | SAZipPlus2 x₂ = refl
+  ... | refl | SAZipHole x₂ x₃ qq = refl

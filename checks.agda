@@ -115,6 +115,8 @@ module checks where
   runana++ DoRefl d2 = d2
   runana++ (DoAna x d1) d2 = DoAna x (runana++ d1 d2)
 
+  -- todo: rename these consistently; call them the zipper lemmas?
+
   -- the following collection of lemmas asserts that the various runs
   -- interoperate nicely. in many cases, these amount to observing
   -- something like congruence: if a subterm is related to something by one
