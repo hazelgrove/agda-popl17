@@ -5,7 +5,8 @@ open import core
 open import judgemental-erase
 
 module checks where
-  -- theorem: movement doesn't change the term other than moving the focus around.
+  -- theorem: movement doesn't change the term other than moving the focus
+  -- around.
   moveerase : {e e' : ê} {δ : direction} →
             (e + move δ +>e e') →
             (e ◆e) == (e' ◆e)
@@ -26,26 +27,33 @@ module checks where
   moveerase EMNEHoleFirstChild = refl
   moveerase EMNEHoleParent = refl
 
+  -- this form is essentially the same as above, but for judgemental erasure
   moveerase' : {e e' : ê} {e◆ : ė} {δ : direction} →
             erase-e e e◆ →
             (e + move δ +>e e') →
             erase-e e' e◆
-  moveerase' EETop EMAscFirstChild = EEAscL EETop
-  moveerase' EETop EMLamFirstChild = EELam EETop
-  moveerase' EETop EMPlusFirstChild = EEPlusL EETop
-  moveerase' EETop EMApFirstChild = EEApL EETop
-  moveerase' EETop EMNEHoleFirstChild = EENEHole EETop
-  moveerase' (EEAscL EETop) EMAscParent1 = EETop
-  moveerase' (EEAscL EETop) EMAscNextSib = EEAscR ETTop
-  moveerase' (EEAscR ETTop) EMAscParent2 = EETop
-  moveerase' (EELam EETop) EMLamParent = EETop
-  moveerase' (EEApL EETop) EMApParent1 = EETop
-  moveerase' (EEApL EETop) EMApNextSib = EEApR EETop
-  moveerase' (EEApR EETop) EMApParent2 = EETop
-  moveerase' (EEPlusL EETop) EMPlusParent1 = EETop
-  moveerase' (EEPlusL EETop) EMPlusNextSib = EEPlusR EETop
-  moveerase' (EEPlusR EETop) EMPlusParent2 = EETop
-  moveerase' (EENEHole EETop) EMNEHoleParent = EETop
+  moveerase' er1 m with erase-e◆ er1
+  ... | refl = ◆erase-e _ _ (! (moveerase m))
+
+  -- as a consequence, movements preserve types upto erase
+  synthmove-er : {Γ : ·ctx} {e e' : ê} {e◆ e'◆ : ė} {t : τ̇} {δ : direction} →
+                 erase-e e e◆  →
+                 erase-e e' e'◆ →
+                 (e + move δ +>e e') →
+                 (Γ ⊢ e◆ => t) →
+                 (Γ ⊢ e'◆ => t)
+  synthmove-er er1 er2 m wt with erasee-det (moveerase' er1 m) er2
+  ... | refl = wt
+
+  anamove-er : {Γ : ·ctx} {δ : direction} {e e' : ê} {e◆ e'◆ : ė} {t : τ̇} →
+            erase-e e e◆ →
+            erase-e e' e'◆ →
+            (p : e + move δ +>e e') →
+            (Γ ⊢ e◆ <= t) →
+            (Γ ⊢ e'◆ <= t)
+  anamove-er er1 er2 m wt with erasee-det (moveerase' er1 m) er2
+  ... | refl = wt
+
 
 
 

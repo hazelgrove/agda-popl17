@@ -5,34 +5,17 @@ open import judgemental-erase
 open import checks
 
 module sensible where
-  -- movements preserve types upto erase
-  synthmovelem : {Γ : ·ctx} {e e' : ê} {e◆ e'◆ : ė} {t : τ̇} {δ : direction} →
-                 erase-e e e◆  →
-                 erase-e e' e'◆ →
-                 (e + move δ +>e e') →
-                 (Γ ⊢ e◆ => t) →
-                 (Γ ⊢ e'◆ => t)
-  synthmovelem {Γ = Γ} {t = t} er1 er2 m wt with erase-e◆ er1 | erase-e◆ er2
-  ... | refl | refl = {!!} -- tr (λ x → Γ ⊢ x => t) (moveerase m)
-
-  anamovelem : {Γ : ·ctx} {δ : direction} {e e' : ê} {e◆ e'◆ : ė} {t : τ̇} →
-            erase-e e e◆ →
-            erase-e e' e'◆ →
-            (p : e + move δ +>e e') →
-            (Γ ⊢ e◆ <= t) →
-            (Γ ⊢ e'◆ <= t)
-  anamovelem {Γ = Γ} {t = t} m = {!!} -- tr (λ x → Γ ⊢ x <= t) (moveerase m)
-
   mutual
-    -- if an action transforms an zexp in a synthetic posistion to another
-    -- zexp, they have the same type up erasure of focus.
+    -- if an action transforms a ê in a synthetic posistion to another ê,
+    -- they have the same type up erasure of focus.
     actsense1 : {Γ : ·ctx} {e e' : ê} {e◆ e'◆ : ė} {t t' : τ̇} {α : action} →
                 erase-e e e◆  →
                 erase-e e' e'◆ →
                 Γ ⊢ e => t ~ α ~> e' => t' →
                 Γ ⊢ e◆ => t →
                 Γ ⊢ e'◆ => t'
-    actsense1 er er' (SAMove x) wt = synthmovelem er er' x wt
+    -- in the movement case, we defer to the movement erasure theorem
+    actsense1 er er' (SAMove x) wt = synthmove-er er er' x wt
 
     -- in all the nonzipper cases, the focus must be at the top for the
     -- action rule to apply, so we just build the new derivation
@@ -51,8 +34,8 @@ module sensible where
     actsense1 EETop (EENEHole EETop) SAConNEHole wt = SNEHole wt
     actsense1 _ EETop (SAFinish x) _ = x
 
-    --- zipper cases. in each, we recur on the smaller action derivation,
-    --- then reassemble the result
+    --- zipper cases. in each, we recur on the smaller action derivation
+    --- following the zipper structure, then reassemble the result
     actsense1 (EEAscL er) (EEAscL er') (SAZipAsc1 x) (SAsc x₁)
       with actsense2 er er' x x₁
     ... | ih = SAsc ih
@@ -80,19 +63,19 @@ module sensible where
       with actsense1 x er' act x₁
     ... | ih = SNEHole ih
 
-
-
+    -- if an action transforms an ê in an analytic posistion to another ê,
+    -- they have the same type up erasure of focus.
     actsense2  : {Γ : ·ctx} {e e' : ê} {e◆ e'◆ : ė} {t : τ̇} {α : action} →
-                  erase-e e e◆ →
+                  erase-e e  e◆ →
                   erase-e e' e'◆ →
-                  (Γ ⊢ e ~ α ~> e' ⇐ t) →
-                  (Γ ⊢ e◆ <= t) →
-                  (Γ ⊢ e'◆ <= t)
+                  Γ ⊢ e ~ α ~> e' ⇐ t →
+                  Γ ⊢ e◆ <= t →
+                  Γ ⊢ e'◆ <= t
     -- in the subsumption case, punt to the other theorem
-    actsense2 er1 er2 (AASubsume x x₁ x₂ x₃) wt = ASubsume (actsense1 x er2 x₂ x₁) x₃
+    actsense2 er1 er2 (AASubsume x x₁ x₂ x₃) _ = ASubsume (actsense1 x er2 x₂ x₁) x₃
 
     -- for movement, appeal to the movement-erasure theorem
-    actsense2 er1 er2 (AAMove x) wt = anamovelem er1 er2 x wt
+    actsense2 er1 er2 (AAMove x) wt = anamove-er er1 er2 x wt
 
     -- in the nonzipper cases, we again know where the hole must be, so we
     -- force it and then build the relevant derivation directly.
@@ -102,7 +85,8 @@ module sensible where
     actsense2 EETop (EELam EETop) (AAConLam1 x₁ x₂) wt = ALam x₁ x₂ (ASubsume SEHole TCHole1)
     actsense2 EETop (EENEHole EETop) (AAConNumlit x) wt = ASubsume (SNEHole SNum) TCHole1
     actsense2 EETop EETop (AAFinish x) wt = x
-    actsense2 EETop (EENEHole (EEAscR (ETArrL ETTop))) (AAConLam2 x₂ x₃) (ASubsume SEHole q) = ASubsume (SNEHole (SAsc (ALam x₂ MAArr (ASubsume SEHole TCRefl)))) q
+    actsense2 EETop (EENEHole (EEAscR (ETArrL ETTop))) (AAConLam2 x _) (ASubsume SEHole q) =
+                     ASubsume (SNEHole (SAsc (ALam x MAArr (ASubsume SEHole TCRefl)))) q
 
     -- all subsumptions in the right derivation are bogus, because there's no
     -- rule for lambdas synthetically
