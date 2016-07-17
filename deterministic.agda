@@ -73,22 +73,7 @@ module deterministic where
          (Γ ⊢ e => t' ~ move δ ~> e'' => t'') →
          (e + move δ +>e e') →
          e'' == e'
-  synthmovedet (SAMove EMAscFirstChild) EMAscFirstChild = refl
-  synthmovedet (SAMove EMAscParent1) EMAscParent1 = refl
-  synthmovedet (SAMove EMAscParent2) EMAscParent2 = refl
-  synthmovedet (SAMove EMAscNextSib) EMAscNextSib = refl
-  synthmovedet (SAMove EMLamFirstChild) EMLamFirstChild = refl
-  synthmovedet (SAMove EMLamParent) EMLamParent = refl
-  synthmovedet (SAMove EMPlusFirstChild) EMPlusFirstChild = refl
-  synthmovedet (SAMove EMPlusParent1) EMPlusParent1 = refl
-  synthmovedet (SAMove EMPlusParent2) EMPlusParent2 = refl
-  synthmovedet (SAMove EMPlusNextSib) EMPlusNextSib = refl
-  synthmovedet (SAMove EMApFirstChild) EMApFirstChild = refl
-  synthmovedet (SAMove EMApParent1) EMApParent1 = refl
-  synthmovedet (SAMove EMApParent2) EMApParent2 = refl
-  synthmovedet (SAMove EMApNextSib) EMApNextSib = refl
-  synthmovedet (SAMove EMNEHoleFirstChild) EMNEHoleFirstChild = refl
-  synthmovedet (SAMove EMNEHoleParent) EMNEHoleParent = refl
+  synthmovedet (SAMove m1) m2 = movedet m1 m2
   -- all these cases lead to absurdities based on movement
   synthmovedet (SAZipAsc1 x) EMAscParent1         = abort (lem-nomove-para x)
   synthmovedet (SAZipAsc1 x) EMAscNextSib         = abort (lem-nomove-nsa x)
