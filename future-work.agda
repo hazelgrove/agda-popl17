@@ -57,3 +57,13 @@ module future-work where
   anaconsis (ALam x₁ MAArr wt) TCHole1 = ALam x₁ {!!} (anaconsis wt TCRefl) -- hole doesn't match anything
   anaconsis (ALam x₁ MAArr wt) (TCArr con con₁) with anaconsis wt con₁
   ... | ih = ALam x₁ MAArr {!!} -- the type in the context doesn't change, only in the analysis position. lemma?
+
+
+
+  pseudodet : {Γ : ·ctx} {e e' e'' : ê} {e◆ : ė} {t t' : τ̇} {α : action} →
+              (erase-e e e◆) →
+              (Γ ⊢ e◆ <= t) →
+              (Γ ⊢ e ~ α ~> e' ⇐ t) →
+              (Γ ⊢ e ~ α ~> e'' ⇐ t') →
+              (e' == e'' × t ~ t')
+  pseudodet = {!!}

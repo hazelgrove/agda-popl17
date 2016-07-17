@@ -4,8 +4,7 @@ open import core
 open import judgemental-erase
 
 module deterministic where
-  -- the same action applied to the same type makes the same resultant
-  -- type.
+  -- the same action applied to the same type makes the same type
   actdet1 : {t t' t'' : τ̂} {α : action} →
             (t + α +> t') →
             (t + α +> t'') →
@@ -28,25 +27,6 @@ module deterministic where
   actdet1 (TMZip2 p1) (TMZip2 p2) with actdet1 p1 p2
   ... | refl = refl
 
-  -- non-movement lemmas; theses show up pervasively throughout and save a
-  -- lot of pattern matching.
-  lem-nomove-pars : ∀{Γ e t e' t'} → Γ ⊢ ▹ e ◃ => t ~ move parent ~> e' => t' → ⊥
-  lem-nomove-pars (SAMove ())
-
-  lem-nomove-para : ∀{Γ e t e'} → Γ ⊢ ▹ e ◃ ~ move parent ~> e' ⇐ t → ⊥
-  lem-nomove-para (AASubsume e x x₁ x₂) = lem-nomove-pars x₁
-  lem-nomove-para (AAMove ())
-
-  lem-nomove-nss : ∀{Γ e t e' t'} → Γ ⊢ ▹ e ◃ => t ~ move nextSib ~> e' => t' → ⊥
-  lem-nomove-nss (SAMove ())
-
-  lem-nomove-nsa : ∀{Γ e t e'} → Γ ⊢ ▹ e ◃ ~ move nextSib ~> e' ⇐ t → ⊥
-  lem-nomove-nsa (AASubsume e  x x₁ x₂) = lem-nomove-nss x₁
-  lem-nomove-nsa (AAMove ())
-
-  lem-nomove-part : ∀ {t t'} → ▹ t ◃ + move parent +> t' → ⊥
-  lem-nomove-part ()
-
   -- all expressions only move to one other expression
   movedet : {e e' e'' : ê} {δ : direction} →
             (e + move δ +>e e') →
@@ -68,6 +48,25 @@ module deterministic where
   movedet EMApNextSib EMApNextSib = refl
   movedet EMNEHoleFirstChild EMNEHoleFirstChild = refl
   movedet EMNEHoleParent EMNEHoleParent = refl
+
+  -- non-movement lemmas; theses show up pervasively throughout and save a
+  -- lot of pattern matching.
+  lem-nomove-part : ∀ {t t'} → ▹ t ◃ + move parent +> t' → ⊥
+  lem-nomove-part ()
+
+  lem-nomove-pars : ∀{Γ e t e' t'} → Γ ⊢ ▹ e ◃ => t ~ move parent ~> e' => t' → ⊥
+  lem-nomove-pars (SAMove ())
+
+  lem-nomove-nss : ∀{Γ e t e' t'} → Γ ⊢ ▹ e ◃ => t ~ move nextSib ~> e' => t' → ⊥
+  lem-nomove-nss (SAMove ())
+
+  lem-nomove-para : ∀{Γ e t e'} → Γ ⊢ ▹ e ◃ ~ move parent ~> e' ⇐ t → ⊥
+  lem-nomove-para (AASubsume e x x₁ x₂) = lem-nomove-pars x₁
+  lem-nomove-para (AAMove ())
+
+  lem-nomove-nsa : ∀{Γ e t e'} → Γ ⊢ ▹ e ◃ ~ move nextSib ~> e' ⇐ t → ⊥
+  lem-nomove-nsa (AASubsume e  x x₁ x₂) = lem-nomove-nss x₁
+  lem-nomove-nsa (AAMove ())
 
   -- if a move action on a synthetic action makes a new form, it's unique
   synthmovedet : {Γ : ·ctx} {e e' e'' : ê} {t' t'' : τ̇} {δ : direction} →
@@ -101,22 +100,6 @@ module deterministic where
   synthmovedet (SAZipPlus1 x) EMPlusNextSib       = abort (lem-nomove-nsa x)
   synthmovedet (SAZipPlus2 x) EMPlusParent2       = abort (lem-nomove-para x)
   synthmovedet (SAZipHole _ _ x) EMNEHoleParent   = abort (lem-nomove-pars x)
-
-  -- these are techincal lemmas for the cases of the main theorem
-
-  -- this two lemmas would not be needed except that currently only one of
-  -- the two determinism arguments uses jugemental erasure.
-  -- lem-alam : ∀{Γ x t1 t2 e} →
-  --         Γ ⊢ ·λ x (e ◆e) <= (t1 ==> t2) →
-  --         (Γ ,, (x , t1)) ⊢ e ◆e <= t2
-  -- lem-alam (ASubsume () x₂)
-  -- lem-alam (ALam x MAArr d1) = d1
-
-  -- lem-alamh : ∀{Γ x e} →
-  --         Γ ⊢ ·λ x (e ◆e) <= <||> →
-  --         (Γ ,, (x , <||>)) ⊢ e ◆e <= <||>
-  -- lem-alamh (ASubsume () x₂)
-  -- lem-alamh (ALam x₁ MAHole d) = d
 
   mutual
     -- an action on an expression in a synthetic position produces one
@@ -308,48 +291,7 @@ module deterministic where
               (Γ ⊢ e ~ α ~> e' ⇐ t) →
               (Γ ⊢ e ~ α ~> e'' ⇐ t) →
               (e' == e'')
-    actdet3 EETop (ASubsume (SAsc x) x₁) d1 d2 = {!!}
-    actdet3 (EEAscL er) (ASubsume (SAsc x) x₁) d1 d2 = {!!}
-    actdet3 (EEAscR x) (ASubsume (SAsc x₁) x₂) d1 d2 = {!!}
-
-    actdet3 EETop (ASubsume (SVar x) x₁) (AASubsume EETop (SVar x₂) x₄ x₅) (AASubsume EETop (SVar x₃) x₈ x₉) = {!!}
-    actdet3 EETop (ASubsume (SVar x) x₁) (AASubsume x₂ x₃ x₅ x₄) (AAMove ())
-    actdet3 EETop (ASubsume (SVar x) x₁) (AASubsume x₂ x₃ SADel x₅) AADel = refl
-    actdet3 EETop (ASubsume {Γ = Γ} (SVar x) x₁) (AASubsume EETop (SVar x₂) SAConAsc x₅) AAConAsc with ctxunicity {Γ = Γ} x x₂
-    ... | refl = {!!}
-    actdet3 EETop (ASubsume (SVar x) x₁) (AAMove ()) (AASubsume x₃ x₄ x₅ x₆)
-    actdet3 EETop (ASubsume (SVar x) x₁) (AAMove x₂) (AAMove x₃) = movedet x₂ x₃
-    actdet3 EETop (ASubsume (SVar x) x₁) AADel (AASubsume x₂ x₃ SADel x₅) = refl
-    actdet3 EETop (ASubsume (SVar x) x₁) AADel AADel = refl
-    actdet3 EETop (ASubsume (SVar x) x₁) AAConAsc (AASubsume x₂ x₃ x₄ x₅) = {!!}
-    actdet3 EETop (ASubsume (SVar x) x₁) AAConAsc AAConAsc = refl
-
-    actdet3 EETop (ASubsume (SAp x x₁ x₂) x₃) d1 d2 = {!!}
-    actdet3 (EEApL er) (ASubsume (SAp x x₁ x₂) x₃) d1 d2 = {!!}
-    actdet3 (EEApR er) (ASubsume (SAp x x₁ x₂) x₃) d1 d2 = {!!}
-
-    actdet3 EETop (ASubsume SNum c) (AASubsume EETop SNum x₂ x₃) (AASubsume EETop SNum x₄ x₅) = π1 (actdet2 EETop SNum x₂ x₄)
-    actdet3 EETop (ASubsume SNum c) (AASubsume EETop SNum x₂ x₃) (AAMove ())
-    actdet3 EETop (ASubsume SNum c) (AASubsume EETop SNum SADel x₃) AADel = refl
-    actdet3 EETop (ASubsume SNum TCRefl) (AASubsume EETop SNum SAConAsc TCRefl) AAConAsc = refl
-    actdet3 EETop (ASubsume SNum TCHole2) (AASubsume EETop SNum SAConAsc TCHole2) AAConAsc = {!!}
-    actdet3 EETop (ASubsume SNum c) (AAMove x) (AASubsume EETop SNum (SAMove x₁) x₅) = movedet x x₁
-    actdet3 EETop (ASubsume SNum c) (AAMove x) (AAMove x₁) = movedet x x₁
-    actdet3 EETop (ASubsume SNum c) AADel (AASubsume EETop SNum SADel x₃) = refl
-    actdet3 EETop (ASubsume SNum c) AADel AADel = refl
-    actdet3 EETop (ASubsume SNum TCRefl) AAConAsc (AASubsume EETop SNum SAConAsc TCRefl) = refl
-    actdet3 EETop (ASubsume SNum TCHole2) AAConAsc (AASubsume EETop SNum SAConAsc TCHole2) = {!!}
-    actdet3 EETop (ASubsume SNum c) AAConAsc AAConAsc = refl
-
-    actdet3 EETop (ASubsume (SPlus x x₁) x₂) d1 d2 = {!!}
-    actdet3 (EEPlusL er) (ASubsume (SPlus x x₁) x₂) d1 d2 = {!x₂!}
-    actdet3 (EEPlusR er) (ASubsume (SPlus x x₁) x₂) d1 d2 = {!!}
-
-    actdet3 EETop (ASubsume SEHole x₁) d1 d2 = {!d1 d2!}
-
-    actdet3 EETop (ASubsume (SNEHole x) x₁) d1 d2 = {!!}
-    actdet3 (EENEHole er) (ASubsume (SNEHole x) x₁) d1 d2 = {!!}
-
+    ---- lambda cases first
     -- an erased lambda can't be typechecked with subsume
     actdet3 (EELam _) (ASubsume () _) _ _
 
@@ -377,10 +319,66 @@ module deterministic where
     ... | refl with actdet3 er wt d1 d2
     ... | refl = refl
 
-    pseudodet : {Γ : ·ctx} {e e' e'' : ê} {e◆ : ė} {t t' : τ̇} {α : action} →
-              (erase-e e e◆) →
-              (Γ ⊢ e◆ <= t) →
-              (Γ ⊢ e ~ α ~> e' ⇐ t) →
-              (Γ ⊢ e ~ α ~> e'' ⇐ t') →
-              (e' == e'' × t ~ t')
-    pseudodet = {!!}
+    ---- now the subsumption cases
+      -- subsume / subsume, so pin things down then recurr
+    actdet3 er (ASubsume a b) (AASubsume x x₁ x₂ x₃) (AASubsume x₄ x₅ x₆ x₇)
+      with erasee-det x₄ x
+    ... | refl with erasee-det er x₄
+    ... | refl with synthunicity x₅ x₁
+    ... | refl = π1 (actdet2 x x₅ x₂ x₆)
+
+    -- (these are all repeated below, irritatingly.)
+    actdet3 er (ASubsume a b) (AASubsume x x₁ x₃ x₂) (AAMove x₄) = synthmovedet x₃ x₄
+    actdet3 EETop (ASubsume a b) (AASubsume EETop x SADel x₁) AADel = refl
+    actdet3 EETop (ASubsume a b) (AASubsume EETop x SAConAsc x₁) AAConAsc
+      with synthunicity a x
+    ... | refl = {!!} -- unprovable
+    actdet3 EETop (ASubsume SEHole b) (AASubsume EETop SEHole (SAConVar {Γ = Γ} p) x₂) (AAConVar x₅ p₁)
+      with ctxunicity {Γ = Γ} p p₁
+    ... | refl = abort (x₅ x₂)
+    actdet3 EETop (ASubsume SEHole b) (AASubsume EETop SEHole (SAConLam x₄) x₂) (AAConLam1 x₅ m) = {!!} -- unprovable
+    actdet3 EETop (ASubsume a b) (AASubsume EETop x₁ (SAConLam x₃) x₂) (AAConLam2 x₅ x₆) = abort (x₆ x₂)
+    actdet3 EETop (ASubsume a b) (AASubsume EETop x₁ SAConNumlit x₂) (AAConNumlit x₄) = abort (x₄ x₂)
+    actdet3 EETop (ASubsume a b) (AASubsume EETop x (SAFinish x₂) x₁) (AAFinish x₄) = refl
+
+      -- subsume / move
+    actdet3 er (ASubsume a b) (AAMove x) (AASubsume x₁ x₂ x₃ x₄) = ! (synthmovedet x₃ x)
+    actdet3 er (ASubsume a b) (AAMove x) (AAMove x₁) = movedet x x₁
+
+      -- subsume / del
+    actdet3 er (ASubsume a b) AADel (AASubsume x x₁ SADel x₃) = refl
+    actdet3 er (ASubsume a b) AADel AADel = refl
+
+      -- subsume / conasc
+    actdet3 EETop (ASubsume a b) AAConAsc (AASubsume EETop x₁ SAConAsc x₃)
+      with synthunicity a x₁
+    ... | refl = {!!} -- unprovable
+    actdet3 er (ASubsume a b) AAConAsc AAConAsc = refl
+
+      -- subsume / convar
+    actdet3 EETop (ASubsume SEHole b) (AAConVar x₁ p) (AASubsume EETop SEHole (SAConVar {Γ = Γ} p₁) x₅)
+      with ctxunicity {Γ = Γ} p p₁
+    ... | refl = abort (x₁ x₅)
+    actdet3 er (ASubsume a b) (AAConVar x₁ p) (AAConVar x₂ p₁) = refl
+
+      -- subsume / conlam1
+    actdet3 EETop (ASubsume SEHole b) (AAConLam1 x₁ x₂) (AASubsume EETop SEHole (SAConLam x₃) x₆) = {!!} -- unprovable
+    actdet3 er (ASubsume a b) (AAConLam1 x₁ MAHole) (AAConLam2 x₃ x₄) = abort (x₄ TCHole2)
+    actdet3 er (ASubsume a b) (AAConLam1 x₁ MAArr) (AAConLam2 x₃ x₄) = abort (x₄ (TCArr TCHole1 TCHole1))
+    actdet3 er (ASubsume a b) (AAConLam1 x₁ x₂) (AAConLam1 x₃ x₄) = refl
+
+      -- subsume / conlam2
+    actdet3 EETop (ASubsume SEHole TCRefl) (AAConLam2 x₁ x₂) (AASubsume EETop SEHole x₅ x₆) = abort (x₂ TCHole2)
+    actdet3 EETop (ASubsume SEHole TCHole1) (AAConLam2 x₁ x₂) (AASubsume EETop SEHole (SAConLam x₃) x₆) = abort (x₂ x₆)
+    actdet3 EETop (ASubsume SEHole TCHole2) (AAConLam2 x₁ x₂) (AASubsume EETop SEHole x₅ x₆) = abort (x₂ TCHole2)
+    actdet3 EETop (ASubsume a b) (AAConLam2 x₂ x₁) (AAConLam1 x₃ MAHole) = abort (x₁ TCHole2)
+    actdet3 EETop (ASubsume a b) (AAConLam2 x₂ x₁) (AAConLam1 x₃ MAArr) = abort (x₁ (TCArr TCHole1 TCHole1))
+    actdet3 er (ASubsume a b) (AAConLam2 x₂ x) (AAConLam2 x₃ x₄) = refl
+
+      -- subsume / numlit
+    actdet3 er (ASubsume a b) (AAConNumlit x) (AASubsume x₁ x₂ SAConNumlit x₄) = abort (x x₄)
+    actdet3 er (ASubsume a b) (AAConNumlit x) (AAConNumlit x₁) = refl
+
+      -- subsume / finish
+    actdet3 er (ASubsume a b) (AAFinish x) (AASubsume x₁ x₂ (SAFinish x₃) x₄) = refl
+    actdet3 er (ASubsume a b) (AAFinish x) (AAFinish x₁) = refl
