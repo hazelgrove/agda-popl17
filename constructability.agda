@@ -114,9 +114,9 @@ module constructability where
                        Γ ⊢ e => t
                      → buildexp ▹ e ◃ L
                      → runsynth Γ ▹ <||> ◃ <||> L ▹ e ◃ t
-    constructsynth (SAsc x) (BuildAsc b x₁) with constructtype x₁ | constructana x b
+    constructsynth (SAsc x) (BuildAsc {l2 = l2} b x₁) with constructtype x₁ | constructana x b
     ... | ih1 | ih2 = DoSynth SAConAsc
-                       (runsynth++ (lem-tscong ih1)
+                       (runsynth++ {L1 = l2} (lem-tscong ETTop ETTop  ih1)
                          (DoSynth (SAMove EMAscParent2)
                            (DoSynth (SAMove EMAscFirstChild)
                              (runsynth++ (lem-anasynthasc ih2)
@@ -136,9 +136,10 @@ module constructability where
                                (runsynth++ (synth-ana-plus1-cong ih1)
                                  (DoSynth (SAMove EMPlusParent1) DoRefl)))))
     constructsynth SEHole BuildEHole = DoSynth SADel DoRefl
-    constructsynth (SNEHole wt) (BuildNEHole b) = runsynth++ (constructsynth wt b)
-                                                    (DoSynth SAConNEHole
-                                                      (DoSynth (SAMove EMNEHoleParent) DoRefl))
+    constructsynth (SNEHole wt) (BuildNEHole b) =
+                            runsynth++ (constructsynth wt b)
+                                 (DoSynth SAConNEHole
+                                    (DoSynth (SAMove EMNEHoleParent) DoRefl))
 
     constructana : {Γ : ·ctx} {e : ė} {t : τ̇} {L : List action} →
                        Γ ⊢ e <= t
@@ -150,7 +151,6 @@ module constructability where
     ... | ih = DoAna (AAConLam1 m x₁)
                 (runana++ (ana-lam-cong m x₁ ih)
                   (DoAna (AAMove EMLamParent) DoRefl))
-
 
   -- tie together the mode theorem and the above to demonstrate that for
   -- any type there is a spcific list of actions that builds it.

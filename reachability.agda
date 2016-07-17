@@ -278,7 +278,7 @@ module reachability where
   movements-synth ._ (AM:: p) (DoSynth x x₁) with movements-synth _ p x₁ | x
   ... | refl | SAMove x₂ = refl
   ... | refl | SAZipAsc1 x₂ = refl
-  ... | refl | SAZipAsc2 x₂ x₃ x₄ x₅ = {!x₂!}
+  ... | refl | SAZipAsc2 x₂ x₃ x₄ x₅ = eraset-det (lem-erase-step x₄ x₂) x₃
   ... | refl | SAZipApArr x₂ x₃ x₄ qq x₅ = {!!}
   ... | refl | SAZipApAna x₂ x₃ x₄ = refl
   ... | refl | SAZipPlus1 x₂ = refl

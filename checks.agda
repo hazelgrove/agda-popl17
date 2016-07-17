@@ -161,6 +161,23 @@ module checks where
   lem-anasynthasc DoRefl = DoRefl
   lem-anasynthasc (DoAna a r) = DoSynth (SAZipAsc1 a) (lem-anasynthasc r)
 
+  -- this one is very specific to the particular proof of constructability.
+  lem-tscong : ∀{Γ t L t' t◆ t'◆} →
+               erase-t t t◆ →
+               erase-t t' t'◆ →
+               runtype t L t' →
+               runsynth Γ (<||> ·:₂ t) t◆ L (<||> ·:₂ t') t'◆
+  lem-tscong {Γ} er er' rt with erase-t◆ er | erase-t◆ er'
+  ... | refl | refl = lem-tscong' {Γ = Γ} rt
+   where
+     lem-tscong' : ∀{t L t' Γ } →
+               runtype t L t' →
+               runsynth Γ (<||> ·:₂ t) (t ◆t) L (<||> ·:₂ t') (t' ◆t)
+     lem-tscong' DoRefl = DoRefl
+     lem-tscong' (DoType x rt) = DoSynth
+                      (SAZipAsc2 x (◆erase-t _ _ refl) (◆erase-t _ _ refl)
+                                (ASubsume SEHole TCHole1)) (lem-tscong' rt)
+
   ana-lam-cong : ∀ {Γ x e t t1 t2 L e'} →
                    x # Γ →
                    t ▸arr (t1 ==> t2) →
