@@ -51,7 +51,7 @@ module reachability where
                   erase-t t ter →
                   runtype t L t' →
                   runsynth Γ (e ·:₂ t) ter L (e ·:₂ t') ter
-  runsynth-type = {!!}
+  runsynth-type wt er rt = {!!}
 
   synth-ap1-cong : ∀{Γ e t t1 t2 L e' f er} →
                        erase-e e er →
@@ -60,7 +60,7 @@ module reachability where
                        t ▸arr (t2 ==> t1) →
                        runsynth Γ e t L e' t →
                        runsynth Γ (e ∘₁ f) t1 L (e' ∘₁ f) t1
-  synth-ap1-cong = {!!}
+  synth-ap1-cong er wt1 wt2 m rs = {!!}
 
   mutual
     reachup-synth : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
@@ -82,14 +82,15 @@ module reachability where
     reachup-synth (EEPlusR er) (SPlus x x₁) with reachup-ana er x₁
     ... | ih = runsynth++ (ziplem-plus2 ih) (DoSynth (SAMove EMPlusParent2) DoRefl)
     reachup-synth (EENEHole er) (SNEHole wt) with reachup-synth er wt
-    ... | ih = runsynth++ (ziplem-nehole-a {!!} ih) (DoSynth (SAMove EMNEHoleParent) DoRefl)
+    ... | ih = runsynth++ (ziplem-nehole-a (lem-erase-synth er wt) ih) (DoSynth (SAMove EMNEHoleParent) DoRefl)
 
     reachup-ana : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
                       erase-e e e' →
                       Γ ⊢ e' <= t →
                       runana Γ e (moveup-e e) ▹ e' ◃ t
     reachup-ana EETop _ = DoRefl
-    reachup-ana er (ASubsume x x₁) = {!!}
+    reachup-ana er (ASubsume x x₁) with reachup-synth er x
+    ... | ih = {!!}
     reachup-ana (EELam er) (ALam x₁ x₂ wt) with reachup-ana er wt
     ... | ih = runana++ (ziplem-lam x₁ x₂ ih) (DoAna (AAMove EMLamParent) DoRefl)
 
@@ -139,14 +140,15 @@ module reachability where
     reachdown-synth (EEPlusR p) (SPlus x x₁) with reachdown-ana p x₁
     ... | ih = DoSynth (SAMove EMPlusFirstChild) (DoSynth (SAMove EMPlusNextSib) (ziplem-plus2 ih))
     reachdown-synth (EENEHole p) (SNEHole wt) with reachdown-synth p wt
-    ... | ih = DoSynth (SAMove EMNEHoleFirstChild) (ziplem-nehole-a {!!} ih)
+    ... | ih = DoSynth (SAMove EMNEHoleFirstChild) (ziplem-nehole-a wt ih)
 
     reachdown-ana : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
                       (p : erase-e e e') →
                       (wt : Γ ⊢ e' <= t)
                      → runana Γ ▹ e' ◃ (movedown-e e' e p) e  t
     reachdown-ana EETop _ = DoRefl
-    reachdown-ana er (ASubsume x x₁) = {!!}
+    reachdown-ana er (ASubsume x x₁) with reachdown-synth er x
+    ... | ih = {!ih!}
     reachdown-ana (EELam p) (ALam m x₁ wt) with reachdown-ana p wt
     ... | ih = DoAna (AAMove EMLamFirstChild) (ziplem-lam m x₁ ih)
 

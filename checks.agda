@@ -84,12 +84,16 @@ module checks where
   -- therefore there are enough premises to each lemma to supply to the
   -- action semantics rules.
   --
-  -- algorithmically, these amount to a checksum on the zipper actions; by
-  -- iterating the action semantics, we need to show that they interplay in
-  -- the right way, which is congruence. the only check the zipper actions
-  -- they happen to be include, however, which is driven by the particular
-  -- lists we use in the proof of contructability.
+  -- therefore, these amount to a checksum on the zipper actions under the
+  -- lifing of the action semantics to the list monoid.
+  --
+  -- they only check the zipper actions they happen to be include, however,
+  -- which is driven by the particular lists we use in the proofs of
+  -- contructability and reachability, which may or may not be all of
+  -- them. additionally, the lemmas given here are what is needed for these
+  -- proofs, not anything that's more general.
 
+    -- type zippers
   ziplem-tm1 : ∀ {t1 t1' t2 L } →
             runtype t1' L t1 →
             runtype (t1' ==>₁ t2) L (t1 ==>₁ t2)
@@ -102,13 +106,15 @@ module checks where
   ziplem-tm2 DoRefl = DoRefl
   ziplem-tm2 (DoType x L') = DoType (TMZip2 x) (ziplem-tm2 L')
 
+
+    -- expression zippers
   ziplem-asc1 : ∀{Γ t L e e'} →
         runana Γ e L e' t →
         runsynth Γ (e ·:₁ t) t L (e' ·:₁ t) t
   ziplem-asc1 DoRefl = DoRefl
   ziplem-asc1 (DoAna a r) = DoSynth (SAZipAsc1 a) (ziplem-asc1 r)
 
-  -- this one is very specific to the particular proof of constructability.
+  -- todo: why is this easier with a weird mix of erasures?
   ziplem-asc2 : ∀{Γ t L t' t◆ t'◆} →
                erase-t t t◆ →
                erase-t t' t'◆ →
@@ -153,6 +159,7 @@ module checks where
   ziplem-ap2 wt m DoRefl = DoRefl
   ziplem-ap2 wt m (DoAna x d) = DoSynth (SAZipApAna m wt x) (ziplem-ap2 wt m d)
 
+  -- todo: why is this easier with functional erasure?
   ziplem-nehole-a : ∀{Γ e e' L t t'} →
                 (Γ ⊢ e ◆e => t) →
                 runsynth Γ e t L e' t' →
@@ -161,17 +168,20 @@ module checks where
   ziplem-nehole-a wt (DoSynth {e = e} x d) =
     DoSynth (SAZipHole (rel◆ e) wt x) (ziplem-nehole-a (actsense1 (rel◆ e) (rel◆ _) x wt) d)
 
+  -- todo: why is this easier with functional erasure?
   ziplem-nehole-b : ∀{Γ e e' L t t'} →
                 (Γ ⊢ e ◆e => t) →
                 runsynth Γ e t L e' t' →
                 runana Γ <| e |> L <| e' |> t'
   ziplem-nehole-b wt DoRefl = DoRefl
-  ziplem-nehole-b wt (DoSynth {e = e} x d) = DoAna (AASubsume {e◆ = <| e ◆e |>} (lemX (rel◆ _)) (SNEHole wt) (SAZipHole (rel◆ _) wt x) TCHole1)
-                                  (ziplem-nehole-b (actsense1 (rel◆ _) (rel◆ _) x wt) d)
+  ziplem-nehole-b wt (DoSynth {e = e} x d) =
+                     DoAna (AASubsume {e◆ = <| e ◆e |>}
+                          (erase-in-hole (rel◆ _)) (SNEHole wt) (SAZipHole (rel◆ _) wt x) TCHole1)
+                               (ziplem-nehole-b (actsense1 (rel◆ _) (rel◆ _) x wt) d)
    where
-     lemX : ∀ {e e'} → erase-e e e' → erase-e <| e |> <| e' |>
-     lemX (EENEHole er) = EENEHole (lemX er)
-     lemX x = EENEHole x
+     erase-in-hole : ∀ {e e'} → erase-e e e' → erase-e <| e |> <| e' |>
+     erase-in-hole (EENEHole er) = EENEHole (erase-in-hole er)
+     erase-in-hole x = EENEHole x
 
 
   -- runsynth-unicity : ∀{Γ t0 t' e L e' e'' t''} →
