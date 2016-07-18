@@ -2,7 +2,7 @@ open import Nat
 open import Prelude
 open import core
 open import judgemental-erase
-open import checks
+open import moveerase
 
 module sensible where
   mutual
