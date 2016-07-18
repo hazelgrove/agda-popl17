@@ -134,12 +134,12 @@ module core where
 
   ----- a couple of exmaples to demonstrate how the encoding above works
 
-  -- the function (λx. x + 0) where x is named "0".
+  -- the function (λx. x + 1) where x is named "0".
   add0 : ė
-  add0 = ·λ 0 (X 0 ·+ N 0)
+  add0 = ·λ 0 (X 0 ·+ N 1)
 
   -- this is the derivation that fn has type num ==> num
-  ex1 : ∅ ⊢ ·λ 0 (X 0 ·+ N 0) <= (num ==> num)
+  ex1 : ∅ ⊢ add0 <= (num ==> num)
   ex1 = ALam refl MAArr (ASubsume
                            (SPlus (ASubsume (SVar refl) TCRefl) (ASubsume SNum TCRefl))
                            TCRefl)
