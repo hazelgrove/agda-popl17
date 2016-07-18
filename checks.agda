@@ -3,60 +3,9 @@ open import Prelude
 open import List
 open import core
 open import judgemental-erase
+open import sensible
 
 module checks where
-  -- theorem: movement doesn't change the term other than moving the focus
-  -- around.
-  moveerase : {e e' : ê} {δ : direction} →
-            (e + move δ +>e e') →
-            (e ◆e) == (e' ◆e)
-  moveerase EMAscFirstChild = refl
-  moveerase EMAscParent1 = refl
-  moveerase EMAscParent2 = refl
-  moveerase EMAscNextSib = refl
-  moveerase EMLamFirstChild = refl
-  moveerase EMLamParent = refl
-  moveerase EMPlusFirstChild = refl
-  moveerase EMPlusParent1 = refl
-  moveerase EMPlusParent2 = refl
-  moveerase EMPlusNextSib = refl
-  moveerase EMApFirstChild = refl
-  moveerase EMApParent1 = refl
-  moveerase EMApParent2 = refl
-  moveerase EMApNextSib = refl
-  moveerase EMNEHoleFirstChild = refl
-  moveerase EMNEHoleParent = refl
-
-  -- this form is essentially the same as above, but for judgemental erasure
-  moveerase' : {e e' : ê} {e◆ : ė} {δ : direction} →
-            erase-e e e◆ →
-            (e + move δ +>e e') →
-            erase-e e' e◆
-  moveerase' er1 m with erase-e◆ er1
-  ... | refl = ◆erase-e _ _ (! (moveerase m))
-
-  -- as a consequence, movements preserve types upto erase
-  synthmove-er : {Γ : ·ctx} {e e' : ê} {e◆ e'◆ : ė} {t : τ̇} {δ : direction} →
-                 erase-e e e◆  →
-                 erase-e e' e'◆ →
-                 (e + move δ +>e e') →
-                 (Γ ⊢ e◆ => t) →
-                 (Γ ⊢ e'◆ => t)
-  synthmove-er er1 er2 m wt with erasee-det (moveerase' er1 m) er2
-  ... | refl = wt
-
-  anamove-er : {Γ : ·ctx} {δ : direction} {e e' : ê} {e◆ e'◆ : ė} {t : τ̇} →
-            erase-e e e◆ →
-            erase-e e' e'◆ →
-            (p : e + move δ +>e e') →
-            (Γ ⊢ e◆ <= t) →
-            (Γ ⊢ e'◆ <= t)
-  anamove-er er1 er2 m wt with erasee-det (moveerase' er1 m) er2
-  ... | refl = wt
-
-
-
-
   -- these three judmgements lift the action semantics judgements to relate
   -- an expression and a list of pair-wise composable actions to the
   -- expression that's produced by tracing through the action semantics for
@@ -205,3 +154,11 @@ module checks where
                        runsynth Γ (f ∘₂ e) tf L (f ∘₂ e') tf
   synth-ana-ap2-cong wt m DoRefl = DoRefl
   synth-ana-ap2-cong wt m (DoAna x d) = DoSynth (SAZipApAna m wt x) (synth-ana-ap2-cong wt m d)
+
+  nehole-cong : ∀{Γ e e' L t t'} →
+                (Γ ⊢ e ◆e => t) →
+                runsynth Γ e t L e' t' →
+                runsynth Γ <| e |> <||> L <| e' |> <||>
+  nehole-cong wt DoRefl = DoRefl
+  nehole-cong wt (DoSynth {e = e} x d) =
+    DoSynth (SAZipHole (rel◆ e) wt x) (nehole-cong (actsense1 (rel◆ e) (rel◆ _) x wt) d)
