@@ -75,7 +75,7 @@ module constructability where
     construct-ana (ASubsume {e = e} x x₁) with construct-synth x
     ... | (l , ih) = construct nehole :: l ++ (move parent :: finish :: []) ,
                      DoAna (AASubsume EETop SEHole SAConNEHole TCHole1)
-                      (runana++ {L1 = l} {e' = <| ▹ e ◃ |>} {!!}
+                      (runana++ {L1 = l} {e' = <| ▹ e ◃ |>} (ziplem-nehole {!!} x x₁ ih)
                         (DoAna (AAMove EMNEHoleParent)
                           (DoAna (AAFinish (ASubsume x x₁)) DoRefl)))
 
@@ -84,3 +84,20 @@ module constructability where
                      , DoAna (AAConLam1 a m)
                          (runana++ (ana-lam-cong a m ih)
                           (DoAna (AAMove EMLamParent) DoRefl))
+
+    -- ziplem-nehole : ∀{Γ t t' l e} →
+    --                 t ~ t' →
+    --                 runsynth Γ ▹ <||> ◃ <||> l ▹ e ◃ t' →
+    --                 runana Γ <| ▹ <||> ◃ |> l <| ▹ e ◃ |> t
+
+
+    ziplem-nehole : ∀{Γ t t' l e e' e◆ tx} →
+                    erase-e e e◆ →
+                    Γ ⊢ e◆ => t' →
+                    t ~ t' →
+                    runsynth Γ e tx l e' t' →
+                    runana Γ <| e |> l <| e' |> t
+    ziplem-nehole er wt c DoRefl = DoRefl
+    ziplem-nehole er wt c (DoSynth x s) =
+                  DoAna (AASubsume {!!} {!!} (SAZipHole er {!!} x) TCHole1)
+                        {!!}
