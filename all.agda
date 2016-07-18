@@ -12,6 +12,7 @@ open import core
 open import checks
 open import judgemental-erase
 open import judgemental-inconsistency
+open import moveerase
 --open import structural
 
 -- first wave theorems
