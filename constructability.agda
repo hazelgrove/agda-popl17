@@ -72,12 +72,13 @@ module constructability where
     construct-ana : {Γ : ·ctx} {t : τ̇} {e : ė} → (Γ ⊢ e <= t) →
                                 Σ[ L ∈ List action ]
                                    runana Γ ▹ <||> ◃ L ▹ e ◃ t
-    construct-ana (ASubsume {e = e} x x₁) with construct-synth x
+    construct-ana (ASubsume x c) with construct-synth x
     ... | (l , ih) = construct nehole :: l ++ (move parent :: finish :: []) ,
                      DoAna (AASubsume EETop SEHole SAConNEHole TCHole1)
-                      (runana++ {L1 = l} {e' = <| ▹ e ◃ |>} (ziplem-nehole {!!} x x₁ ih)
+                      (runana++ {L1 = l} {e' = <| ▹ _ ◃ |>}
+                                (nehole-cong' SEHole {!!})
                         (DoAna (AAMove EMNEHoleParent)
-                          (DoAna (AAFinish (ASubsume x x₁)) DoRefl)))
+                          (DoAna (AAFinish (ASubsume x c)) DoRefl)))
 
     construct-ana (ALam a m e) with construct-ana e
     ... | (l , ih) = construct (lam _) :: (l ++ [ move parent ])
@@ -85,19 +86,21 @@ module constructability where
                          (runana++ (ana-lam-cong a m ih)
                           (DoAna (AAMove EMLamParent) DoRefl))
 
+    -- (ziplem-nehole {!!} x x₁ ih)
+
     -- ziplem-nehole : ∀{Γ t t' l e} →
     --                 t ~ t' →
     --                 runsynth Γ ▹ <||> ◃ <||> l ▹ e ◃ t' →
     --                 runana Γ <| ▹ <||> ◃ |> l <| ▹ e ◃ |> t
 
 
-    ziplem-nehole : ∀{Γ t t' l e e' e◆ tx} →
-                    erase-e e e◆ →
-                    Γ ⊢ e◆ => t' →
-                    t ~ t' →
-                    runsynth Γ e tx l e' t' →
-                    runana Γ <| e |> l <| e' |> t
-    ziplem-nehole er wt c DoRefl = DoRefl
-    ziplem-nehole er wt c (DoSynth x s) =
-                  DoAna (AASubsume {!!} {!!} (SAZipHole er {!!} x) TCHole1)
-                        {!!}
+    -- ziplem-nehole : ∀{Γ t t' l e e' e◆ tx} →
+    --                 erase-e e e◆ →
+    --                 Γ ⊢ e◆ => t' →
+    --                 t ~ t' →
+    --                 runsynth Γ e tx l e' t' →
+    --                 runana Γ <| e |> l <| e' |> t
+    -- ziplem-nehole er wt c DoRefl = DoRefl
+    -- ziplem-nehole er wt c (DoSynth x s) =
+    --               DoAna (AASubsume {!!} {!!} (SAZipHole er {!!} x) TCHole1)
+    --                     {!!}

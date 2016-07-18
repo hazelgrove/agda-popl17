@@ -4,6 +4,7 @@ open import List
 open import core
 open import judgemental-erase
 open import checks
+open import moveerase
 
 module reachability where
   -- algorithmically, we break reachability into two halves: first you
@@ -45,25 +46,12 @@ module reachability where
   reachup-type (ETArrR tr) with reachup-type tr
   ... | ih = runtype++ (runtype-cong2 ih) (DoType TMParent2 DoRefl)
 
-  lem-erase-step : ∀{ t t' t'' δ} →
-                 erase-t t t' →
-                 t + move δ +> t'' →
-                 erase-t t'' t'
-  lem-erase-step ETTop TMFirstChild = ETArrL ETTop
-  lem-erase-step (ETArrL ETTop) TMParent1 = ETTop
-  lem-erase-step (ETArrL ETTop) TMNextSib = ETArrR ETTop
-  lem-erase-step (ETArrL er) (TMZip1 m) = ETArrL (lem-erase-step er m)
-  lem-erase-step (ETArrR ETTop) TMParent2 = ETTop
-  lem-erase-step (ETArrR er) (TMZip2 m) = ETArrR (lem-erase-step er m)
-
   runsynth-type : ∀{t L t' Γ e ter} →
                   Γ ⊢ e <= ter →
                   erase-t t ter →
                   runtype t L t' →
                   runsynth Γ (e ·:₂ t) ter L (e ·:₂ t') ter
-  runsynth-type _ _ DoRefl = DoRefl
-  runsynth-type wt er (DoType x d) with lem-erase-step er {!!}
-  ... | er' = DoSynth (SAZipAsc2 x er' er wt) (runsynth-type wt er' d)
+  runsynth-type = {!!}
 
   synth-ap1-cong : ∀{Γ e t t1 t2 L e' f er} →
                        erase-e e er →
@@ -72,17 +60,7 @@ module reachability where
                        t ▸arr (t2 ==> t1) →
                        runsynth Γ e t L e' t →
                        runsynth Γ (e ∘₁ f) t1 L (e' ∘₁ f) t1
-  synth-ap1-cong _ _ _ _ DoRefl = DoRefl
-  synth-ap1-cong er s a m (DoSynth x d) =
-                 DoSynth (SAZipApArr m er s {!x!} a)
-                   {!!}
-
-  nehole-cong : ∀{Γ e e' L t} →
-                runsynth Γ e t L e' t →
-                runsynth Γ <| e |> <||> L <| e' |> <||>
-  nehole-cong DoRefl = DoRefl
-  nehole-cong (DoSynth x d) = DoSynth (SAZipHole {!!} {!!} x) (nehole-cong {!!})
-
+  synth-ap1-cong = {!!}
 
   mutual
     reachup-synth : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
@@ -104,7 +82,7 @@ module reachability where
     reachup-synth (EEPlusR er) (SPlus x x₁) with reachup-ana er x₁
     ... | ih = runsynth++ (synth-ana-plus2-cong ih) (DoSynth (SAMove EMPlusParent2) DoRefl)
     reachup-synth (EENEHole er) (SNEHole wt) with reachup-synth er wt
-    ... | ih = runsynth++ (nehole-cong ih) (DoSynth (SAMove EMNEHoleParent) DoRefl)
+    ... | ih = runsynth++ (nehole-cong {!!} ih) (DoSynth (SAMove EMNEHoleParent) DoRefl)
 
     reachup-ana : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
                       erase-e e e' →
@@ -161,7 +139,7 @@ module reachability where
     reachdown-synth (EEPlusR p) (SPlus x x₁) with reachdown-ana p x₁
     ... | ih = DoSynth (SAMove EMPlusFirstChild) (DoSynth (SAMove EMPlusNextSib) (synth-ana-plus2-cong ih))
     reachdown-synth (EENEHole p) (SNEHole wt) with reachdown-synth p wt
-    ... | ih = DoSynth (SAMove EMNEHoleFirstChild) (nehole-cong ih)
+    ... | ih = DoSynth (SAMove EMNEHoleFirstChild) (nehole-cong {!!} ih)
 
     reachdown-ana : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
                       (p : erase-e e e') →

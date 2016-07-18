@@ -162,3 +162,26 @@ module checks where
   nehole-cong wt DoRefl = DoRefl
   nehole-cong wt (DoSynth {e = e} x d) =
     DoSynth (SAZipHole (rel◆ e) wt x) (nehole-cong (actsense1 (rel◆ e) (rel◆ _) x wt) d)
+
+
+  lemX : ∀ {e e'} → erase-e e e' → erase-e <| e |> <| e' |>
+  lemX (EENEHole er) = EENEHole (lemX er)
+  lemX x = EENEHole x
+
+  nehole-cong' : ∀{Γ e e' L t t'} →
+                (Γ ⊢ e ◆e => t) →
+                runsynth Γ e t L e' t' →
+                runana Γ <| e |> L <| e' |> t'
+  nehole-cong' wt DoRefl = DoRefl
+  nehole-cong' wt (DoSynth {e = e} x d) = DoAna (AASubsume {e◆ = <| e ◆e |>} (lemX (rel◆ _)) (SNEHole wt) (SAZipHole (rel◆ _) wt x) TCHole1)
+                                  (nehole-cong' (actsense1 (rel◆ _) (rel◆ _) x wt) d)
+
+  -- runsynth-unicity : ∀{Γ t0 t' e L e' e'' t''} →
+  --     runsynth Γ e t0 L e' t' →
+  --     runsynth Γ e t0 L e'' t'' →
+  --     t' == t''
+  -- runsynth-unicity DoRefl DoRefl = refl
+  -- runsynth-unicity (DoSynth x rs) (DoSynth x' rs')
+  --   with actsense1 {!!} {!!} x {!!} | actsense1 {!!} {!!} x' {!!}
+  -- ... | wt1 | wt2 with synthunicity wt1 wt2
+  -- ... | refl = {!runsynth-unicity rs !}
