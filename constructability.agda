@@ -24,7 +24,7 @@ module constructability where
   ... | (l1 , ih1) | (l2 , ih2)= l1 ++ construct arrow :: l2 ++ [ move parent ] ,
                                  runtype++ ih1
                                    (DoType TMConArrow
-                                     (runtype++ (runtype-cong2 ih2)
+                                     (runtype++ (ziplem-tm2 ih2)
                                        (DoType TMParent2 DoRefl)))
 
   mutual
@@ -41,26 +41,26 @@ module constructability where
     construct-synth {t = t} (SAsc x) with construct-type t | construct-ana x
     ... | (l1 , ih1) | (l2 , ih2) = construct asc :: (l1 ++ move parent :: move firstChild :: (l2 ++ [ move parent ])) ,
                                     DoSynth SAConAsc
-                                        (runsynth++ (lem-tscong ETTop ETTop ih1)
+                                        (runsynth++ (ziplem-asc2 ETTop ETTop ih1)
                                          (DoSynth (SAMove EMAscParent2)
                                           (DoSynth (SAMove EMAscFirstChild)
-                                           (runsynth++ (lem-anasynthasc ih2)
+                                           (runsynth++ (ziplem-asc1 ih2)
                                             (DoSynth (SAMove EMAscParent1) DoRefl)))))
 
     construct-synth (SAp e1 m e2) with construct-synth e1 | construct-ana e2
     ... | (l1 , ih1) | (l2 , ih2) = l1 ++ construct ap :: (l2 ++ [ move parent ]) ,
                                     runsynth++ ih1
                                         (DoSynth (SAConApArr m)
-                                         (runsynth++ (synth-ana-ap2-cong e1 m ih2)
+                                         (runsynth++ (ziplem-ap2 e1 m ih2)
                                           (DoSynth (SAMove EMApParent2) DoRefl)))
 
     construct-synth (SPlus e1 e2 ) with construct-ana e1 | construct-ana e2
     ... | (l1 , ih1) | (l2 , ih2) = construct plus :: (l2 ++ move parent :: move firstChild :: (l1 ++ [ move parent ])) ,
                                     DoSynth (SAConPlus1 TCHole2)
-                                        (runsynth++ (synth-ana-plus2-cong ih2)
+                                        (runsynth++ (ziplem-plus2 ih2)
                                          (DoSynth (SAMove EMPlusParent2)
                                           (DoSynth (SAMove EMPlusFirstChild)
-                                           (runsynth++ (synth-ana-plus1-cong ih1)
+                                           (runsynth++ (ziplem-plus1 ih1)
                                             (DoSynth (SAMove EMPlusParent1) DoRefl)))))
 
     construct-synth (SNEHole wt) with construct-synth wt
@@ -76,14 +76,14 @@ module constructability where
     ... | (l , ih) = construct nehole :: l ++ (move parent :: finish :: []) ,
                      DoAna (AASubsume EETop SEHole SAConNEHole TCHole1)
                       (runana++ {L1 = l} {e' = <| ▹ _ ◃ |>}
-                                (nehole-cong' SEHole {!!})
+                                (ziplem-nehole-b SEHole {!!})
                         (DoAna (AAMove EMNEHoleParent)
                           (DoAna (AAFinish (ASubsume x c)) DoRefl)))
 
     construct-ana (ALam a m e) with construct-ana e
     ... | (l , ih) = construct (lam _) :: (l ++ [ move parent ])
                      , DoAna (AAConLam1 a m)
-                         (runana++ (ana-lam-cong a m ih)
+                         (runana++ (ziplem-lam a m ih)
                           (DoAna (AAMove EMLamParent) DoRefl))
 
     -- (ziplem-nehole {!!} x x₁ ih)

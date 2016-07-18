@@ -42,9 +42,9 @@ module reachability where
               runtype t (moveup-t t) (▹ t' ◃)
   reachup-type ETTop = DoRefl
   reachup-type (ETArrL tr) with reachup-type tr
-  ... | ih = runtype++ (runtype-cong1 ih) (DoType TMParent1 DoRefl)
+  ... | ih = runtype++ (ziplem-tm1 ih) (DoType TMParent1 DoRefl)
   reachup-type (ETArrR tr) with reachup-type tr
-  ... | ih = runtype++ (runtype-cong2 ih) (DoType TMParent2 DoRefl)
+  ... | ih = runtype++ (ziplem-tm2 ih) (DoType TMParent2 DoRefl)
 
   runsynth-type : ∀{t L t' Γ e ter} →
                   Γ ⊢ e <= ter →
@@ -70,19 +70,19 @@ module reachability where
     reachup-synth (EELam er) ()
     reachup-synth EETop _ = DoRefl
     reachup-synth (EEAscL er) (SAsc x) with reachup-ana er x
-    ... | ih = runsynth++ (lem-anasynthasc ih) (DoSynth (SAMove EMAscParent1) DoRefl)
+    ... | ih = runsynth++ (ziplem-asc1 ih) (DoSynth (SAMove EMAscParent1) DoRefl)
     reachup-synth (EEAscR x) (SAsc x₁) with reachup-type x
     ... | ih = runsynth++ (runsynth-type x₁ x ih) (DoSynth (SAMove EMAscParent2) DoRefl)
     reachup-synth (EEApL er) (SAp wt m x) with reachup-synth er wt
     ... | ih =  runsynth++ (synth-ap1-cong er wt x m ih) (DoSynth (SAMove EMApParent1) DoRefl)
     reachup-synth (EEApR er) (SAp wt m x) with reachup-ana er x
-    ... | ih =  runsynth++ (synth-ana-ap2-cong wt m ih) (DoSynth (SAMove EMApParent2) DoRefl)
+    ... | ih =  runsynth++ (ziplem-ap2 wt m ih) (DoSynth (SAMove EMApParent2) DoRefl)
     reachup-synth (EEPlusL er) (SPlus x x₁) with reachup-ana er x
-    ... | ih = runsynth++ (synth-ana-plus1-cong ih) (DoSynth (SAMove EMPlusParent1) DoRefl)
+    ... | ih = runsynth++ (ziplem-plus1 ih) (DoSynth (SAMove EMPlusParent1) DoRefl)
     reachup-synth (EEPlusR er) (SPlus x x₁) with reachup-ana er x₁
-    ... | ih = runsynth++ (synth-ana-plus2-cong ih) (DoSynth (SAMove EMPlusParent2) DoRefl)
+    ... | ih = runsynth++ (ziplem-plus2 ih) (DoSynth (SAMove EMPlusParent2) DoRefl)
     reachup-synth (EENEHole er) (SNEHole wt) with reachup-synth er wt
-    ... | ih = runsynth++ (nehole-cong {!!} ih) (DoSynth (SAMove EMNEHoleParent) DoRefl)
+    ... | ih = runsynth++ (ziplem-nehole-a {!!} ih) (DoSynth (SAMove EMNEHoleParent) DoRefl)
 
     reachup-ana : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
                       erase-e e e' →
@@ -91,7 +91,7 @@ module reachability where
     reachup-ana EETop _ = DoRefl
     reachup-ana er (ASubsume x x₁) = {!!}
     reachup-ana (EELam er) (ALam x₁ x₂ wt) with reachup-ana er wt
-    ... | ih = runana++ (ana-lam-cong x₁ x₂ ih) (DoAna (AAMove EMLamParent) DoRefl)
+    ... | ih = runana++ (ziplem-lam x₁ x₂ ih) (DoAna (AAMove EMLamParent) DoRefl)
 
 
 
@@ -115,9 +115,9 @@ module reachability where
                      runtype (▹ t ◃) (movedown-t t t' p) t'
   reachdown-type ETTop = DoRefl
   reachdown-type (ETArrL p) with reachdown-type p
-  ... | ih = DoType TMFirstChild (runtype-cong1 ih)
+  ... | ih = DoType TMFirstChild (ziplem-tm1 ih)
   reachdown-type (ETArrR p) with reachdown-type p
-  ... | ih = DoType TMFirstChild (DoType TMNextSib (runtype-cong2 ih))
+  ... | ih = DoType TMFirstChild (DoType TMNextSib (ziplem-tm2 ih))
 
   mutual
     reachdown-synth : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
@@ -127,19 +127,19 @@ module reachability where
     reachdown-synth (EELam p) ()
     reachdown-synth EETop _ = DoRefl
     reachdown-synth (EEAscL p) (SAsc x) with reachdown-ana p x
-    ... | ih = DoSynth (SAMove EMAscFirstChild) (lem-anasynthasc ih)
+    ... | ih = DoSynth (SAMove EMAscFirstChild) (ziplem-asc1 ih)
     reachdown-synth (EEAscR x) (SAsc x₁) with reachdown-type x
     ... | ih = DoSynth (SAMove EMAscFirstChild) (DoSynth (SAMove EMAscNextSib) (runsynth-type x₁ ETTop ih))
     reachdown-synth (EEApL p) (SAp wt m  x) with reachdown-synth p wt
     ... | ih = DoSynth (SAMove EMApFirstChild) (synth-ap1-cong EETop wt x m ih)
     reachdown-synth (EEApR p) (SAp wt m x) with reachdown-ana p x
-    ... | ih = DoSynth (SAMove EMApFirstChild) (DoSynth (SAMove EMApNextSib) (synth-ana-ap2-cong wt m ih))
+    ... | ih = DoSynth (SAMove EMApFirstChild) (DoSynth (SAMove EMApNextSib) (ziplem-ap2 wt m ih))
     reachdown-synth (EEPlusL p) (SPlus x x₁) with reachdown-ana p x
-    ... | ih = DoSynth (SAMove EMPlusFirstChild) (synth-ana-plus1-cong ih)
+    ... | ih = DoSynth (SAMove EMPlusFirstChild) (ziplem-plus1 ih)
     reachdown-synth (EEPlusR p) (SPlus x x₁) with reachdown-ana p x₁
-    ... | ih = DoSynth (SAMove EMPlusFirstChild) (DoSynth (SAMove EMPlusNextSib) (synth-ana-plus2-cong ih))
+    ... | ih = DoSynth (SAMove EMPlusFirstChild) (DoSynth (SAMove EMPlusNextSib) (ziplem-plus2 ih))
     reachdown-synth (EENEHole p) (SNEHole wt) with reachdown-synth p wt
-    ... | ih = DoSynth (SAMove EMNEHoleFirstChild) (nehole-cong {!!} ih)
+    ... | ih = DoSynth (SAMove EMNEHoleFirstChild) (ziplem-nehole-a {!!} ih)
 
     reachdown-ana : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
                       (p : erase-e e e') →
@@ -148,7 +148,7 @@ module reachability where
     reachdown-ana EETop _ = DoRefl
     reachdown-ana er (ASubsume x x₁) = {!!}
     reachdown-ana (EELam p) (ALam m x₁ wt) with reachdown-ana p wt
-    ... | ih = DoAna (AAMove EMLamFirstChild) (ana-lam-cong m x₁ ih)
+    ... | ih = DoAna (AAMove EMLamFirstChild) (ziplem-lam m x₁ ih)
 
   -- because the point of the reachability theorems is to show that we
   -- didn't forget to define any of the action semantic cases, it's
