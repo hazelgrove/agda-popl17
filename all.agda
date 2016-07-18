@@ -22,7 +22,7 @@ open import sensible
 -- second wave theorems (checksums)
 --open import reachability
 --open import deletability
---open import constructability
+open import constructability
 
 -- third wave theorems (and future work)
 --open import complete-dynamics

@@ -168,7 +168,13 @@ module checks where
   ziplem-nehole-a wt (DoSynth {e = e} x d) =
     DoSynth (SAZipHole (rel◆ e) wt x) (ziplem-nehole-a (actsense1 (rel◆ e) (rel◆ _) x wt) d)
 
-  -- todo: why is this easier with functional erasure?
+
+  erase-in-hole : ∀ {e e'} → erase-e e e' → erase-e <| e |> <| e' |>
+  erase-in-hole (EENEHole er) = EENEHole (erase-in-hole er)
+  erase-in-hole x = EENEHole x
+
+  -- todo: why is this easier with functional erasure? which one of these
+  -- do i really need? currently only use d.
   ziplem-nehole-b : ∀{Γ e e' L t t'} →
                 (Γ ⊢ e ◆e => t) →
                 runsynth Γ e t L e' t' →
@@ -178,18 +184,23 @@ module checks where
                      DoAna (AASubsume {e◆ = <| e ◆e |>}
                           (erase-in-hole (rel◆ _)) (SNEHole wt) (SAZipHole (rel◆ _) wt x) TCHole1)
                                (ziplem-nehole-b (actsense1 (rel◆ _) (rel◆ _) x wt) d)
-   where
-     erase-in-hole : ∀ {e e'} → erase-e e e' → erase-e <| e |> <| e' |>
-     erase-in-hole (EENEHole er) = EENEHole (erase-in-hole er)
-     erase-in-hole x = EENEHole x
 
+  ziplem-nehole-c : ∀{Γ e e' L t t'} →
+                (Γ ⊢ e ◆e => t) →
+                runsynth Γ e t L e' t' →
+                runana Γ <| e |> L <| e' |> <||>
+  ziplem-nehole-c wt DoRefl = DoRefl
+  ziplem-nehole-c wt (DoSynth x rs) =
+                     DoAna (AASubsume
+                           (erase-in-hole (rel◆ _)) (SNEHole wt) (SAZipHole (rel◆ _) wt x) TCHole2)
+                              (ziplem-nehole-c (actsense1 (rel◆ _) (rel◆ _) x wt) rs)
 
-  -- runsynth-unicity : ∀{Γ t0 t' e L e' e'' t''} →
-  --     runsynth Γ e t0 L e' t' →
-  --     runsynth Γ e t0 L e'' t'' →
-  --     t' == t''
-  -- runsynth-unicity DoRefl DoRefl = refl
-  -- runsynth-unicity (DoSynth x rs) (DoSynth x' rs')
-  --   with actsense1 {!!} {!!} x {!!} | actsense1 {!!} {!!} x' {!!}
-  -- ... | wt1 | wt2 with synthunicity wt1 wt2
-  -- ... | refl = {!runsynth-unicity rs !}
+  ziplem-nehole-d : ∀{Γ e e' L t t' t''} →
+                (Γ ⊢ e ◆e => t) →
+                (t'' ~ t') →
+                runsynth Γ e t L e' t' →
+                runana Γ <| e |> L <| e' |> t''
+  ziplem-nehole-d wt c DoRefl = DoRefl
+  ziplem-nehole-d wt c (DoSynth x rs) =
+                     DoAna (AASubsume (erase-in-hole (rel◆ _)) (SNEHole wt) (SAZipHole (rel◆ _) wt x) TCHole1)
+                           (ziplem-nehole-d (actsense1 (rel◆ _) (rel◆ _) x wt) c rs)
