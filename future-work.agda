@@ -192,3 +192,18 @@ module future-work where
     -- subsume / finish
   actdet3 er (ASubsume a b) (AAFinish x) (AASubsume x₁ x₂ (SAFinish x₃) x₄) = EqNear refl
   actdet3 er (ASubsume a b) (AAFinish x) (AAFinish x₁) = EqNear refl
+
+
+  movements-synth : ∀{e e' t t' Γ} →
+    (L : List action) (p : movements L) →
+                    runsynth Γ e t L e' t' → t == t'
+  movements-synth .[] AM[] DoRefl = refl
+  movements-synth ._ (AM:: p) (DoSynth x x₁) with movements-synth _ p x₁ | x
+  ... | refl | SAMove x₂ = refl
+  ... | refl | SAZipAsc1 x₂ = refl
+  ... | refl | SAZipAsc2 x₂ x₃ x₄ x₅ = eraset-det (lem-erase-step x₄ x₂) x₃
+  ... | refl | SAZipApArr x₂ x₃ x₄ qq x₅ = {!!}
+  ... | refl | SAZipApAna x₂ x₃ x₄ = refl
+  ... | refl | SAZipPlus1 x₂ = refl
+  ... | refl | SAZipPlus2 x₂ = refl
+  ... | refl | SAZipHole x₂ x₃ qq = refl
