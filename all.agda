@@ -20,7 +20,7 @@ open import sensible
 -- open import deterministic
 
 -- second wave theorems (checksums)
---open import reachability
+open import reachability
 --open import deletability
 open import constructability
 

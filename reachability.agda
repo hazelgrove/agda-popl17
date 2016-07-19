@@ -35,16 +35,6 @@ module reachability where
                         runtype++ (ziplem-tm2 ih) (DoType TMParent2 DoRefl) ,
                         movements++ m (AM:: AM[])
 
-  ziplem-moves-ap1 : ∀{Γ l e1 e1' e2 t t'} →
-                   movements l →
-                   runsynth Γ e1 t l e1' t →
-                   runsynth Γ (e1 ∘₁ e2) t' l (e1' ∘₁ e2) t'
-  ziplem-moves-ap1 _ DoRefl = DoRefl
-  ziplem-moves-ap1 (AM:: m) (DoSynth x rs) =  {!!}
-                   -- DoSynth (SAZipApArr {!!} {!!} {!!} x {!!})
-                   --         (ziplem-moves-ap1 m {!rs!})
-
-
   mutual
     reachup-synth : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
                       erase-e e e' →
@@ -62,7 +52,7 @@ module reachability where
                        movements++ m (AM:: AM[])
     reachup-synth (EEApL er) (SAp wt x x₁) with reachup-synth er wt
     ... | l , ih , m = l ++ [ move parent ] ,
-                       runsynth++ {L1 = l} {!!} (DoSynth (SAMove EMApParent1) DoRefl) ,
+                       runsynth++ {L1 = l} (ziplem-moves-ap1 (lem-erase-synth er wt) x x₁ m ih) (DoSynth (SAMove EMApParent1) DoRefl) ,
                        movements++ m (AM:: AM[])
     reachup-synth (EEApR er) (SAp wt x x₁) with reachup-ana er x₁
     ... | l , ih , m = l ++ [ move parent ] ,
@@ -95,9 +85,7 @@ module reachability where
                        runana++ (ziplem-lam x₁ x₂ ih) (DoAna (AAMove EMLamParent) DoRefl) ,
                        movements++ m (AM:: AM[])
 
-
   --------------------------
-
 
   reachdown-type : {t : τ̇} {t' : τ̂} → (p : erase-t t' t) →
                      Σ[ L ∈ List action ] runtype (▹ t ◃) L t' × movements L
@@ -128,7 +116,7 @@ module reachability where
                        AM:: (AM:: m)
     reachdown-synth (EEApL er) (SAp wt x x₁) with reachdown-synth er wt
     ... | l , ih , m = move firstChild :: l ,
-                       DoSynth (SAMove EMApFirstChild) {!!} ,
+                       DoSynth (SAMove EMApFirstChild) (ziplem-moves-ap1 wt x x₁ m ih) ,
                        AM:: m
     reachdown-synth (EEApR er) (SAp wt x x₁) with reachdown-ana er x₁
     ... | l , ih , m = move firstChild :: move nextSib :: l ,

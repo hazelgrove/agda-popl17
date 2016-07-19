@@ -249,4 +249,19 @@ module checks where
                    runana Γ e l e' t
   synthana-moves _ _ _ DoRefl = DoRefl
   synthana-moves wt (AM:: m) c (DoSynth x rs) with pin (rel◆ _) wt x
-  ... | refl = DoAna (AASubsume (rel◆ _) wt x c) (synthana-moves (actsense1 (rel◆ _) (rel◆ _) x wt) m c rs)
+  ... | refl = DoAna (AASubsume (rel◆ _) wt x c)
+                     (synthana-moves (actsense1 (rel◆ _) (rel◆ _) x wt) m c rs)
+
+
+  ziplem-moves-ap1 : ∀{Γ l e1 e1' e2 t t' tx} →
+                   Γ ⊢ e1 ◆e => t →
+                   t ▸arr (tx ==> t') →
+                   Γ ⊢ e2 <= tx →
+                   movements l →
+                   runsynth Γ e1 t l e1' t →
+                   runsynth Γ (e1 ∘₁ e2) t' l (e1' ∘₁ e2) t'
+  ziplem-moves-ap1 _ _ _ _ DoRefl = DoRefl
+  ziplem-moves-ap1 wt1 mch wt2 (AM:: m) (DoSynth x rs) with pin (rel◆ _) wt1 x
+  ... | refl = DoSynth (SAZipApArr mch (rel◆ _) wt1 x wt2)
+                        (ziplem-moves-ap1 (actsense1 (rel◆ _) (rel◆ _) x wt1)
+                                                     mch wt2 m rs)
