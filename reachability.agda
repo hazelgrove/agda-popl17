@@ -34,13 +34,6 @@ module reachability where
                         runtype++ (ziplem-tm2 ih) (DoType TMParent2 DoRefl) ,
                         movements++ m (AM:: AM[])
 
-  -- ziplem-moves-asc2 : ∀{ Γ l t t' e }
-  --                   movements l →
-  --                   runtype t l t' →
-  --                   runsynth Γ (e ·:₂ t) t l (e ·:₂ t') t'
-  -- ziplem-moves-asc2 = ?
-
-
   mutual
     reachup-synth : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
                       erase-e e e' →
@@ -54,7 +47,7 @@ module reachability where
                        movements++ m (AM:: AM[])
     reachup-synth (EEAscR er) (SAsc x₁) with reachup-type er
     ... | l , ih , m = l ++ [ move parent ] ,
-                       runsynth++ {L1 = l} {!ih!} (DoSynth (SAMove EMAscParent2) DoRefl) ,
+                       runsynth++ {L1 = l} (ziplem-moves-asc2 m er x₁ ih) (DoSynth (SAMove EMAscParent2) DoRefl) ,
                        movements++ m (AM:: AM[])
     reachup-synth (EEApL er) (SAp wt x x₁) with reachup-synth er wt
     ... | l , ih , m = l ++ [ move parent ] ,
@@ -120,7 +113,7 @@ module reachability where
                        AM:: m
     reachdown-synth (EEAscR er) (SAsc x₁) with reachdown-type er
     ... | l , ih , m = move firstChild :: move nextSib :: l ,
-                       DoSynth (SAMove EMAscFirstChild) (DoSynth (SAMove EMAscNextSib) {!!}) ,
+                       DoSynth (SAMove EMAscFirstChild) (DoSynth (SAMove EMAscNextSib) (ziplem-moves-asc2 m ETTop x₁ ih)) ,
                        AM:: (AM:: m)
     reachdown-synth (EEApL er) (SAp wt x x₁) with reachdown-synth er wt
     ... | l , ih , m = move firstChild :: l ,

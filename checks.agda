@@ -4,6 +4,7 @@ open import List
 open import core
 open import judgemental-erase
 open import sensible
+open import moveerase
 
 module checks where
   -- these three judmgements lift the action semantics judgements to relate
@@ -228,3 +229,14 @@ module checks where
                                         movements (l1 ++ l2)
   movements++ (AM:: m1) m2 = AM:: (movements++ m1 m2)
   movements++ AM[] m2 = m2
+
+
+  ziplem-moves-asc2 : ∀{ Γ l t t' e t◆ } →
+                      movements l →
+                      erase-t t t◆ →
+                      Γ ⊢ e <= t◆ →
+                      runtype t l t' →
+                      runsynth Γ (e ·:₂ t) t◆ l (e ·:₂ t') t◆
+  ziplem-moves-asc2 _ _ _ DoRefl = DoRefl
+  ziplem-moves-asc2 (AM:: m) er wt (DoType x rt) with lem-erase-step er x
+  ... | er' =  DoSynth (SAZipAsc2 x er' er wt) (ziplem-moves-asc2 m er' wt rt)
