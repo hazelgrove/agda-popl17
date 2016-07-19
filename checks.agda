@@ -204,3 +204,27 @@ module checks where
   ziplem-nehole-d wt c (DoSynth x rs) =
                      DoAna (AASubsume (erase-in-hole (rel◆ _)) (SNEHole wt) (SAZipHole (rel◆ _) wt x) TCHole1)
                            (ziplem-nehole-d (actsense1 (rel◆ _) (rel◆ _) x wt) c rs)
+
+
+  -- because the point of the reachability theorems is to show that we
+  -- didn't forget to define any of the action semantic cases, it's
+  -- important that theorems include the fact that the witness only uses
+  -- move -- otherwise, you could cheat by just prepending [ del ] to the
+  -- list produced by constructability. constructability does also use
+  -- some, but not all, of the possible movements, so this would no longer
+  -- demonstrate the property we really want. to that end, we define a
+  -- predicate on lists that they contain only (move _) and that the
+  -- various things above that produce the lists we use have this property.
+
+  -- predicate
+  data movements : List action → Set where
+    AM:: : {L : List action} {δ : direction}
+              → movements L
+              → movements ((move δ) :: L)
+    AM[] : movements []
+
+  -- movements breaks over the list monoid, as expected
+  movements++ : {l1 l2 : List action} → movements l1 → movements l2 →
+                                        movements (l1 ++ l2)
+  movements++ (AM:: m1) m2 = AM:: (movements++ m1 m2)
+  movements++ AM[] m2 = m2

@@ -7,30 +7,6 @@ open import checks
 open import moveerase
 
 module reachability where
-  -- because the point of the reachability theorems is to show that we
-  -- didn't forget to define any of the action semantic cases, it's
-  -- important that theorems include the fact that the witness only uses
-  -- move -- otherwise, you could cheat by just prepending [ del ] to the
-  -- list produced by constructability. constructability does also use
-  -- some, but not all, of the possible movements, so this would no longer
-  -- demonstrate the property we really want. to that end, we define a
-  -- predicate on lists that they contain only (move _) and that the
-  -- various things above that produce the lists we use have this property.
-
-  -- predicate
-  data movements : List action → Set where
-    AM:: : {L : List action} {δ : direction}
-              → movements L
-              → movements ((move δ) :: L)
-    AM[] : movements []
-
-  -- movements breaks over the list monoid, as expected
-  movements++ : {l1 l2 : List action} → movements l1 → movements l2 → movements (l1 ++ l2)
-  movements++ (AM:: am1) (AM:: am2) = AM:: (movements++ am1 (AM:: am2))
-  movements++ (AM:: am1) AM[] = AM:: (movements++ am1 AM[])
-  movements++ AM[] (AM:: am2) = AM:: am2
-  movements++ AM[] AM[] = AM[]
-
   -- algorithmically, we break reachability into two halves: first you
   -- produce a list of actions that are all "move parent" to pull the focus
   -- to the very top of the expression in question. then, you go back down
@@ -58,53 +34,125 @@ module reachability where
                         runtype++ (ziplem-tm2 ih) (DoType TMParent2 DoRefl) ,
                         movements++ m (AM:: AM[])
 
-  -- runsynth-type : ∀{t L t' Γ e ter} →
-  --                 Γ ⊢ e <= ter →
-  --                 erase-t t ter →
-  --                 runtype t L t' →
-  --                 runsynth Γ (e ·:₂ t) ter L (e ·:₂ t') ter
-  -- runsynth-type wt er rt = {!!}
+  -- ziplem-moves-asc2 : ∀{ Γ l t t' e }
+  --                   movements l →
+  --                   runtype t l t' →
+  --                   runsynth Γ (e ·:₂ t) t l (e ·:₂ t') t'
+  -- ziplem-moves-asc2 = ?
 
-  -- synth-ap1-cong : ∀{Γ e t t1 t2 L e' f er} →
-  --                      erase-e e er →
-  --                      Γ ⊢ er => t →
-  --                      Γ ⊢ f <= t2 →
-  --                      t ▸arr (t2 ==> t1) →
-  --                      runsynth Γ e t L e' t →
-  --                      runsynth Γ (e ∘₁ f) t1 L (e' ∘₁ f) t1
-  -- synth-ap1-cong er wt1 wt2 m rs = {!!}
 
   mutual
     reachup-synth : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
                       erase-e e e' →
                       Γ ⊢ e' => t →
                      Σ[ L ∈ List action ] runsynth Γ e t L ▹ e' ◃ t × movements L
-    reachup-synth er wt = {!!}
+    reachup-synth (EELam _) ()
+    reachup-synth EETop _ = [] , DoRefl , AM[]
+    reachup-synth (EEAscL er) (SAsc x) with reachup-ana er x
+    ... | l , ih , m = l ++ [ move parent ] ,
+                       runsynth++ (ziplem-asc1 ih) (DoSynth (SAMove EMAscParent1) DoRefl) ,
+                       movements++ m (AM:: AM[])
+    reachup-synth (EEAscR er) (SAsc x₁) with reachup-type er
+    ... | l , ih , m = l ++ [ move parent ] ,
+                       runsynth++ {L1 = l} {!ih!} (DoSynth (SAMove EMAscParent2) DoRefl) ,
+                       movements++ m (AM:: AM[])
+    reachup-synth (EEApL er) (SAp wt x x₁) with reachup-synth er wt
+    ... | l , ih , m = l ++ [ move parent ] ,
+                       runsynth++ {L1 = l} {!!} (DoSynth (SAMove EMApParent1) DoRefl) ,
+                       movements++ m (AM:: AM[])
+    reachup-synth (EEApR er) (SAp wt x x₁) with reachup-ana er x₁
+    ... | l , ih , m = l ++ [ move parent ] ,
+                       runsynth++ (ziplem-ap2 wt x ih) (DoSynth (SAMove EMApParent2) DoRefl) ,
+                       movements++ m (AM:: AM[])
+    reachup-synth (EEPlusL er) (SPlus x x₁) with reachup-ana er x
+    ... | l , ih , m = l ++ [ move parent ] ,
+                       runsynth++ (ziplem-plus1 ih) (DoSynth (SAMove EMPlusParent1) DoRefl) ,
+                       movements++ m (AM:: AM[])
+    reachup-synth (EEPlusR er) (SPlus x x₁) with reachup-ana er x₁
+    ... | l , ih , m = l ++ [ move parent ] ,
+                       runsynth++ (ziplem-plus2 ih) (DoSynth (SAMove EMPlusParent2) DoRefl) ,
+                       movements++ m (AM:: AM[])
+    reachup-synth (EENEHole er) (SNEHole wt) with reachup-synth er wt
+    ... | l , ih , m = l ++ [ move parent ] ,
+                       runsynth++ (ziplem-nehole-a (lem-erase-synth er wt) ih) (DoSynth (SAMove EMNEHoleParent) DoRefl) ,
+                       movements++ m (AM:: AM[])
 
     reachup-ana : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
                       erase-e e e' →
                       Γ ⊢ e' <= t →
                       Σ[ L ∈ List action ] runana Γ e L ▹ e' ◃ t × movements L
-    reachup-ana er wt = {!!}
+    reachup-ana EETop _ = [] , DoRefl , AM[]
+    reachup-ana er (ASubsume x x₁) with reachup-synth er x
+    ... | l , ih , m = l ,
+                       {!!} ,
+                       m
+    reachup-ana (EELam er) (ALam x₁ x₂ wt) with reachup-ana er wt
+    ... | l , ih , m = l ++ [ move parent ] ,
+                       runana++ (ziplem-lam x₁ x₂ ih) (DoAna (AAMove EMLamParent) DoRefl) ,
+                       movements++ m (AM:: AM[])
 
   reachdown-type : {t : τ̇} {t' : τ̂} → (p : erase-t t' t) →
                      Σ[ L ∈ List action ] runtype (▹ t ◃) L t' × movements L
-  reachdown-type ETTop = {!!}
-  reachdown-type (ETArrL er) = {!!}
-  reachdown-type (ETArrR er) = {!!}
+  reachdown-type ETTop = [] , DoRefl , AM[]
+  reachdown-type (ETArrL er) with reachdown-type er
+  ... | (l , ih , m ) = {!!} ,
+                        {!!} ,
+                        {!!}
+  reachdown-type (ETArrR er) with reachdown-type er
+  ... | (l , ih , m ) = {!!} ,
+                        {!!} ,
+                        {!!}
 
   mutual
     reachdown-synth : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
                       (p : erase-e e e') →
                       (wt : Γ ⊢ e' => t) →
                       Σ[ L ∈ List action ] runsynth Γ ▹ e' ◃ t L e t × movements L
-    reachdown-synth = {!!}
+    reachdown-synth (EELam _) ()
+    reachdown-synth EETop _ = [] , DoRefl , AM[]
+    reachdown-synth (EEAscL er) (SAsc x) with reachdown-ana er x
+    ... | l , ih , m = {!!} ,
+                       {!!} ,
+                       {!!}
+    reachdown-synth (EEAscR er) (SAsc x₁) with reachdown-type er
+    ... | l , ih , m = {!!} ,
+                       {!!} ,
+                       {!!}
+    reachdown-synth (EEApL er) (SAp wt x x₁) with reachdown-synth er wt
+    ... | l , ih , m = {!!} ,
+                       {!!} ,
+                       {!!}
+    reachdown-synth (EEApR er) (SAp wt x x₁) with reachdown-ana er x₁
+    ... | l , ih , m = {!!} ,
+                       {!!} ,
+                       {!!}
+    reachdown-synth (EEPlusL er) (SPlus x x₁) with reachdown-ana er x
+    ... | l , ih , m = {!!} ,
+                       {!!} ,
+                       {!!}
+    reachdown-synth (EEPlusR er) (SPlus x x₁) with reachdown-ana er x₁
+    ... | l , ih , m = {!!} ,
+                       {!!} ,
+                       {!!}
+    reachdown-synth (EENEHole er) (SNEHole wt) with reachdown-synth er wt
+    ... | l , ih , m = {!!} ,
+                       {!!} ,
+                       {!!}
 
     reachdown-ana : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
                       (p : erase-e e e') →
                       (wt : Γ ⊢ e' <= t) →
                       Σ[ L ∈ List action ] runana Γ ▹ e' ◃ L e  t × movements L
-    reachdown-ana = {!!}
+    reachdown-ana EETop _ = [] , DoRefl , AM[]
+    reachdown-ana er (ASubsume x x₁) with reachdown-synth er x
+    ... | l , ih , m = {!!} ,
+                       {!!} ,
+                       {!!}
+    reachdown-ana (EELam er) (ALam x₁ x₂ wt) with reachdown-ana er wt
+    ... | l , ih , m = {!!} ,
+                       {!!} ,
+                       {!!}
+
 
   -- this is the final statement of the reachability triplet. the movement
   -- between judgemental and metafunctional erasure happens internally to
@@ -120,7 +168,8 @@ module reachability where
 
   reachability-types : (t1 t2 : τ̂) → (t1 ◆t) == (t2 ◆t) →
                            Σ[ L ∈ List action ] runtype t1 L t2 × movements L
-  reachability-types t1 t2 eq with ◆erase-t t1 (t2 ◆t) eq | ◆erase-t t2 (t1 ◆t) (! eq)
+  reachability-types t1 t2 eq
+    with ◆erase-t t1 (t2 ◆t) eq | ◆erase-t t2 (t1 ◆t) (! eq)
   ... | er1 | er2 with reachup-type er1 | reachdown-type er2
   ... | (lup , rup , mvup)  | (ldwn , rdwn , mvdwn) =
         lup ++ ldwn ,
@@ -131,8 +180,10 @@ module reachability where
                             Γ ⊢ e1 ◆e => t →
                             e1 ◆e == e2 ◆e →
                             Σ[ L ∈ List action ] runsynth Γ e1 t L e2 t × movements L
-  reachability-synth Γ t e1 e2 wt1 eq with ◆erase-e e1 (e2 ◆e) eq | ◆erase-e e2 (e1 ◆e) (! eq)
-  ... | er1 | er2 with reachup-synth er1 (tr (λ x → Γ ⊢ x => t) eq wt1) | reachdown-synth er2 wt1
+  reachability-synth Γ t e1 e2 wt1 eq
+    with ◆erase-e e1 (e2 ◆e) eq | ◆erase-e e2 (e1 ◆e) (! eq)
+  ... | er1 | er2 with reachup-synth er1 (tr (λ x → Γ ⊢ x => t) eq wt1)
+                     | reachdown-synth er2 wt1
   ... | (lup , rup , mvup)  | (ldwn , rdwn , mvdwn) =
       (lup ++ ldwn) ,
       runsynth++ rup (tr (λ x → runsynth Γ ▹ x ◃ t ldwn e2 t) eq rdwn) ,
@@ -142,8 +193,10 @@ module reachability where
                             Γ ⊢ e1 ◆e <= t →
                             e1 ◆e == e2 ◆e →
                             Σ[ L ∈ List action ] runana Γ e1 L e2 t × movements L
-  reachability-ana Γ t e1 e2 wt1 eq with ◆erase-e e1 (e2 ◆e) eq | ◆erase-e e2 (e1 ◆e) (! eq)
-  ... | er1 | er2 with reachup-ana er1 (tr (λ x → Γ ⊢ x <= t) eq wt1) | reachdown-ana er2 wt1
+  reachability-ana Γ t e1 e2 wt1 eq
+    with ◆erase-e e1 (e2 ◆e) eq | ◆erase-e e2 (e1 ◆e) (! eq)
+  ... | er1 | er2 with reachup-ana er1 (tr (λ x → Γ ⊢ x <= t) eq wt1)
+                     | reachdown-ana er2 wt1
   ... | (lup , rup , mvup)  | (ldwn , rdwn , mvdwn) =
       lup ++ ldwn ,
       (runana++ rup (tr (λ x → runana Γ ▹ x ◃ ldwn e2 t) eq rdwn)) ,
