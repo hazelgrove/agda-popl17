@@ -5,6 +5,7 @@ open import core
 open import judgemental-erase
 open import checks
 open import moveerase
+open import sensible
 
 module reachability where
   -- algorithmically, we break reachability into two halves: first you
@@ -39,9 +40,9 @@ module reachability where
                    runsynth Γ e1 t l e1' t →
                    runsynth Γ (e1 ∘₁ e2) t' l (e1' ∘₁ e2) t'
   ziplem-moves-ap1 _ DoRefl = DoRefl
-  ziplem-moves-ap1 (AM:: m) (DoSynth x rs) =
-                   DoSynth (SAZipApArr {!!} {!!} {!!} x {!!})
-                           (ziplem-moves-ap1 m {!rs!})
+  ziplem-moves-ap1 (AM:: m) (DoSynth x rs) =  {!!}
+                   -- DoSynth (SAZipApArr {!!} {!!} {!!} x {!!})
+                   --         (ziplem-moves-ap1 m {!rs!})
 
 
   mutual
@@ -87,7 +88,7 @@ module reachability where
     reachup-ana EETop _ = [] , DoRefl , AM[]
     reachup-ana er (ASubsume x x₁) with reachup-synth er x
     ... | l , ih , m = l ,
-                       {!!} ,
+                       synthana-moves (lem-erase-synth er x) m x₁ ih ,
                        m
     reachup-ana (EELam er) (ALam x₁ x₂ wt) with reachup-ana er wt
     ... | l , ih , m = l ++ [ move parent ] ,
@@ -153,7 +154,7 @@ module reachability where
     reachdown-ana EETop _ = [] , DoRefl , AM[]
     reachdown-ana er (ASubsume x x₁) with reachdown-synth er x
     ... | l , ih , m = l ,
-                       {!!} ,
+                       synthana-moves x m x₁ ih ,
                        m
     reachdown-ana (EELam er) (ALam x₁ x₂ wt) with reachdown-ana er wt
     ... | l , ih , m = move firstChild :: l ,

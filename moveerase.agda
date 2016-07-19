@@ -54,10 +54,10 @@ module moveerase where
   anamove-er er1 er2 m wt with erasee-det (moveerase' er1 m) er2
   ... | refl = wt
 
-  lem-erase-step : ∀{ t t' t'' δ} →
-                 erase-t t t' →
+  lem-erase-step : ∀{ t t◆ t'' δ} →
+                 erase-t t t◆ →
                  t + move δ +> t'' →
-                 erase-t t'' t'
+                 erase-t t'' t◆
   lem-erase-step ETTop TMFirstChild = ETArrL ETTop
   lem-erase-step (ETArrL ETTop) TMParent1 = ETTop
   lem-erase-step (ETArrL ETTop) TMNextSib = ETArrR ETTop
