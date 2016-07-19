@@ -91,17 +91,21 @@ module reachability where
                        runana++ (ziplem-lam x₁ x₂ ih) (DoAna (AAMove EMLamParent) DoRefl) ,
                        movements++ m (AM:: AM[])
 
+
+  --------------------------
+
+
   reachdown-type : {t : τ̇} {t' : τ̂} → (p : erase-t t' t) →
                      Σ[ L ∈ List action ] runtype (▹ t ◃) L t' × movements L
   reachdown-type ETTop = [] , DoRefl , AM[]
   reachdown-type (ETArrL er) with reachdown-type er
-  ... | (l , ih , m ) = {!!} ,
-                        {!!} ,
-                        {!!}
+  ... | (l , ih , m ) = move firstChild :: l ,
+                        DoType TMFirstChild (ziplem-tm1 ih) ,
+                        AM:: m
   reachdown-type (ETArrR er) with reachdown-type er
-  ... | (l , ih , m ) = {!!} ,
-                        {!!} ,
-                        {!!}
+  ... | (l , ih , m ) = move firstChild :: move nextSib :: l ,
+                        DoType TMFirstChild (DoType TMNextSib (ziplem-tm2 ih)) ,
+                        AM:: (AM:: m)
 
   mutual
     reachdown-synth : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
@@ -111,33 +115,33 @@ module reachability where
     reachdown-synth (EELam _) ()
     reachdown-synth EETop _ = [] , DoRefl , AM[]
     reachdown-synth (EEAscL er) (SAsc x) with reachdown-ana er x
-    ... | l , ih , m = {!!} ,
-                       {!!} ,
-                       {!!}
+    ... | l , ih , m = move firstChild :: l ,
+                       DoSynth (SAMove EMAscFirstChild) (ziplem-asc1 ih) ,
+                       AM:: m
     reachdown-synth (EEAscR er) (SAsc x₁) with reachdown-type er
-    ... | l , ih , m = {!!} ,
-                       {!!} ,
-                       {!!}
+    ... | l , ih , m = move firstChild :: move nextSib :: l ,
+                       DoSynth (SAMove EMAscFirstChild) (DoSynth (SAMove EMAscNextSib) {!!}) ,
+                       AM:: (AM:: m)
     reachdown-synth (EEApL er) (SAp wt x x₁) with reachdown-synth er wt
-    ... | l , ih , m = {!!} ,
-                       {!!} ,
-                       {!!}
+    ... | l , ih , m = move firstChild :: l ,
+                       DoSynth (SAMove EMApFirstChild) {!!} ,
+                       AM:: m
     reachdown-synth (EEApR er) (SAp wt x x₁) with reachdown-ana er x₁
-    ... | l , ih , m = {!!} ,
-                       {!!} ,
-                       {!!}
+    ... | l , ih , m = move firstChild :: move nextSib :: l ,
+                       DoSynth (SAMove EMApFirstChild) (DoSynth (SAMove EMApNextSib) (ziplem-ap2 wt x ih)) ,
+                       AM:: (AM:: m)
     reachdown-synth (EEPlusL er) (SPlus x x₁) with reachdown-ana er x
-    ... | l , ih , m = {!!} ,
-                       {!!} ,
-                       {!!}
+    ... | l , ih , m = move firstChild :: l ,
+                       DoSynth (SAMove EMPlusFirstChild) (ziplem-plus1 ih) ,
+                       AM:: m
     reachdown-synth (EEPlusR er) (SPlus x x₁) with reachdown-ana er x₁
-    ... | l , ih , m = {!!} ,
-                       {!!} ,
-                       {!!}
+    ... | l , ih , m = move firstChild :: move nextSib :: l ,
+                       DoSynth (SAMove EMPlusFirstChild) (DoSynth (SAMove EMPlusNextSib) (ziplem-plus2 ih)) ,
+                       AM:: (AM:: m)
     reachdown-synth (EENEHole er) (SNEHole wt) with reachdown-synth er wt
-    ... | l , ih , m = {!!} ,
-                       {!!} ,
-                       {!!}
+    ... | l , ih , m = move firstChild :: l ,
+                       DoSynth (SAMove EMNEHoleFirstChild) (ziplem-nehole-a wt ih) ,
+                       AM:: m
 
     reachdown-ana : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
                       (p : erase-e e e') →
@@ -145,13 +149,16 @@ module reachability where
                       Σ[ L ∈ List action ] runana Γ ▹ e' ◃ L e  t × movements L
     reachdown-ana EETop _ = [] , DoRefl , AM[]
     reachdown-ana er (ASubsume x x₁) with reachdown-synth er x
-    ... | l , ih , m = {!!} ,
+    ... | l , ih , m = l ,
                        {!!} ,
-                       {!!}
+                       m
     reachdown-ana (EELam er) (ALam x₁ x₂ wt) with reachdown-ana er wt
-    ... | l , ih , m = {!!} ,
-                       {!!} ,
-                       {!!}
+    ... | l , ih , m = move firstChild :: l ,
+                       DoAna (AAMove EMLamFirstChild) (ziplem-lam x₁ x₂ ih) ,
+                       AM:: m
+
+
+  --------------------------
 
 
   -- this is the final statement of the reachability triplet. the movement
