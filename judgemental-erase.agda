@@ -144,3 +144,7 @@ module judgemental-erase where
   erasee-det : ∀{e e' e''} → erase-e e e' → erase-e e e'' → e' == e''
   erasee-det e1 e2 with erase-e◆ e1
   ... | refl = erase-e◆ e2
+
+  erase-in-hole : ∀ {e e'} → erase-e e e' → erase-e <| e |> <| e' |>
+  erase-in-hole (EENEHole er) = EENEHole (erase-in-hole er)
+  erase-in-hole x = EENEHole x

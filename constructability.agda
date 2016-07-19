@@ -75,7 +75,7 @@ module constructability where
     construct-ana (ASubsume x c) with construct-synth x
     ... | (l , ih) = construct nehole :: l ++ (move parent :: finish :: []) ,
                      DoAna (AASubsume EETop SEHole SAConNEHole TCHole1)
-                      (runana++  (ziplem-nehole-d SEHole c ih)
+                      (runana++  (ziplem-nehole-b SEHole c ih)
                         (DoAna (AAMove EMNEHoleParent)
                           (DoAna (AAFinish (ASubsume x c)) DoRefl)))
 

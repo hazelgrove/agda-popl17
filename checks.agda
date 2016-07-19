@@ -169,42 +169,15 @@ module checks where
   ziplem-nehole-a wt (DoSynth {e = e} x d) =
     DoSynth (SAZipHole (rel◆ e) wt x) (ziplem-nehole-a (actsense1 (rel◆ e) (rel◆ _) x wt) d)
 
-
-  erase-in-hole : ∀ {e e'} → erase-e e e' → erase-e <| e |> <| e' |>
-  erase-in-hole (EENEHole er) = EENEHole (erase-in-hole er)
-  erase-in-hole x = EENEHole x
-
-  -- todo: why is this easier with functional erasure? which one of these
-  -- do i really need? currently only use d.
-  ziplem-nehole-b : ∀{Γ e e' L t t'} →
-                (Γ ⊢ e ◆e => t) →
-                runsynth Γ e t L e' t' →
-                runana Γ <| e |> L <| e' |> t'
-  ziplem-nehole-b wt DoRefl = DoRefl
-  ziplem-nehole-b wt (DoSynth {e = e} x d) =
-                     DoAna (AASubsume {e◆ = <| e ◆e |>}
-                          (erase-in-hole (rel◆ _)) (SNEHole wt) (SAZipHole (rel◆ _) wt x) TCHole1)
-                               (ziplem-nehole-b (actsense1 (rel◆ _) (rel◆ _) x wt) d)
-
-  ziplem-nehole-c : ∀{Γ e e' L t t'} →
-                (Γ ⊢ e ◆e => t) →
-                runsynth Γ e t L e' t' →
-                runana Γ <| e |> L <| e' |> <||>
-  ziplem-nehole-c wt DoRefl = DoRefl
-  ziplem-nehole-c wt (DoSynth x rs) =
-                     DoAna (AASubsume
-                           (erase-in-hole (rel◆ _)) (SNEHole wt) (SAZipHole (rel◆ _) wt x) TCHole2)
-                              (ziplem-nehole-c (actsense1 (rel◆ _) (rel◆ _) x wt) rs)
-
-  ziplem-nehole-d : ∀{Γ e e' L t t' t''} →
+  ziplem-nehole-b : ∀{Γ e e' L t t' t''} →
                 (Γ ⊢ e ◆e => t) →
                 (t'' ~ t') →
                 runsynth Γ e t L e' t' →
                 runana Γ <| e |> L <| e' |> t''
-  ziplem-nehole-d wt c DoRefl = DoRefl
-  ziplem-nehole-d wt c (DoSynth x rs) =
+  ziplem-nehole-b wt c DoRefl = DoRefl
+  ziplem-nehole-b wt c (DoSynth x rs) =
                      DoAna (AASubsume (erase-in-hole (rel◆ _)) (SNEHole wt) (SAZipHole (rel◆ _) wt x) TCHole1)
-                           (ziplem-nehole-d (actsense1 (rel◆ _) (rel◆ _) x wt) c rs)
+                           (ziplem-nehole-b (actsense1 (rel◆ _) (rel◆ _) x wt) c rs)
 
 
   -- because the point of the reachability theorems is to show that we
@@ -225,12 +198,16 @@ module checks where
     AM[] : movements []
 
   -- movements breaks over the list monoid, as expected
-  movements++ : {l1 l2 : List action} → movements l1 → movements l2 →
-                                        movements (l1 ++ l2)
+  movements++ : {l1 l2 : List action} →
+              movements l1 → movements l2 → movements (l1 ++ l2)
   movements++ (AM:: m1) m2 = AM:: (movements++ m1 m2)
   movements++ AM[] m2 = m2
 
 
+  -- these are zipper lemmas that are specific to list of movement
+  -- actions. they are not true for general actions, but because
+  -- reachability is restricted to movements, we get some milage out of
+  -- them anyway.
   ziplem-moves-asc2 : ∀{ Γ l t t' e t◆ } →
                       movements l →
                       erase-t t t◆ →
