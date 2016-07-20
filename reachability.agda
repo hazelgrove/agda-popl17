@@ -9,14 +9,14 @@ open import sensible
 
 module reachability where
   -- algorithmically, we break reachability into two halves: first you
-  -- produce a list of actions that are all "move parent" to pull the focus
+  -- produce a list of actions that are all "move parent" to pull the cursor
   -- to the very top of the expression in question. then, you go back down
   -- into the expression with a sequence of move firstChild and move
   -- nextSibs as appropriate. the append of these two lists will reach from
   -- one expression to the other.
   --
   -- there may well be a shorter list of actions that does the same thing;
-  -- the expression with top-level focus may not be the Least Common
+  -- the expression with top-level cursor may not be the Least Common
   -- Ancestor in the expression tree of the given pair. however, the work
   -- of this less minimal thing and corresponding size of the proof term is
   -- still bounded linearly by the size of the expression, and is far
@@ -158,9 +158,9 @@ module reachability where
   -- theses statements to present a consistent interface with the text of
   -- the paper, while also allowing easy pattern matching in the proofs.
   --
-  -- the justification for these statements, intuitively, is that focus
+  -- the justification for these statements, intuitively, is that cursor
   -- cannot change the type of things because the typing judgement is
-  -- defined on the focus-erased terms and types. so if two terms agree up
+  -- defined on the cursor-erased terms and types. so if two terms agree up
   -- to erasure, they must have the exact same type in the same context,
   -- not merely a compatible one in an extension or any other weakening of
   -- the statement. these are lemmas which are currently not proven. TODO?

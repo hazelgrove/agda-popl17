@@ -7,7 +7,7 @@ open import moveerase
 module sensible where
   mutual
     -- if an action transforms a ê in a synthetic posistion to another ê,
-    -- they have the same type up erasure of focus.
+    -- they have the same type up erasure of the cursor
     actsense1 : {Γ : ·ctx} {e e' : ê} {e◆ e'◆ : ė} {t t' : τ̇} {α : action} →
                 erase-e e e◆  →
                 erase-e e' e'◆ →
@@ -17,7 +17,7 @@ module sensible where
     -- in the movement case, we defer to the movement erasure theorem
     actsense1 er er' (SAMove x) wt = synthmove-er er er' x wt
 
-    -- in all the nonzipper cases, the focus must be at the top for the
+    -- in all the nonzipper cases, the cursor must be at the top for the
     -- action rule to apply, so we just build the new derivation
     -- directly. no recursion is needed; these are effectively base cases.
     actsense1 _ EETop SADel _ = SEHole
@@ -64,7 +64,7 @@ module sensible where
     ... | ih = SNEHole ih
 
     -- if an action transforms an ê in an analytic posistion to another ê,
-    -- they have the same type up erasure of focus.
+    -- they have the same type up erasure of the cursor.
     actsense2  : {Γ : ·ctx} {e e' : ê} {e◆ e'◆ : ė} {t : τ̇} {α : action} →
                   erase-e e  e◆ →
                   erase-e e' e'◆ →

@@ -5,7 +5,7 @@ open import core
 open import judgemental-erase
 
 module moveerase where
-  -- theorem: movement doesn't change the term other than moving the focus
+  -- theorem: movement doesn't change the term other than moving the cursor
   -- around.
   moveerase : {e e' : ê} {δ : direction} →
             (e + move δ +>e e') →

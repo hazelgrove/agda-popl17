@@ -287,7 +287,7 @@ module core where
     _·+₂_ : ė → ê → ê
     <|_|> : ê → ê
 
-  -- erasure of focus cursor for types and expressions, judgementally. see
+  -- erasure of cursor for types and expressions, judgementally. see
   -- jugemental-erase for an argument that this defines an isomorphic
   -- object to the direct metafunction provided in the text of the paper
   data erase-t : τ̂ → τ̇ → Set where

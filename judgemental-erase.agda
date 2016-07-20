@@ -3,7 +3,7 @@ open import Prelude
 open import List
 open import core
 
--- erasure of focus in the types and expressions is defined in the paper,
+-- erasure of cursor in the types and expressions is defined in the paper,
 -- and in the core file, as a function on zexpressions. because of the
 -- particular encoding of all the judgments as datatypes and the agda
 -- semantics for pattern matching, it is sometimes also convenient to have
@@ -24,13 +24,13 @@ open import core
 -- associated work done in agda.
 module judgemental-erase where
 
-  --focus erasure for types, as written in the paper
+  --cursor erasure for types, as written in the paper
   _◆t : τ̂ → τ̇
   ▹ t ◃ ◆t =  t
   (t1 ==>₁ t2) ◆t = (t1 ◆t) ==> t2
   (t1 ==>₂ t2) ◆t = t1 ==> (t2 ◆t)
 
-  --focus erasure for expressions, as written in the paper
+  --cursor erasure for expressions, as written in the paper
   _◆e : ê → ė
   ▹ x ◃ ◆e       = x
   (e ·:₁ t) ◆e   = (e ◆e) ·: t
