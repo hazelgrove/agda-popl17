@@ -8,22 +8,60 @@ the write up of the paper.
 
 This file describes how to use the emacs agda input mode to enter each of
 those special characters, in roughly the order that they appear in
-`Hazelnut.agda`.
+`core.agda` broken into categories that aren't quite disjoint.
 
+
+Agda built-ins or prelude-defined types
+------------------------------
  - "→" is `\to`
+
  - "⊤" is `\top`
- - "⊥" is `\bot"
+
+ - "⊥" is `\bot`
+
+ - "∀" is `\forall`
+
+ - "∈" is `\in`
+
  - "×" is `\times` or `\x`, and not to be confused with "x"
+
+ - subscripted numbers like "₂" are `\_2` after the main glyph is entered
+
+
+judgemental and expression forms
+--------------------------------
+ - "⊢" is `\vdash`
+
  - "·" is `\cdot`
- - "λ" is `\lambda`
+
+ - greek letters like "Γ", "Σ", "λ", "α", and "δ" are their names with
+   relevant capitalization, so `\Gamma`, `\Sigma`, `\lambda`, `\alpha`,
+   and `\delta`
+
  - "∘" is `\circ` or `\o`
+
  - "~̸" is `~\not`
 
+
+super-scripted letters
+----------------------
+
  - "τ̇" is `\tau \^.`
+
  - "ė" is `e \^.`
+
  - "τ̂" is `\tau \^`
+
  - "ê" is `e \^`
 
+
+arrows
+------
+
  - "▹" is `\t 2`
+
  - "◃" is `\t 6`
+
+ - "▸" is `\t 5`
+
  - "◆" is `\di`
