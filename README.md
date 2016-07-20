@@ -1,45 +1,75 @@
 # agda-popl17
 
 This repository contains the formalization of Hazelnut and the associated
-metatheory.
+metatheory as submitted to POPL 2017.
 
-**This readme file is currently in an inconsistent state.**
+File Descriptions
+=================
 
-Agda File Descriptions
-======================
+[core.agda](core.agda) is the best file to start reading in, as it gives
+the basic definitions and syntax for the rest. Each file is documented
+internally, but we give a brief description here in alphabetical order.
 
-- [List.agda](List.agda), [Nat.agda](Nat.agda), and
-   [Prelude.agda](Prelude.agda) describe some standard data structures,
-   helpful types, a notion of equality, and related lemmas.
+- [LICENSE](LICENSE) is the license for this work
 
-- [Hazelnut-core.agda](Hazelnut-core.agda) defines the basic syntax of
-   Hazelnut, the static semantics, and the action semantics judgements.
+- [List.agda](List.agda), [Nat.agda](Nat.agda), and,
+  [Prelude.agda](Prelude.agda) define common data structures, types, and
+  lemmas not specific to Hazelnut.
 
-- [Hazelnut-deterministic.agda](Hazelnut-deterministic.agda) and
-   [Hazelnut-sensible.agda](Hazelnut-sensible.agda) prove the theorems
-   from the TFP draft paper arguing that actions preserve well-typedness
-   and are deterministic.
+- [README.md](README.md) is this file you're reading right now.
 
-- [Hazelnut-declarative.agda](Hazelnut-declarative.agda) defines a
-   declarative typing judgement for Hazelnut terms, rather than the main
-   bidirectional one, and relates the two. This allows us to state type
-   safety with respect to possible dynamic semantics.
+- [all.agda](all.agda) acts as an ad-hoc make file for the project. If you
+  run `agda all.agda` at the commandline in a clone with no `.agdai` files,
+  it will check all the complete proofs from scratch. The files that
+  contain proofs that are not yet done are also listed here, but commented
+  out because Agda (very rightly) won't let you include modules with
+  unsolved goals.
 
-- [Hazelnut-complete-dynamics.agda](Hazelnut-complete-dynamics.agda)
-   defines the standard dynamic semantics on complete terms -- i.e. ones
-   with no holes in them.
+- [checks.agda](checks.agda) defines the iterated action semantics and the
+  lemmas that lift the zipper rules to them.
 
-- [Hazelnut-checks.agda](Hazelnut-checks.agda) is a collection of theorems
-   that amount to sanity checking the rules from the judgements -- the fact
-   that they are true is not surprising, but does demonstrate that rules
-   haven't been omitted. This is part of the effort to make the core
-   calculus easy to extend with confidence.
+- [complete-dynamics.agda](complete-dynamics.agda) is incomplete, but
+  defines a notion of a dynamics on complete terms.
 
-- [todo.md](todo.md) is the short-hand todo list for this formalization
-  effort.
+- [constructability.agda](constructability.agda) gives the proof of
+  constructability.
 
-- [keys.md](keys.md) is a list of agda-mode emacs key chords that enter the
-   odder bits of unicode that we use in the Agda files
+- [core.agda](core.agda) defines the main judgements and grammars of the
+  language, and gives a few lemmas.
+
+- [declarative.agda](declarative.agda) is incomplete, but defines a
+  declarative rather than bidirectional typing system and relates it to the
+  main system.
+
+- [deterministic.agda](deterministic.agda) is incomplete, but very nearly
+  proves that the action semantics are deterministic. There are two cases
+  that fail. Fixing this is on the short todo list.
+
+- [future-work.agda](future-work.agda) is full of half-baked crack pot
+  ideas about possible things we might want to prove soon.
+
+- [judgemental-erase.agda](judgemental-erase.agda) defines the function
+  form of cursor erasure and proves it isomorpic to the judgemental form
+  given in [core.agda](core.agda).
+
+- [judgemental-inconsistency.agda](judgemental-inconsistency.agda) defines
+  a jugemental form of type inconsistency and proves it isomorphic to the
+  functional form given in [core.agda](core.agda).
+
+- [keys.md](keys.md) is a list of emacs agda-mode key chords to enter the
+  unicode characters we use throughout the development.
+
+- [moveerase.agda](moveerase.agda) contains theorems about the interaction
+  between movement and cursor erasure.
+
+- [reachability.agda](reachability.agda) gives the proof of reachability.
+
+- [sensible.agda](sensible.agda) gives the proof of action sensibility.
+
+- [structural.agda](structural.agda) is incomplete, but has proofs of
+  standard structural properties like weakening, exchange, and contraction
+  for the various context-sensitive judgements.
+
 
 Assumptions and Represenatation Decisions
 =========================================
@@ -80,8 +110,8 @@ Assumptions and Represenatation Decisions
   maximum-name-used-so-far. We have not needed to do that yet, but it is an
   easy refactoring if we do in the future.
 
-- Type compatability is a judgement all its own, rather than trying to use
-  an agda internal notion of equality. This is because the notion of
+- Type consistency is a judgement all its own, rather than trying to use an
+  agda internal notion of equality. This is because the notion of
   compatibility that we inherit from the work on gradual typing is
   deliberately not transitive, so it can't be easily encoded as equality.
 
@@ -89,15 +119,18 @@ Assumptions and Represenatation Decisions
   with the homotopy type theoretic notion of a higher inductive type (HIT)
   but we haven't explored that at all.
 
-- Type incompatability is not its own judgement, but rather represented as
+- Type inconsistency is not its own judgement, but rather represented as
   `{t1 t2 : ·τ} → t1 ~ t2 → ⊥`, which is the standard way to represent
   negation.
 
   This means the same thing as the judgement in the text, but saves us
   proving some lemmas describing the coherence between two types that would
-  result from the direct translation into Agda. The only downside is that
-  if the incompatibility judgement is extended in an incorrect way, we have
-  no metatheory in the formalization that will break to show that.
+  result from the direct translation into Agda.
+
+  The two views are shown isomorphic in
+  [judgemental-inconsistency.agda](judgemental-inconsistency.agda), so if
+  bad rules are added that isomorphism will break. This also jusitifes our
+  use of the much-easier-to-program-with negation form.
 
 - Each of the clauses of the theorems in the text are broken off into
   separate functions in the formalization. This is because the clauses are
