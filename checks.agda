@@ -115,7 +115,6 @@ module checks where
   ziplem-asc1 DoRefl = DoRefl
   ziplem-asc1 (DoAna a r) = DoSynth (SAZipAsc1 a) (ziplem-asc1 r)
 
-  -- todo: why is this easier with a weird mix of erasures?
   ziplem-asc2 : ∀{Γ t L t' t◆ t'◆} →
                erase-t t t◆ →
                erase-t t' t'◆ →
@@ -160,7 +159,6 @@ module checks where
   ziplem-ap2 wt m DoRefl = DoRefl
   ziplem-ap2 wt m (DoAna x d) = DoSynth (SAZipApAna m wt x) (ziplem-ap2 wt m d)
 
-  -- todo: why is this easier with functional erasure?
   ziplem-nehole-a : ∀{Γ e e' L t t'} →
                 (Γ ⊢ e ◆e => t) →
                 runsynth Γ e t L e' t' →

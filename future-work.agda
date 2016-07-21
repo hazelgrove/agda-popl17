@@ -39,7 +39,6 @@ module future-work where
   semitrans (TCArr a a₁) TCHole1 = TCHole1
   semitrans (TCArr a a₁) (TCArr c c₁) = TCArr (semitrans a c) (semitrans a₁ c₁)
 
-
   -- analysis and type consistency work together in the expected way
   anaconsis : ∀{Γ e t t'} → Γ ⊢ e <= t → t ~ t' → Γ ⊢ e <= t'
   anaconsis (ASubsume x x₁) TCRefl = ASubsume x x₁
