@@ -158,13 +158,9 @@ module reachability where
   -- theses statements to present a consistent interface with the text of
   -- the paper, while also allowing easy pattern matching in the proofs.
   --
-  -- the justification for these statements, intuitively, is that cursor
-  -- cannot change the type of things because the typing judgement is
-  -- defined on the cursor-erased terms and types. so if two terms agree up
-  -- to erasure, they must have the exact same type in the same context,
-  -- not merely a compatible one in an extension or any other weakening of
-  -- the statement. these are lemmas which are currently not proven. TODO?
-
+  -- the intuition for these statements is that the cursor cannot change
+  -- the type of things because the typing judgement is defined on the
+  -- cursor-erased terms and types.
   reachability-types : (t1 t2 : τ̂) → (t1 ◆t) == (t2 ◆t) →
                            Σ[ L ∈ List action ] runtype t1 L t2 × movements L
   reachability-types t1 t2 eq
