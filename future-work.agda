@@ -22,49 +22,37 @@ module future-work where
 
   -- TODO: the shower thoughts theorem
 
-    -- not a theorem; same problem as the corresponding hole below
-  semitrans : ∀{t t' t''} → t ~ t'' → t ~ t' → t'' ~ t'
-  semitrans TCRefl TCRefl = TCRefl
-  semitrans TCRefl TCHole1 = TCHole1
-  semitrans TCRefl TCHole2 = TCHole2
-  semitrans TCRefl (TCArr c c₁) = TCArr c c₁
-  semitrans TCHole1 TCRefl = TCHole2
-  semitrans TCHole1 TCHole1 = TCRefl
-  semitrans TCHole1 TCHole2 = TCHole2
-  semitrans TCHole1 (TCArr c c₁) = TCHole2
-  semitrans TCHole2 TCRefl = TCHole1
-  semitrans TCHole2 TCHole1 = TCHole1
-  semitrans TCHole2 TCHole2 = {!!} -- unfillable; not enough info from TCHole2
-  semitrans (TCArr a a₁) TCRefl = TCArr (semitrans a TCRefl) (semitrans a₁ TCRefl)
-  semitrans (TCArr a a₁) TCHole1 = TCHole1
-  semitrans (TCArr a a₁) (TCArr c c₁) = TCArr (semitrans a c) (semitrans a₁ c₁)
-
   -- analysis and type consistency work together in the expected way
-  anaconsis : ∀{Γ e t t'} → Γ ⊢ e <= t → t ~ t' → Γ ⊢ e <= t'
-  anaconsis (ASubsume x x₁) TCRefl = ASubsume x x₁
-  anaconsis (ASubsume x x₁) TCHole1 = ASubsume x TCHole2
-  anaconsis (ASubsume x TCRefl) TCHole2 = ASubsume x TCHole1
-  anaconsis (ASubsume x TCHole1) TCHole2 = ASubsume x TCHole1
-  anaconsis (ASubsume x TCHole2) TCHole2 = {!!}
-  anaconsis (ASubsume x TCRefl) (TCArr con con₁) = ASubsume x (TCArr (~sym con) (~sym con₁))
-  anaconsis (ASubsume x TCHole1) (TCArr con con₁) = ASubsume x TCHole1
-  anaconsis (ASubsume x (TCArr x₁ x₂)) (TCArr con con₁) = ASubsume x (TCArr (semitrans con x₁) (semitrans con₁ x₂))
+  anaconsis : ∀{Γ e t t'} → tcomplete t → Γ ⊢ e <= t → t ~ t' → Γ ⊢ e <= t'
+  anaconsis tc (ASubsume x x₁) c = {!!}
+  anaconsis tc (ALam x₁ x₂ wt) TCRefl = {!!}
+  anaconsis tc (ALam x₁ x₂ wt) TCHole1 = {!!}
+  anaconsis tc (ALam x₁ x₂ wt) TCHole2 = {!!}
+  anaconsis tc (ALam x₁ x₂ wt) (TCArr c c₁) = {!!}
 
-  anaconsis (ALam x₁ MAHole wt) TCRefl = ALam x₁ MAHole wt
-  anaconsis (ALam x₁ MAHole wt) TCHole1 = ALam x₁ MAHole wt
-  anaconsis (ALam x₁ MAHole wt) TCHole2 with anaconsis wt TCRefl -- you can put any of TC construtors here and this t/cs
-  ... | ih = ALam x₁ {!!} ih
-  anaconsis (ALam x₁ MAArr wt) TCRefl = ALam x₁ MAArr wt
-  anaconsis (ALam x₁ MAArr wt) TCHole1 = ALam x₁ {!!} (anaconsis wt TCRefl) -- hole doesn't match anything
-  anaconsis (ALam x₁ MAArr wt) (TCArr con con₁) with anaconsis wt con₁
-  ... | ih = ALam x₁ MAArr {!!} -- the type in the context doesn't change, only in the analysis position. lemma?
+  -- anaconsis (ASubsume x x₁) TCRefl = ASubsume x x₁
+  -- anaconsis (ASubsume x x₁) TCHole1 = ASubsume x TCHole2
+  -- anaconsis (ASubsume x TCRefl) TCHole2 = ASubsume x TCHole1
+  -- anaconsis (ASubsume x TCHole1) TCHole2 = ASubsume x TCHole1
+  -- anaconsis (ASubsume x TCHole2) TCHole2 = {!!}
+  -- anaconsis (ASubsume x TCRefl) (TCArr con con₁) = ASubsume x (TCArr (~sym con) (~sym con₁))
+  -- anaconsis (ASubsume x TCHole1) (TCArr con con₁) = ASubsume x TCHole1
+  -- anaconsis (ASubsume x (TCArr x₁ x₂)) (TCArr con con₁) = ASubsume x (TCArr (semitrans con x₁) (semitrans con₁ x₂))
+
+  -- anaconsis (ALam x₁ MAHole wt) TCRefl = ALam x₁ MAHole wt
+  -- anaconsis (ALam x₁ MAHole wt) TCHole1 = ALam x₁ MAHole wt
+  -- anaconsis (ALam x₁ MAHole wt) TCHole2 with anaconsis wt TCRefl -- you can put any of TC construtors here and this t/cs
+  -- ... | ih = ALam x₁ {!!} ih
+  -- anaconsis (ALam x₁ MAArr wt) TCRefl = ALam x₁ MAArr wt
+  -- anaconsis (ALam x₁ MAArr wt) TCHole1 = ALam x₁ {!!} (anaconsis wt TCRefl) -- hole doesn't match anything
+  -- anaconsis (ALam x₁ MAArr wt) (TCArr con con₁) with anaconsis wt con₁
+  -- ... | ih = ALam x₁ MAArr {!!} -- the type in the context doesn't change, only in the analysis position. lemma?
 
 
 
 
   -- horsing around with weakening the statement of determinism for the two
   -- cases that we can't prove in the analysis case.
-
   data near : ê → ê → Set where
     AscNear : ∀{e t1 t2} →
                       (t1 ~ t2) →
@@ -193,18 +181,3 @@ module future-work where
     -- subsume / finish
   actdet3 er (ASubsume a b) (AAFinish x) (AASubsume x₁ x₂ (SAFinish x₃) x₄) = EqNear refl
   actdet3 er (ASubsume a b) (AAFinish x) (AAFinish x₁) = EqNear refl
-
-
-  movements-synth : ∀{e e' t t' Γ} →
-    (L : List action) (p : movements L) →
-                    runsynth Γ e t L e' t' → t == t'
-  movements-synth .[] AM[] DoRefl = refl
-  movements-synth ._ (AM:: p) (DoSynth x x₁) with movements-synth _ p x₁ | x
-  ... | refl | SAMove x₂ = refl
-  ... | refl | SAZipAsc1 x₂ = refl
-  ... | refl | SAZipAsc2 x₂ x₃ x₄ x₅ = eraset-det (lem-erase-step x₄ x₂) x₃
-  ... | refl | SAZipApArr x₂ x₃ x₄ qq x₅ = {!!}
-  ... | refl | SAZipApAna x₂ x₃ x₄ = refl
-  ... | refl | SAZipPlus1 x₂ = refl
-  ... | refl | SAZipPlus2 x₂ = refl
-  ... | refl | SAZipHole x₂ x₃ qq = refl
