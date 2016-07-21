@@ -4,6 +4,7 @@ open import List
 open import core
 open import judgemental-erase
 open import checks
+open import moveerase
 
 module future-work where
   -- there is no list of actions that can be preformed in sequence that
@@ -37,6 +38,7 @@ module future-work where
   semitrans (TCArr a a₁) TCRefl = TCArr (semitrans a TCRefl) (semitrans a₁ TCRefl)
   semitrans (TCArr a a₁) TCHole1 = TCHole1
   semitrans (TCArr a a₁) (TCArr c c₁) = TCArr (semitrans a c) (semitrans a₁ c₁)
+
 
   -- analysis and type consistency work together in the expected way
   anaconsis : ∀{Γ e t t'} → Γ ⊢ e <= t → t ~ t' → Γ ⊢ e <= t'

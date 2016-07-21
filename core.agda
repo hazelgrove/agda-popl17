@@ -193,6 +193,11 @@ module core where
   ~sym TCHole2 = TCHole1
   ~sym (TCArr p1 p2) = TCArr (~sym p1) (~sym p2)
 
+  -- type consistency isn't transitive
+  not-trans : ((t1 t2 t3 : τ̇) → t1 ~ t2 → t2 ~ t3 → t1 ~ t3) → ⊥
+  not-trans t with t (num ==> num) <||> num TCHole1 TCHole2
+  ... | ()
+
   -- if the domain or codomain of a pair of arrows isn't consistent, the
   -- whole arrow isn't consistent.
   lemarr1 : {t1 t2 t3 t4 : τ̇} → (t1 ~ t3 → ⊥) → (t1 ==> t2) ~ (t3 ==> t4)  → ⊥
