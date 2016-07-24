@@ -309,109 +309,148 @@ module core where
   synthunicity (SNEHole _) (SNEHole _) = refl
 
 
+  ----- the zippered form of the forms above and the rules for actions on them
 
+  -- those types without holes anywhere
+  tcomplete : τ̇ → Set
+  tcomplete num         = ⊤
+  tcomplete <||>        = ⊥
+  tcomplete (t1 ==> t2) = (tcomplete t1) × (tcomplete t2)
+  tcomplete (t1 ⊕ t2) = (tcomplete t1) × (tcomplete t2)
 
-  -- ----- the zippered form of the forms above and the rules for actions on them
+  -- similarly to the complete types, the complete expressions
+  ecomplete : ė → Set
+  ecomplete (e1 ·: t)  = ecomplete e1 × tcomplete t
+  ecomplete (X _)      = ⊤
+  ecomplete (·λ _ e1)  = ecomplete e1
+  ecomplete (N x)      = ⊤
+  ecomplete (e1 ·+ e2) = ecomplete e1 × ecomplete e2
+  ecomplete <||>       = ⊥
+  ecomplete <| e1 |>   = ⊥
+  ecomplete (e1 ∘ e2)  = ecomplete e1 × ecomplete e2
+  ecomplete (inl e)    = ecomplete e
+  ecomplete (inr e)    = ecomplete e
+  ecomplete (case e x e1 y e2)  = ecomplete e × ecomplete e1 × ecomplete e2
 
-  -- -- those types without holes anywhere
-  -- tcomplete : τ̇ → Set
-  -- tcomplete num         = ⊤
-  -- tcomplete <||>        = ⊥
-  -- tcomplete (t1 ==> t2) = (tcomplete t1) × (tcomplete t2)
+  -- zippered form of types
+  data τ̂ : Set where
+    ▹_◃  : τ̇ → τ̂
+    _==>₁_ : τ̂ → τ̇ → τ̂
+    _==>₂_ : τ̇ → τ̂ → τ̂
+    _⊕₁_ : τ̂ → τ̇ → τ̂
+    _⊕₂_ : τ̇ → τ̂ → τ̂
 
-  -- -- similarly to the complete types, the complete expressions
-  -- ecomplete : ė → Set
-  -- ecomplete (e1 ·: t)  = ecomplete e1 × tcomplete t
-  -- ecomplete (X _)      = ⊤
-  -- ecomplete (·λ _ e1)  = ecomplete e1
-  -- ecomplete (N x)      = ⊤
-  -- ecomplete (e1 ·+ e2) = ecomplete e1 × ecomplete e2
-  -- ecomplete <||>       = ⊥
-  -- ecomplete <| e1 |>   = ⊥
-  -- ecomplete (e1 ∘ e2)  = ecomplete e1 × ecomplete e2
+  -- zippered form of expressions
+  data ê : Set where
+    ▹_◃   : ė → ê
+    _·:₁_ : ê → τ̇ → ê
+    _·:₂_ : ė → τ̂ → ê
+    ·λ    : Nat → ê → ê
+    _∘₁_  : ê → ė → ê
+    _∘₂_  : ė → ê → ê
+    _·+₁_ : ê → ė → ê
+    _·+₂_ : ė → ê → ê
+    <|_|> : ê → ê
+    inl : ê → ê
+    inr : ê → ê
+    case₁ : ê → Nat → ė → Nat → ė → ê
+    case₂ : ė → Nat → ê → Nat → ė → ê
+    case₃ : ė → Nat → ė → Nat → ê → ê
 
-  -- -- zippered form of types
-  -- data τ̂ : Set where
-  --   ▹_◃  : τ̇ → τ̂
-  --   _==>₁_ : τ̂ → τ̇ → τ̂
-  --   _==>₂_ : τ̇ → τ̂ → τ̂
+  -- erasure of cursor for types and expressions, judgementally. see
+  -- jugemental-erase for an argument that this defines an isomorphic
+  -- object to the direct metafunction provided in the text of the paper
+  data erase-t : τ̂ → τ̇ → Set where
+    ETTop  : ∀{t} → erase-t (▹ t ◃) t
+    ETArrL : ∀{t1 t1' t2} → erase-t t1 t1' → erase-t (t1 ==>₁ t2) (t1' ==> t2)
+    ETArrR : ∀{t1 t2 t2'} → erase-t t2 t2' → erase-t (t1 ==>₂ t2) (t1 ==> t2')
+    ETPlusL : ∀{t1 t1' t2} → erase-t t1 t1' → erase-t (t1 ⊕₁ t2) (t1' ⊕ t2)
+    ETPlusR : ∀{t1 t2 t2'} → erase-t t2 t2' → erase-t (t1 ⊕₂ t2) (t1 ⊕ t2')
 
-  -- -- zippered form of expressions
-  -- data ê : Set where
-  --   ▹_◃   : ė → ê
-  --   _·:₁_ : ê → τ̇ → ê
-  --   _·:₂_ : ė → τ̂ → ê
-  --   ·λ    : Nat → ê → ê
-  --   _∘₁_  : ê → ė → ê
-  --   _∘₂_  : ė → ê → ê
-  --   _·+₁_ : ê → ė → ê
-  --   _·+₂_ : ė → ê → ê
-  --   <|_|> : ê → ê
+  data erase-e : ê → ė → Set where
+    EETop   : ∀{x}         → erase-e (▹ x ◃) x
+    EEAscL  : ∀{e e' t}    → erase-e e e'   → erase-e (e ·:₁ t) (e' ·: t)
+    EEAscR  : ∀{e t t'}    → erase-t t t'   → erase-e (e ·:₂ t) (e ·: t')
+    EELam   : ∀{x e e'}    → erase-e e e'   → erase-e (·λ x e) (·λ x e')
+    EEApL   : ∀{e1 e1' e2} → erase-e e1 e1' → erase-e (e1 ∘₁ e2) (e1' ∘ e2)
+    EEApR   : ∀{e1 e2 e2'} → erase-e e2 e2' → erase-e (e1 ∘₂ e2) (e1 ∘ e2')
+    EEPlusL : ∀{e1 e1' e2} → erase-e e1 e1' → erase-e (e1 ·+₁ e2) (e1' ·+ e2)
+    EEPlusR : ∀{e1 e2 e2'} → erase-e e2 e2' → erase-e (e1 ·+₂ e2) (e1 ·+ e2')
+    EENEHole : ∀{e e'}     → erase-e e e'   → erase-e <| e |>  <| e' |>
+    EEInl   : ∀{e e'}        → erase-e e e'   → erase-e (inl e) (inl e')
+    EEInr   : ∀{e e'}        → erase-e e e'   → erase-e (inr e) (inr e')
+    EECase1 : ∀{e e' x e1 y e2} → erase-e e e' →
+                                  erase-e (case₁ e x e1 y e2) (case e' x e1 y e2)
+    EECase2 : ∀{e x e1 e1' y e2} → erase-e e1 e1' →
+                                  erase-e (case₂ e x e1 y e2) (case e x e1' y e2)
+    EECase3 : ∀{e x e1 y e2 e2'} → erase-e e2 e2' →
+                                  erase-e (case₃ e x e1 y e2) (case e x e1 y e2')
 
-  -- -- erasure of cursor for types and expressions, judgementally. see
-  -- -- jugemental-erase for an argument that this defines an isomorphic
-  -- -- object to the direct metafunction provided in the text of the paper
-  -- data erase-t : τ̂ → τ̇ → Set where
-  --   ETTop  : ∀{t} → erase-t (▹ t ◃) t
-  --   ETArrL : ∀{t1 t1' t2} → erase-t t1 t1' → erase-t (t1 ==>₁ t2) (t1' ==> t2)
-  --   ETArrR : ∀{t1 t2 t2'} → erase-t t2 t2' → erase-t (t1 ==>₂ t2) (t1 ==> t2')
+  -- the three grammars that define actions
+  data direction : Set where
+    firstChild : direction
+    parent : direction
+    nextSib : direction
 
-  -- data erase-e : ê → ė → Set where
-  --   EETop   : ∀{x}         → erase-e (▹ x ◃) x
-  --   EEAscL  : ∀{e e' t}    → erase-e e e'   → erase-e (e ·:₁ t) (e' ·: t)
-  --   EEAscR  : ∀{e t t'}    → erase-t t t'   → erase-e (e ·:₂ t) (e ·: t')
-  --   EELam   : ∀{x e e'}    → erase-e e e'   → erase-e (·λ x e) (·λ x e')
-  --   EEApL   : ∀{e1 e1' e2} → erase-e e1 e1' → erase-e (e1 ∘₁ e2) (e1' ∘ e2)
-  --   EEApR   : ∀{e1 e2 e2'} → erase-e e2 e2' → erase-e (e1 ∘₂ e2) (e1 ∘ e2')
-  --   EEPlusL : ∀{e1 e1' e2} → erase-e e1 e1' → erase-e (e1 ·+₁ e2) (e1' ·+ e2)
-  --   EEPlusR : ∀{e1 e2 e2'} → erase-e e2 e2' → erase-e (e1 ·+₂ e2) (e1 ·+ e2')
-  --   EENEHole : ∀{e e'}      → erase-e e e'   → erase-e <| e |>  <| e' |>
+  data shape : Set where
+    arrow : shape
+    num   : shape
+    asc   : shape
+    var   : Nat → shape
+    lam   : Nat → shape
+    ap    : shape
+    arg   : shape
+    numlit : Nat → shape
+    plus  : shape
+    nehole : shape
+    tplus : shape
+    inl : shape
+    inr : shape
+    case : Nat → Nat → shape
 
-  -- -- the three grammars that define actions
-  -- data direction : Set where
-  --   firstChild : direction
-  --   parent : direction
-  --   nextSib : direction
+  data action : Set where
+    move : direction → action
+    del : action
+    construct : shape → action
+    finish : action
 
-  -- data shape : Set where
-  --   arrow : shape
-  --   num   : shape
-  --   asc   : shape
-  --   var   : Nat → shape
-  --   lam   : Nat → shape
-  --   ap    : shape
-  --   arg   : shape
-  --   numlit : Nat → shape
-  --   plus  : shape
-  --   nehole : shape
-
-  -- data action : Set where
-  --   move : direction → action
-  --   del : action
-  --   construct : shape → action
-  --   finish : action
-
-  -- -- type actions
-  -- data _+_+>_ : (t : τ̂) → (α : action) → (t' : τ̂) → Set where
-  --   TMFirstChild : {t1 t2 : τ̇} →
-  --              ▹ t1 ==> t2 ◃ + move firstChild +> (▹ t1 ◃ ==>₁ t2)
-  --   TMParent1 : {t1 t2 : τ̇} →
-  --              (▹ t1 ◃ ==>₁ t2) + move parent +> ▹ t1 ==> t2 ◃
-  --   TMParent2 : {t1 t2 : τ̇} →
-  --              (t1 ==>₂ ▹ t2 ◃) + move parent +> ▹ t1 ==> t2 ◃
-  --   TMNextSib : {t1 t2 : τ̇} →
-  --              (▹ t1 ◃ ==>₁ t2) + move nextSib +> (t1 ==>₂ ▹ t2 ◃)
-  --   TMDel     : {t : τ̇} →
-  --               (▹ t ◃) + del +> (▹ <||> ◃)
-  --   TMConArrow  : {t : τ̇} →
-  --               (▹ t ◃) + construct arrow +> (t ==>₂ ▹ <||> ◃)
-  --   TMConNum  : (▹ <||> ◃) + construct num +> (▹ num ◃)
-  --   TMZip1 : {t1 t1' : τ̂} {t2 : τ̇} {α : action} →
-  --               (t1 + α +> t1') →
-  --               ((t1 ==>₁ t2) + α +> (t1' ==>₁ t2))
-  --   TMZip2 : {t2 t2' : τ̂} {t1 : τ̇} {α : action} →
-  --               (t2 + α +> t2') →
-  --               ((t1 ==>₂ t2) + α +> (t1 ==>₂ t2'))
+  -- type actions
+  data _+_+>_ : (t : τ̂) → (α : action) → (t' : τ̂) → Set where
+    TMArrFirstChild : {t1 t2 : τ̇} →
+               ▹ t1 ==> t2 ◃ + move firstChild +> (▹ t1 ◃ ==>₁ t2)
+    TMArrParent1 : {t1 t2 : τ̇} →
+               (▹ t1 ◃ ==>₁ t2) + move parent +> ▹ t1 ==> t2 ◃
+    TMArrParent2 : {t1 t2 : τ̇} →
+               (t1 ==>₂ ▹ t2 ◃) + move parent +> ▹ t1 ==> t2 ◃
+    TMArrNextSib : {t1 t2 : τ̇} →
+               (▹ t1 ◃ ==>₁ t2) + move nextSib +> (t1 ==>₂ ▹ t2 ◃)
+    TMPlusFirstChild : {t1 t2 : τ̇} →
+               ▹ t1 ⊕ t2 ◃ + move firstChild +> (▹ t1 ◃ ⊕₁ t2)
+    TMPlusParent1 : {t1 t2 : τ̇} →
+               (▹ t1 ◃ ⊕₁ t2) + move parent +> ▹ t1 ⊕ t2 ◃
+    TMPlusParent2 : {t1 t2 : τ̇} →
+               (t1 ⊕₂ ▹ t2 ◃) + move parent +> ▹ t1 ⊕ t2 ◃
+    TMPlusNextSib : {t1 t2 : τ̇} →
+               (▹ t1 ◃ ⊕₁ t2) + move nextSib +> (t1 ⊕₂ ▹ t2 ◃)
+    TMDel     : {t : τ̇} →
+                (▹ t ◃) + del +> (▹ <||> ◃)
+    TMConArrow  : {t : τ̇} →
+                (▹ t ◃) + construct arrow +> (t ==>₂ ▹ <||> ◃)
+    TMConPlus  : {t : τ̇} →
+                (▹ t ◃) + construct tplus +> (t ⊕₂ ▹ <||> ◃)
+    TMConNum  : (▹ <||> ◃) + construct num +> (▹ num ◃)
+    TMArrZip1 : {t1 t1' : τ̂} {t2 : τ̇} {α : action} →
+                (t1 + α +> t1') →
+                ((t1 ==>₁ t2) + α +> (t1' ==>₁ t2))
+    TMArrZip2 : {t2 t2' : τ̂} {t1 : τ̇} {α : action} →
+                (t2 + α +> t2') →
+                ((t1 ==>₂ t2) + α +> (t1 ==>₂ t2'))
+    TMPlusZip1 : {t1 t1' : τ̂} {t2 : τ̇} {α : action} →
+                (t1 + α +> t1') →
+                ((t1 ⊕₁ t2) + α +> (t1' ⊕₁ t2))
+    TMPlusZip2 : {t2 t2' : τ̂} {t1 : τ̇} {α : action} →
+                (t2 + α +> t2') →
+                ((t1 ⊕₂ t2) + α +> (t1 ⊕₂ t2'))
 
   -- -- expression movement
   -- data _+_+>e_ : (e : ê) → (α : action) → (e' : ê) → Set where
