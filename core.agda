@@ -170,126 +170,143 @@ module core where
                  (Γ ,, (x , t2)) ⊢ e2 <= t →
                  Γ ⊢ case e x e1 y e2 <= t
 
+  ----- a couple of exmaples to demonstrate how the encoding above works
 
-  -- ----- a couple of exmaples to demonstrate how the encoding above works
+  -- the function (λx. x + 1) where x is named "0".
+  add0 : ė
+  add0 = ·λ 0 (X 0 ·+ N 1)
 
-  -- -- the function (λx. x + 1) where x is named "0".
-  -- add0 : ė
-  -- add0 = ·λ 0 (X 0 ·+ N 1)
+  -- this is the derivation that fn has type num ==> num
+  ex1 : ∅ ⊢ add0 <= (num ==> num)
+  ex1 = ALam refl MAArr (ASubsume
+                           (SPlus (ASubsume (SVar refl) TCRefl) (ASubsume SNum TCRefl))
+                           TCRefl)
 
-  -- -- this is the derivation that fn has type num ==> num
-  -- ex1 : ∅ ⊢ add0 <= (num ==> num)
-  -- ex1 = ALam refl MAArr (ASubsume
-  --                          (SPlus (ASubsume (SVar refl) TCRefl) (ASubsume SNum TCRefl))
-  --                          TCRefl)
+  -- the derivation that when applied to the numeric argument 10 add0
+  -- produces a num.
+  ex2 : ∅ ⊢ (add0 ·: (num ==> num)) ∘ (N 10) => num
+  ex2 = SAp (SAsc ex1) MAArr (ASubsume SNum TCRefl)
 
-  -- -- the derivation that when applied to the numeric argument 10 add0
-  -- -- produces a num.
-  -- ex2 : ∅ ⊢ (add0 ·: (num ==> num)) ∘ (N 10) => num
-  -- ex2 = SAp (SAsc ex1) MAArr (ASubsume SNum TCRefl)
+  -- the slightly longer derivation that argues that add0 applied to a
+  -- variable that's known to be a num produces a num
+  ex2b : (∅ ,, (1 , num)) ⊢ (add0 ·: (num ==> num)) ∘ (X 1) => num
+  ex2b = SAp (SAsc (ALam refl MAArr (ASubsume
+                                       (SPlus (ASubsume (SVar refl) TCRefl) (ASubsume SNum TCRefl))
+                                       TCRefl))) MAArr (ASubsume (SVar refl) TCRefl)
 
-  -- -- the slightly longer derivation that argues that add0 applied to a
-  -- -- variable that's known to be a num produces a num
-  -- ex2b : (∅ ,, (1 , num)) ⊢ (add0 ·: (num ==> num)) ∘ (X 1) => num
-  -- ex2b = SAp (SAsc (ALam refl MAArr (ASubsume
-  --                                      (SPlus (ASubsume (SVar refl) TCRefl) (ASubsume SNum TCRefl))
-  --                                      TCRefl))) MAArr (ASubsume (SVar refl) TCRefl)
+  -- eta-expanding addition to curry it gets num → num → num
+  ex3 : ∅ ⊢ ·λ 0 ( (·λ 1 (X 0 ·+ X 1)) ·: (num ==> num)  )
+               <= (num ==> (num ==> num))
+  ex3 = ALam refl MAArr (ASubsume (SAsc (ALam refl MAArr (ASubsume
+                                                            (SPlus (ASubsume (SVar refl) TCRefl) (ASubsume (SVar refl) TCRefl))
+                                                            TCRefl))) TCRefl)
 
-  -- -- eta-expanding addition to curry it gets num → num → num
-  -- ex3 : ∅ ⊢ ·λ 0 ( (·λ 1 (X 0 ·+ X 1)) ·: (num ==> num)  )
-  --              <= (num ==> (num ==> num))
-  -- ex3 = ALam refl MAArr (ASubsume (SAsc (ALam refl MAArr (ASubsume
-  --                                                           (SPlus (ASubsume (SVar refl) TCRefl) (ASubsume (SVar refl) TCRefl))
-  --                                                           TCRefl))) TCRefl)
-
-  -- -- applying three to four has type hole -- but there is no action that
-  -- -- can fill the hole in the type so this term is forever incomplete.
-  -- ex4 : ∅ ⊢ ((N 3) ·: <||>) ∘ (N 4) => <||>
-  -- ex4 = SAp (SAsc (ASubsume SNum TCHole2)) MAHole (ASubsume SNum TCHole2)
-
-
-  -- ----- some theorems about the rules and judgement presented so far.
-
-  -- -- a variable is apart from any context from which it is removed
-  -- aar : (Γ : ·ctx) (x : Nat) → x # (Γ / x)
-  -- aar Γ x with natEQ x x
-  -- aar Γ x | Inl refl = refl
-  -- aar Γ x | Inr x≠x  = abort (x≠x refl)
-
-  -- -- contexts give at most one binding for each variable
-  -- ctxunicity : {Γ : ·ctx} {n : Nat} {t t' : τ̇} →
-  --              (n , t) ∈ Γ →
-  --              (n , t') ∈ Γ →
-  --              t == t'
-  -- ctxunicity {n = n} p q with natEQ n n
-  -- ctxunicity p q | Inl refl = someinj (! p · q)
-  -- ctxunicity _ _ | Inr x≠x = abort (x≠x refl)
-
-  -- -- type consistency is symmetric
-  -- ~sym : {t1 t2 : τ̇} → t1 ~ t2 → t2 ~ t1
-  -- ~sym TCRefl = TCRefl
-  -- ~sym TCHole1 = TCHole2
-  -- ~sym TCHole2 = TCHole1
-  -- ~sym (TCArr p1 p2) = TCArr (~sym p1) (~sym p2)
-
-  -- -- type consistency isn't transitive
-  -- not-trans : ((t1 t2 t3 : τ̇) → t1 ~ t2 → t2 ~ t3 → t1 ~ t3) → ⊥
-  -- not-trans t with t (num ==> num) <||> num TCHole1 TCHole2
-  -- ... | ()
-
-  -- -- if the domain or codomain of a pair of arrows isn't consistent, the
-  -- -- whole arrow isn't consistent.
-  -- lemarr1 : {t1 t2 t3 t4 : τ̇} → (t1 ~ t3 → ⊥) → (t1 ==> t2) ~ (t3 ==> t4)  → ⊥
-  -- lemarr1 v TCRefl = v TCRefl
-  -- lemarr1 v (TCArr p _) = v p
-
-  -- lemarr2 : {t1 t2 t3 t4 : τ̇} → (t2 ~ t4 → ⊥) → (t1 ==> t2) ~ (t3 ==> t4) →  ⊥
-  -- lemarr2 v TCRefl = v TCRefl
-  -- lemarr2 v (TCArr _ p) = v p
-
-  -- --  every pair of types is either consistent or not consistent
-  -- ~dec : (t1 t2 : τ̇) → ((t1 ~ t2) + (t1 ~̸ t2))
-  --   -- this takes care of all hole cases, so we don't consider them below
-  -- ~dec _ <||> = Inl TCHole1
-  -- ~dec <||> _ = Inl TCHole2
-  --   -- num cases
-  -- ~dec num num = Inl TCRefl
-  -- ~dec num (t2 ==> t3) = Inr (λ ())
-  --   -- arrow cases
-  -- ~dec (t1 ==> t2) num = Inr (λ ())
-  -- ~dec (t1 ==> t2) (t3 ==> t4) with ~dec t1 t3 | ~dec t2 t4
-  -- ... | Inl x | Inl y = Inl (TCArr x y)
-  -- ... | Inl _ | Inr y = Inr (lemarr2 y)
-  -- ... | Inr x | _     = Inr (lemarr1 x)
-
-  -- -- theorem: no pair of types is both consistent and not consistent. this
-  -- -- is immediate from our encoding of the ~̸ judgement in the formalism
-  -- -- here; in the exact mathematics presented in the paper, this would
-  -- -- require induction to relate the two judgements.
-  -- ~apart : {t1 t2 : τ̇} → (t1 ~̸ t2) → (t1 ~ t2) → ⊥
-  -- ~apart v p = v p
+  -- applying three to four has type hole -- but there is no action that
+  -- can fill the hole in the type so this term is forever incomplete.
+  ex4 : ∅ ⊢ ((N 3) ·: <||>) ∘ (N 4) => <||>
+  ex4 = SAp (SAsc (ASubsume SNum TCHole2)) MAHole (ASubsume SNum TCHole2)
 
 
-  -- -- synthesis only produces equal types. note that there is no need for an
-  -- -- analagous theorem for analytic positions because we think of
-  -- -- the type as an input
-  -- synthunicity : {Γ : ·ctx} {e : ė} {t t' : τ̇} →
-  --                 (Γ ⊢ e => t)
-  --               → (Γ ⊢ e => t')
-  --               → t == t'
-  -- synthunicity (SAsc _) (SAsc _) = refl
-  -- synthunicity {Γ = G} (SVar in1) (SVar in2) = ctxunicity {Γ = G} in1 in2
-  -- synthunicity (SAp D1 MAHole b) (SAp D2 MAHole y) = refl
-  -- synthunicity (SAp D1 MAHole b) (SAp D2 MAArr y) with synthunicity D1 D2
-  -- ... | ()
-  -- synthunicity (SAp D1 MAArr b) (SAp D2 MAHole y) with synthunicity D1 D2
-  -- ... | ()
-  -- synthunicity (SAp D1 MAArr b) (SAp D2 MAArr y) with synthunicity D1 D2
-  -- ... | refl = refl
-  -- synthunicity SNum SNum = refl
-  -- synthunicity (SPlus _ _ ) (SPlus _ _ ) = refl
-  -- synthunicity SEHole SEHole = refl
-  -- synthunicity (SNEHole _) (SNEHole _) = refl
+  ----- some theorems about the rules and judgement presented so far.
+
+  -- a variable is apart from any context from which it is removed
+  aar : (Γ : ·ctx) (x : Nat) → x # (Γ / x)
+  aar Γ x with natEQ x x
+  aar Γ x | Inl refl = refl
+  aar Γ x | Inr x≠x  = abort (x≠x refl)
+
+  -- contexts give at most one binding for each variable
+  ctxunicity : {Γ : ·ctx} {n : Nat} {t t' : τ̇} →
+               (n , t) ∈ Γ →
+               (n , t') ∈ Γ →
+               t == t'
+  ctxunicity {n = n} p q with natEQ n n
+  ctxunicity p q | Inl refl = someinj (! p · q)
+  ctxunicity _ _ | Inr x≠x = abort (x≠x refl)
+
+  -- type consistency is symmetric
+  ~sym : {t1 t2 : τ̇} → t1 ~ t2 → t2 ~ t1
+  ~sym TCRefl = TCRefl
+  ~sym TCHole1 = TCHole2
+  ~sym TCHole2 = TCHole1
+  ~sym (TCArr p1 p2) = TCArr (~sym p1) (~sym p2)
+  ~sym (TCPlus p1 p2) = TCPlus (~sym p1) (~sym p2)
+
+  -- type consistency isn't transitive
+  not-trans : ((t1 t2 t3 : τ̇) → t1 ~ t2 → t2 ~ t3 → t1 ~ t3) → ⊥
+  not-trans t with t (num ==> num) <||> num TCHole1 TCHole2
+  ... | ()
+
+  -- if the domain or codomain of a pair of arrows isn't consistent, the
+  -- whole arrow isn't consistent.
+  lemarr1 : {t1 t2 t3 t4 : τ̇} → (t1 ~ t3 → ⊥) → (t1 ==> t2) ~ (t3 ==> t4)  → ⊥
+  lemarr1 v TCRefl = v TCRefl
+  lemarr1 v (TCArr p _) = v p
+
+  lemarr2 : {t1 t2 t3 t4 : τ̇} → (t2 ~ t4 → ⊥) → (t1 ==> t2) ~ (t3 ==> t4) →  ⊥
+  lemarr2 v TCRefl = v TCRefl
+  lemarr2 v (TCArr _ p) = v p
+
+  lemplus1 : {t1 t2 t3 t4 : τ̇} → (t1 ~ t3 → ⊥) → (t1 ⊕ t2) ~ (t3 ⊕ t4)  → ⊥
+  lemplus1 v TCRefl = v TCRefl
+  lemplus1 v (TCPlus p _) = v p
+
+  lemplus2 : {t1 t2 t3 t4 : τ̇} → (t2 ~ t4 → ⊥) → (t1 ⊕ t2) ~ (t3 ⊕ t4) →  ⊥
+  lemplus2 v TCRefl = v TCRefl
+  lemplus2 v (TCPlus _ p) = v p
+
+  --  every pair of types is either consistent or not consistent
+  ~dec : (t1 t2 : τ̇) → ((t1 ~ t2) + (t1 ~̸ t2))
+    -- this takes care of all hole cases, so we don't consider them below
+  ~dec _ <||> = Inl TCHole1
+  ~dec <||> _ = Inl TCHole2
+    -- num cases
+  ~dec num num = Inl TCRefl
+  ~dec num (t2 ==> t3) = Inr (λ ())
+  ~dec num (t1 ⊕ t2) = Inr (λ ())
+    -- arrow cases
+  ~dec (t1 ==> t2) num = Inr (λ ())
+  ~dec (t3 ==> t4) (t1 ⊕ t2) = Inr (λ ())
+  ~dec (t1 ==> t2) (t3 ==> t4) with ~dec t1 t3 | ~dec t2 t4
+  ... | Inl x | Inl y = Inl (TCArr x y)
+  ... | Inl _ | Inr y = Inr (lemarr2 y)
+  ... | Inr x | _     = Inr (lemarr1 x)
+    -- plus cases
+  ~dec (t1 ⊕ t2) num = Inr (λ ())
+  ~dec (t1 ⊕ t2) (t3 ==> t4) = Inr (λ ())
+  ~dec (t1 ⊕ t2) (t3 ⊕ t4) with ~dec t1 t3 | ~dec t2 t4
+  ... | Inl x | Inl y = Inl (TCPlus x y)
+  ... | _     | Inr x = Inr (lemplus2 x)
+  ... | Inr x | Inl _ = Inr (lemplus1 x)
+
+  -- theorem: no pair of types is both consistent and not consistent. this
+  -- is immediate from our encoding of the ~̸ judgement in the formalism
+  -- here; in the exact mathematics presented in the paper, this would
+  -- require induction to relate the two judgements.
+  ~apart : {t1 t2 : τ̇} → (t1 ~̸ t2) → (t1 ~ t2) → ⊥
+  ~apart v p = v p
+
+
+  -- synthesis only produces equal types. note that there is no need for an
+  -- analagous theorem for analytic positions because we think of
+  -- the type as an input
+  synthunicity : {Γ : ·ctx} {e : ė} {t t' : τ̇} →
+                  (Γ ⊢ e => t)
+                → (Γ ⊢ e => t')
+                → t == t'
+  synthunicity (SAsc _) (SAsc _) = refl
+  synthunicity {Γ = G} (SVar in1) (SVar in2) = ctxunicity {Γ = G} in1 in2
+  synthunicity (SAp D1 MAHole b) (SAp D2 MAHole y) = refl
+  synthunicity (SAp D1 MAHole b) (SAp D2 MAArr y) with synthunicity D1 D2
+  ... | ()
+  synthunicity (SAp D1 MAArr b) (SAp D2 MAHole y) with synthunicity D1 D2
+  ... | ()
+  synthunicity (SAp D1 MAArr b) (SAp D2 MAArr y) with synthunicity D1 D2
+  ... | refl = refl
+  synthunicity SNum SNum = refl
+  synthunicity (SPlus _ _ ) (SPlus _ _ ) = refl
+  synthunicity SEHole SEHole = refl
+  synthunicity (SNEHole _) (SNEHole _) = refl
 
 
 
