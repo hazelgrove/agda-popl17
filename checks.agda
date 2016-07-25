@@ -99,13 +99,13 @@ module checks where
             runtype t1' L t1 →
             runtype (t1' ==>₁ t2) L (t1 ==>₁ t2)
   ziplem-tm1 DoRefl = DoRefl
-  ziplem-tm1 (DoType x L') = DoType (TMZip1 x) (ziplem-tm1 L')
+  ziplem-tm1 (DoType x L') = DoType (TMArrZip1 x) (ziplem-tm1 L')
 
   ziplem-tm2 : ∀ {t1 t2 t2' L } →
             runtype t2' L t2 →
             runtype (t1 ==>₂ t2') L (t1 ==>₂ t2)
   ziplem-tm2 DoRefl = DoRefl
-  ziplem-tm2 (DoType x L') = DoType (TMZip2 x) (ziplem-tm2 L')
+  ziplem-tm2 (DoType x L') = DoType (TMArrZip2 x) (ziplem-tm2 L')
 
 
     -- expression zippers
@@ -235,7 +235,7 @@ module checks where
     with pin x₃ x₄ d
   ... | refl with erasee-det er x₃
   ... | refl with synthunicity x₄ wt
-  ... | refl with matchunicity x x₂
+  ... | refl with matcharrunicity x x₂
   ... | refl = refl
 
 
