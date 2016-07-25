@@ -20,6 +20,8 @@ module judgemental-inconsistency where
     ICPlus2 : {t1 t2 t3 t4 : τ̇} →
                incon t2 t4 →
                incon (t1 ⊕ t2) (t3 ⊕ t4)
+    ICPlusArr1 : {t1 t2 t3 t4 : τ̇} → incon (t1 ⊕ t2) (t3 ==> t4)
+    ICPlusArr2 : {t1 t2 t3 t4 : τ̇} → incon (t1 ==> t2) (t3 ⊕ t4)
 
   -- inconsistency is symmetric
   inconsym : ∀ {t1 t2} → incon t1 t2 → incon t2 t1
@@ -31,6 +33,8 @@ module judgemental-inconsistency where
   inconsym (ICArr2 x) = ICArr2 (inconsym x)
   inconsym (ICPlus1 x) = ICPlus1 (inconsym x)
   inconsym (ICPlus2 x) = ICPlus2 (inconsym x)
+  inconsym ICPlusArr1 = ICPlusArr2
+  inconsym ICPlusArr2 = ICPlusArr1
 
 
   -- if an arrow type is ~̸, either the domain or the range must be ~̸. this
@@ -64,6 +68,8 @@ module judgemental-inconsistency where
   to~̸ ._ .num ICNumArr2 ()
   to~̸ .num ._ ICNumPlus1 ()
   to~̸ ._ .num ICNumPlus2 ()
+  to~̸ ._ ._ ICPlusArr1 ()
+  to~̸ ._ ._ ICPlusArr2 ()
    -- arr cases
   to~̸ ._ ._ (ICArr1 incon) TCRefl = abort (incon-nrefl incon)
   to~̸ ._ ._ (ICArr1 incon) (TCArr x x₁) = to~̸ _ _ incon x
@@ -74,6 +80,7 @@ module judgemental-inconsistency where
   to~̸ ._ ._ (ICPlus1 incon) (TCPlus x x₁) = to~̸ _ _ incon x
   to~̸ ._ ._ (ICPlus2 incon) TCRefl = abort (incon-nrefl incon)
   to~̸ ._ ._ (ICPlus2 incon) (TCPlus x x₁) = to~̸ _ _ incon x₁
+
 
   -- second half of iso
   from~̸ : (t1 t2 : τ̇) → t1 ~̸ t2 → incon t1 t2
@@ -88,11 +95,18 @@ module judgemental-inconsistency where
   from~̸ <||> num ncon = abort (ncon TCHole2)
   from~̸ <||> <||> ncon = abort (ncon TCRefl)
   from~̸ <||> (t2 ==> t3) ncon = abort (ncon TCHole2)
+
+  from~̸ num (t1 ⊕ t2) x = ICNumPlus1
+  from~̸ (t1 ⊕ t2) num _ = ICNumPlus2
+  from~̸ (t1 ⊕ t2) (t3 ==> t4) _ = {!!}
+  from~̸ (x ==> x₁) (t1 ⊕ t2) _ = {!!}
+  from~̸ (x ⊕ x₁) (t1 ⊕ t2) ncon with lem⊕ ncon
+  ... | Inl qq = ICPlus1 (from~̸ _ _ qq)
+  ... | Inr qq = ICPlus2 (from~̸ _ _ qq)
+
   from~̸ (t1 ==> t2) <||> ncon = abort (ncon TCHole1)
-  from~̸ (t1 ⊕ t2) num _ = {!!}
-  from~̸ (t1 ⊕ t2) <||> _ = {!!}
-  from~̸ (t1 ⊕ t2) (_==>_ _ _) _ = {!!}
-  from~̸ _ (t1 ⊕ t2) _ = {!!}
+  from~̸ (t1 ⊕ t2) <||> ncon = abort (ncon TCHole1)
+  from~̸ <||> (t1 ⊕ t2) x = abort (x TCHole2)
 
 
   -- need to display that at least one of the round-trips above is stable
