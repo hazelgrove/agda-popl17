@@ -103,10 +103,10 @@ module sensible where
     ... | ih = ALam x₄ x₅ ih
 
       -- constructing injections
-    actsense2 EETop (EEInl EETop) (AAConInl1 e) wt = AInl e (ASubsume SEHole TCRefl)
-    actsense2 EETop (EENEHole (EEAscR (ETPlusL ETTop))) (AAConInl2 e) wt = ASubsume (SNEHole (SAsc (AInl MPPlus (ASubsume SEHole TCRefl)))) TCHole1
-    actsense2 EETop (EEInr EETop) (AAConInr1 e) wt = AInr e (ASubsume SEHole TCRefl)
-    actsense2 EETop (EENEHole (EEAscR (ETPlusL ETTop))) (AAConInr2 e) wt = ASubsume (SNEHole (SAsc (AInr MPPlus (ASubsume SEHole TCRefl)))) TCHole1
+    actsense2 EETop (EEInl EETop) (AAConInl1 e) _ = AInl e (ASubsume SEHole TCRefl)
+    actsense2 EETop (EENEHole (EEAscR (ETPlusL ETTop))) (AAConInl2 e) _ = ASubsume (SNEHole (SAsc (AInl MPPlus (ASubsume SEHole TCRefl)))) TCHole1
+    actsense2 EETop (EEInr EETop) (AAConInr1 e) _ = AInr e (ASubsume SEHole TCRefl)
+    actsense2 EETop (EENEHole (EEAscR (ETPlusL ETTop))) (AAConInr2 e) _ = ASubsume (SNEHole (SAsc (AInr MPPlus (ASubsume SEHole TCRefl)))) TCHole1
 
       -- constructing case
     actsense2 EETop (EECase1 EETop) (AAConCase a b) wt = ACase a b MPHole SEHole (ASubsume SEHole TCHole1) (ASubsume SEHole TCHole1)
@@ -119,23 +119,27 @@ module sensible where
     actsense2 (EECase3 _) (EECase3 _) (AAZipCase3 _ _ _ _ _ _) (ASubsume () _)
 
       -- zipper cases for sum types
-    actsense2 (EEInl er1) (EEInl er2) (AAZipInl MPHole b) (AInl MPHole wt) = AInl MPHole (actsense2 er1 er2 b wt)
-    actsense2 (EEInl er1) (EEInl er2) (AAZipInl MPPlus b) (AInl MPHole wt) = AInl MPHole (actsense2 er1 er2 b wt)
-    actsense2 (EEInl er1) (EEInl er2) (AAZipInl MPPlus b) (AInl MPPlus wt)
-      with actsense2 er1 er2 b {!wt!}
-    ... | ih = AInl MPPlus {!ih!}
-    actsense2 (EEInr er1) (EEInr er2) (AAZipInr a b) (AInr x wt)
-      with actsense2 er1 er2 b {!!}
-    ... | ih = {!!}
+    actsense2 (EEInl er1) (EEInl er2) (AAZipInl m1 b) (AInl m2 wt)
+      with matchplusunicity m1 m2
+    ... | refl with actsense2 er1 er2 b wt
+    ... | wt' = AInl m1 wt'
+    actsense2 (EEInr er1) (EEInr er2) (AAZipInr m1 b) (AInr m2 wt)
+          with matchplusunicity m1 m2
+    ... | refl with actsense2 er1 er2 b wt
+    ... | wt' = AInr m1 wt'
     actsense2 (EECase1 er1) (EECase1 er2) (AAZipCase1 x₁ x₂ x₃ x₄ x₅ x₆ x₇ x₈)
                                           (ACase x₉ x₁₀ x₁₁ x₁₂ wt wt₁)
       with actsense1 x₃ (rel◆ _)  x₅ x₄
     ... | ih = ACase x₉ x₁₀ x₆ (lem-synth-erase ih er2) x₇ x₈
-    actsense2 (EECase2 er1) (EECase2 er2) (AAZipCase2 x₁ x₂ x₃ x₄ x₅ x₆)
-                                          (ACase x₇ x₈ x₉ x₁₀ wt wt₁)
-      with actsense2 er1 er2 x₅ {!!}
-    ... | ih = {!!}
-    actsense2 (EECase3 er1) (EECase3 er2) (AAZipCase3 x₁ x₂ x₃ x₄ x₅ x₆)
-                                          (ACase x₇ x₈ x₉ x₁₀ wt wt₁)
-      with actsense2 er1 er2 x₆ {!!}
-    ... | ih = {!ACase!}
+    actsense2 (EECase2 er1) (EECase2 er2) (AAZipCase2 x₁ x₂ s1 x₄ x₅ x₆)
+                                          (ACase x₇ x₈ x₉ s2 wt wt₁)
+      with synthunicity s1 s2
+    ... | refl with matchplusunicity x₉ x₄
+    ... | refl with actsense2 er1 er2 x₅ wt
+    ... | ih = ACase x₇ x₈ x₉ s2 ih wt₁
+    actsense2 (EECase3 er1) (EECase3 er2) (AAZipCase3 x₁ x₃ s1  x₄ x₅ x₆)
+                                          (ACase x₇ x₈ x₉ s2 wt wt₁)
+     with synthunicity s2 s1
+    ... | refl with matchplusunicity x₉ x₄
+    ... | refl with actsense2 er1 er2 x₆ wt₁
+    ... | ih = ACase x₇ x₈ x₉ s2 wt ih
