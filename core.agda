@@ -653,11 +653,11 @@ module core where
       AAZipInl : {Γ : ·ctx} {t+ t1 t2 : τ̇} {e e' : ê} {α : action} →
                  t+ ▸plus (t1 ⊕ t2) →
                  Γ ⊢ e ~ α ~> e' ⇐ t1 →
-                 Γ ⊢ inl e ~ α ~> inl e' ⇐ t1
+                 Γ ⊢ inl e ~ α ~> inl e' ⇐ t+
       AAZipInr : {Γ : ·ctx} {t+ t1 t2 : τ̇} {e e' : ê} {α : action} →
                  t+ ▸plus (t1 ⊕ t2) →
                  Γ ⊢ e ~ α ~> e' ⇐ t2 →
-                 Γ ⊢ inr e ~ α ~> inr e' ⇐ t2
+                 Γ ⊢ inr e ~ α ~> inr e' ⇐ t+
       AAZipCase1 : {Γ : ·ctx} {e e' : ê} {e◆ e1 e2 : ė} {x y : Nat} {t t0 t+ t1 t2 : τ̇} {α : action} →
                  x # Γ →
                  y # Γ → -- todo: these may be derivable
