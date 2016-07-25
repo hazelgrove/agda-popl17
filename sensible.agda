@@ -118,16 +118,19 @@ module sensible where
     actsense2 (EECase2 _) (EECase2 _) (AAZipCase2 _ _ _ _ _ _) (ASubsume () _)
     actsense2 (EECase3 _) (EECase3 _) (AAZipCase3 _ _ _ _ _ _) (ASubsume () _)
 
-    actsense2 (EEInl er1) (EEInl er2) (AAZipInl a b) (AInl x wt)
-      with actsense2 er1 er2 b {!!}
-    ... | ih = {!!}
+      -- zipper cases for sum types
+    actsense2 (EEInl er1) (EEInl er2) (AAZipInl MPHole b) (AInl MPHole wt) = AInl MPHole (actsense2 er1 er2 b wt)
+    actsense2 (EEInl er1) (EEInl er2) (AAZipInl MPPlus b) (AInl MPHole wt) = AInl MPHole (actsense2 er1 er2 b wt)
+    actsense2 (EEInl er1) (EEInl er2) (AAZipInl MPPlus b) (AInl MPPlus wt)
+      with actsense2 er1 er2 b {!wt!}
+    ... | ih = AInl MPPlus {!ih!}
     actsense2 (EEInr er1) (EEInr er2) (AAZipInr a b) (AInr x wt)
       with actsense2 er1 er2 b {!!}
     ... | ih = {!!}
     actsense2 (EECase1 er1) (EECase1 er2) (AAZipCase1 x₁ x₂ x₃ x₄ x₅ x₆ x₇ x₈)
                                           (ACase x₉ x₁₀ x₁₁ x₁₂ wt wt₁)
-      with actsense1 x₃ (rel◆ _)  x₅ x₄ -- rel is a guess
-    ... | ih = {!!}
+      with actsense1 x₃ (rel◆ _)  x₅ x₄
+    ... | ih = ACase x₉ x₁₀ x₆ (lem-synth-erase ih er2) x₇ x₈
     actsense2 (EECase2 er1) (EECase2 er2) (AAZipCase2 x₁ x₂ x₃ x₄ x₅ x₆)
                                           (ACase x₇ x₈ x₉ x₁₀ wt wt₁)
       with actsense2 er1 er2 x₅ {!!}
@@ -135,4 +138,4 @@ module sensible where
     actsense2 (EECase3 er1) (EECase3 er2) (AAZipCase3 x₁ x₂ x₃ x₄ x₅ x₆)
                                           (ACase x₇ x₈ x₉ x₁₀ wt wt₁)
       with actsense2 er1 er2 x₆ {!!}
-    ... | ih = ACase ? ? ? ? ? ?
+    ... | ih = {!ACase!}
