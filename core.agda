@@ -377,8 +377,8 @@ module core where
     EEPlusL : ∀{e1 e1' e2} → erase-e e1 e1' → erase-e (e1 ·+₁ e2) (e1' ·+ e2)
     EEPlusR : ∀{e1 e2 e2'} → erase-e e2 e2' → erase-e (e1 ·+₂ e2) (e1 ·+ e2')
     EENEHole : ∀{e e'}     → erase-e e e'   → erase-e <| e |>  <| e' |>
-    EEInl   : ∀{e e'}        → erase-e e e'   → erase-e (inl e) (inl e')
-    EEInr   : ∀{e e'}        → erase-e e e'   → erase-e (inr e) (inr e')
+    EEInl   : ∀{e e'}      → erase-e e e'   → erase-e (inl e) (inl e')
+    EEInr   : ∀{e e'}      → erase-e e e'   → erase-e (inr e) (inr e')
     EECase1 : ∀{e e' x e1 y e2} → erase-e e e' →
                                   erase-e (case₁ e x e1 y e2) (case e' x e1 y e2)
     EECase2 : ∀{e x e1 e1' y e2} → erase-e e1 e1' →

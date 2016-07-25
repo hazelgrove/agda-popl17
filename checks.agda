@@ -95,18 +95,29 @@ module checks where
   -- proofs, not anything that's more general.
 
     -- type zippers
-  ziplem-tm1 : ∀ {t1 t1' t2 L } →
+  ziplem-tmarr1 : ∀ {t1 t1' t2 L } →
             runtype t1' L t1 →
             runtype (t1' ==>₁ t2) L (t1 ==>₁ t2)
-  ziplem-tm1 DoRefl = DoRefl
-  ziplem-tm1 (DoType x L') = DoType (TMArrZip1 x) (ziplem-tm1 L')
+  ziplem-tmarr1 DoRefl = DoRefl
+  ziplem-tmarr1 (DoType x L') = DoType (TMArrZip1 x) (ziplem-tmarr1 L')
 
-  ziplem-tm2 : ∀ {t1 t2 t2' L } →
+  ziplem-tmarr2 : ∀ {t1 t2 t2' L } →
             runtype t2' L t2 →
             runtype (t1 ==>₂ t2') L (t1 ==>₂ t2)
-  ziplem-tm2 DoRefl = DoRefl
-  ziplem-tm2 (DoType x L') = DoType (TMArrZip2 x) (ziplem-tm2 L')
+  ziplem-tmarr2 DoRefl = DoRefl
+  ziplem-tmarr2 (DoType x L') = DoType (TMArrZip2 x) (ziplem-tmarr2 L')
 
+  ziplem-tmplus1 : ∀ {t1 t1' t2 L } →
+            runtype t1' L t1 →
+            runtype (t1' ⊕₁ t2) L (t1 ⊕₁ t2)
+  ziplem-tmplus1 DoRefl = DoRefl
+  ziplem-tmplus1 (DoType x L') = DoType (TMPlusZip1 x) (ziplem-tmplus1 L')
+
+  ziplem-tmplus2 : ∀ {t1 t2 t2' L } →
+            runtype t2' L t2 →
+            runtype (t1 ⊕₂ t2') L (t1 ⊕₂ t2)
+  ziplem-tmplus2 DoRefl = DoRefl
+  ziplem-tmplus2 (DoType x L') = DoType (TMPlusZip2 x) (ziplem-tmplus2 L')
 
     -- expression zippers
   ziplem-asc1 : ∀{Γ t L e e'} →
@@ -263,3 +274,22 @@ module checks where
   ... | refl = DoSynth (SAZipApArr mch (rel◆ _) wt1 x wt2)
                         (ziplem-moves-ap1 (actsense1 (rel◆ _) (rel◆ _) x wt1)
                                                      mch wt2 m rs)
+
+  -- zip lemmas for sums
+  ziplem-inl : ∀{ t t1 t2 Γ e L e'  } →
+               t ▸plus (t1 ⊕ t2) →
+               runana Γ e L e' t1 →
+               runana Γ (inl e) L (inl e') t
+  ziplem-inl m DoRefl = DoRefl
+  ziplem-inl m (DoAna x r) = DoAna (AAZipInl m x) (ziplem-inl m r)
+
+  ziplem-inr : ∀{ t t1 t2 Γ e L e'  } →
+               t ▸plus (t1 ⊕ t2) →
+               runana Γ e L e' t2 →
+               runana Γ (inr e) L (inr e') t
+  ziplem-inr m DoRefl = DoRefl
+  ziplem-inr m (DoAna x r) = DoAna (AAZipInr m x) (ziplem-inr m r)
+
+  -- ziplem-case1
+  -- ziplem-case2
+  -- ziplem-case3
