@@ -89,21 +89,19 @@ module judgemental-inconsistency where
   from~̸ (t1 ==> t2) (t3 ==> t4) ncon with lem==> ncon
   ... | Inl qq = ICArr1 (from~̸ _ _ qq)
   ... | Inr qq = ICArr2 (from~̸ _ _ qq)
+  from~̸ num (t1 ⊕ t2) x = ICNumPlus1
+  from~̸ (t1 ⊕ t2) num _ = ICNumPlus2
+  from~̸ (t1 ⊕ t2) (t3 ==> t4) _ = ICPlusArr1
+  from~̸ (x ==> x₁) (t1 ⊕ t2) _ = ICPlusArr2
+  from~̸ (x ⊕ x₁) (t1 ⊕ t2) ncon with lem⊕ ncon
+  ... | Inl qq = ICPlus1 (from~̸ _ _ qq)
+  ... | Inr qq = ICPlus2 (from~̸ _ _ qq)
   -- the remaining consistent types all lead to absurdities
   from~̸ num num ncon = abort (ncon TCRefl)
   from~̸ num <||> ncon = abort (ncon TCHole1)
   from~̸ <||> num ncon = abort (ncon TCHole2)
   from~̸ <||> <||> ncon = abort (ncon TCRefl)
   from~̸ <||> (t2 ==> t3) ncon = abort (ncon TCHole2)
-
-  from~̸ num (t1 ⊕ t2) x = ICNumPlus1
-  from~̸ (t1 ⊕ t2) num _ = ICNumPlus2
-  from~̸ (t1 ⊕ t2) (t3 ==> t4) _ = {!!}
-  from~̸ (x ==> x₁) (t1 ⊕ t2) _ = {!!}
-  from~̸ (x ⊕ x₁) (t1 ⊕ t2) ncon with lem⊕ ncon
-  ... | Inl qq = ICPlus1 (from~̸ _ _ qq)
-  ... | Inr qq = ICPlus2 (from~̸ _ _ qq)
-
   from~̸ (t1 ==> t2) <||> ncon = abort (ncon TCHole1)
   from~̸ (t1 ⊕ t2) <||> ncon = abort (ncon TCHole1)
   from~̸ <||> (t1 ⊕ t2) x = abort (x TCHole2)
@@ -121,7 +119,10 @@ module judgemental-inconsistency where
   rt <||> <||> x               = abort (x TCRefl)
   rt <||> (t2 ==> t3) x        = abort (x TCHole2)
   rt (t1 ==> t2) <||> x        = abort (x TCHole1)
-  rt (t1 ⊕ t2) num _ = {!!}
-  rt (t1 ⊕ t2) <||> _ = {!!}
-  rt (t1 ⊕ t2) (_==>_ _ _) _ = {!!}
-  rt _ (t1 ⊕ t2) _ = {!!}
+  rt (t1 ⊕ t2) num x           = funext (λ ())
+  rt (t1 ⊕ t2) <||> x          = abort (x TCHole1)
+  rt (t1 ⊕ t2) (t3 ==> t4) x   = funext (λ ())
+  rt num (t1 ⊕ t2) x           = funext (λ ())
+  rt <||> (t1 ⊕ t2) x          = abort (x TCHole2)
+  rt (t1 ==> t2) (t3 ⊕ t4) x   = funext (λ ())
+  rt (t1 ⊕ t2) (t3 ⊕ t4) x     = funext (λ x₁ → abort (x x₁))
