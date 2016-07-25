@@ -33,6 +33,9 @@ module sensible where
     actsense1 EETop (EEPlusR EETop) (SAConPlus2 _) wt = SPlus (ASubsume (SNEHole wt) TCHole1) (ASubsume SEHole TCHole1)
     actsense1 EETop (EENEHole EETop) SAConNEHole wt = SNEHole wt
     actsense1 _ EETop (SAFinish x) _ = x
+    actsense1 EETop (EEAscR (ETPlusL ETTop)) SAConInl SEHole = SAsc (AInl MPPlus (ASubsume SEHole TCRefl))
+    actsense1 EETop (EEAscR (ETPlusR ETTop)) SAConInr SEHole = SAsc (AInr MPPlus (ASubsume SEHole TCRefl))
+
 
     --- zipper cases. in each, we recur on the smaller action derivation
     --- following the zipper structure, then reassemble the result
@@ -48,7 +51,7 @@ module sensible where
     ... | ih = SAp ih x x₃
     actsense1 (EEApR er) (EEApR er') (SAZipApAna x x₁ x₂) (SAp wt x₃ x₄)
       with synthunicity x₁ wt
-    ... | refl with matchunicity x x₃
+    ... | refl with matcharrunicity x x₃
     ... | refl with actsense2 er er' x₂ x₄
     ... | ih = SAp wt x ih
 
@@ -95,6 +98,18 @@ module sensible where
     -- that leaves only the zipper cases for lambda, where we force the
     -- forms and then recurr into the body of the lambda being checked.
     actsense2 (EELam er1) (EELam er2) (AAZipLam x₁ x₂ act) (ALam x₄ x₅ wt)
-      with matchunicity x₂ x₅
+      with matcharrunicity x₂ x₅
     ... | refl with actsense2 er1 er2 act wt
     ... | ih = ALam x₄ x₅ ih
+
+    actsense2 EETop (EEInl EETop) (AAConInl1 e) wt = AInl e (ASubsume SEHole TCRefl)
+    actsense2 EETop (EENEHole (EEAscR (ETPlusL ETTop))) (AAConInl2 e) wt = ASubsume (SNEHole (SAsc (AInl MPPlus (ASubsume SEHole TCRefl)))) TCHole1
+    actsense2 EETop (EEInr EETop) (AAConInr1 e) wt = AInr e (ASubsume SEHole TCRefl)
+    actsense2 EETop (EENEHole (EEAscR (ETPlusL ETTop))) (AAConInr2 e) wt = ASubsume (SNEHole (SAsc (AInr MPPlus (ASubsume SEHole TCRefl)))) TCHole1
+
+    actsense2 er1 er2 (AAConCase a b) wt = {!!}
+    actsense2 er1 er2 (AAZipInl a b) wt = {!!}
+    actsense2 er1 er2 (AAZipInr a b) wt = {!!}
+    actsense2 er1 er2 (AAZipCase1  _ _ _ _ _ _ _ _) wt = {!!}
+    actsense2 er1 er2 (AAZipCase2 _ _ _ _ _ _) wt = {!!}
+    actsense2 er1 er2 (AAZipCase3 _ _ _ _ _ _) wt = {!!}
