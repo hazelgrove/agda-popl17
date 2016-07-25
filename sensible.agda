@@ -102,14 +102,37 @@ module sensible where
     ... | refl with actsense2 er1 er2 act wt
     ... | ih = ALam x₄ x₅ ih
 
+      -- constructing injections
     actsense2 EETop (EEInl EETop) (AAConInl1 e) wt = AInl e (ASubsume SEHole TCRefl)
     actsense2 EETop (EENEHole (EEAscR (ETPlusL ETTop))) (AAConInl2 e) wt = ASubsume (SNEHole (SAsc (AInl MPPlus (ASubsume SEHole TCRefl)))) TCHole1
     actsense2 EETop (EEInr EETop) (AAConInr1 e) wt = AInr e (ASubsume SEHole TCRefl)
     actsense2 EETop (EENEHole (EEAscR (ETPlusL ETTop))) (AAConInr2 e) wt = ASubsume (SNEHole (SAsc (AInr MPPlus (ASubsume SEHole TCRefl)))) TCHole1
 
-    actsense2 er1 er2 (AAConCase a b) wt = {!!}
-    actsense2 er1 er2 (AAZipInl a b) wt = {!!}
-    actsense2 er1 er2 (AAZipInr a b) wt = {!!}
-    actsense2 er1 er2 (AAZipCase1  _ _ _ _ _ _ _ _) wt = {!!}
-    actsense2 er1 er2 (AAZipCase2 _ _ _ _ _ _) wt = {!!}
-    actsense2 er1 er2 (AAZipCase3 _ _ _ _ _ _) wt = {!!}
+      -- constructing case
+    actsense2 EETop (EECase1 EETop) (AAConCase a b) wt = ACase a b MPHole SEHole (ASubsume SEHole TCHole1) (ASubsume SEHole TCHole1)
+
+      -- the ASubsume cases are all impossible, by forcing the form via the erasure
+    actsense2 (EEInl _) (EEInl _) (AAZipInl _ _ ) (ASubsume () _)
+    actsense2 (EEInr _) (EEInr _) (AAZipInr _ _) (ASubsume () _)
+    actsense2 (EECase1 _) (EECase1 _) (AAZipCase1 _ _ _ _ _ _ _ _) (ASubsume () _)
+    actsense2 (EECase2 _) (EECase2 _) (AAZipCase2 _ _ _ _ _ _) (ASubsume () _)
+    actsense2 (EECase3 _) (EECase3 _) (AAZipCase3 _ _ _ _ _ _) (ASubsume () _)
+
+    actsense2 (EEInl er1) (EEInl er2) (AAZipInl a b) (AInl x wt)
+      with actsense2 er1 er2 b {!!}
+    ... | ih = {!!}
+    actsense2 (EEInr er1) (EEInr er2) (AAZipInr a b) (AInr x wt)
+      with actsense2 er1 er2 b {!!}
+    ... | ih = {!!}
+    actsense2 (EECase1 er1) (EECase1 er2) (AAZipCase1 x₁ x₂ x₃ x₄ x₅ x₆ x₇ x₈)
+                                          (ACase x₉ x₁₀ x₁₁ x₁₂ wt wt₁)
+      with actsense1 x₃ (rel◆ _)  x₅ x₄ -- rel is a guess
+    ... | ih = {!!}
+    actsense2 (EECase2 er1) (EECase2 er2) (AAZipCase2 x₁ x₂ x₃ x₄ x₅ x₆)
+                                          (ACase x₇ x₈ x₉ x₁₀ wt wt₁)
+      with actsense2 er1 er2 x₅ {!!}
+    ... | ih = {!!}
+    actsense2 (EECase3 er1) (EECase3 er2) (AAZipCase3 x₁ x₂ x₃ x₄ x₅ x₆)
+                                          (ACase x₇ x₈ x₉ x₁₀ wt wt₁)
+      with actsense2 er1 er2 x₆ {!!}
+    ... | ih = ACase ? ? ? ? ? ?
