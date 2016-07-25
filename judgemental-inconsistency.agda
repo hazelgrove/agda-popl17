@@ -4,8 +4,10 @@ open import core
 
 module judgemental-inconsistency where
   data incon : τ̇ → τ̇ → Set where
-    ICNum1 : {t1 t2 : τ̇} → incon num (t1 ==> t2)
-    ICNum2 : {t1 t2 : τ̇} → incon (t1 ==> t2) num
+    ICNumArr1 : {t1 t2 : τ̇} → incon num (t1 ==> t2)
+    ICNumArr2 : {t1 t2 : τ̇} → incon (t1 ==> t2) num
+    ICNumPlus1 : {t1 t2 : τ̇} → incon num (t1 ⊕ t2)
+    ICNumPlus2 : {t1 t2 : τ̇} → incon (t1 ⊕ t2) num
     ICArr1 : {t1 t2 t3 t4 : τ̇} →
                incon t1 t3 →
                incon (t1 ==> t2) (t3 ==> t4)
@@ -21,8 +23,10 @@ module judgemental-inconsistency where
 
   -- inconsistency is symmetric
   inconsym : ∀ {t1 t2} → incon t1 t2 → incon t2 t1
-  inconsym ICNum1 = ICNum2
-  inconsym ICNum2 = ICNum1
+  inconsym ICNumArr1 = ICNumArr2
+  inconsym ICNumArr2 = ICNumArr1
+  inconsym ICNumPlus1 = ICNumPlus2
+  inconsym ICNumPlus2 = ICNumPlus1
   inconsym (ICArr1 x) = ICArr1 (inconsym x)
   inconsym (ICArr2 x) = ICArr2 (inconsym x)
   inconsym (ICPlus1 x) = ICPlus1 (inconsym x)
@@ -56,8 +60,10 @@ module judgemental-inconsistency where
 
   -- first half of iso
   to~̸ : (t1 t2 : τ̇) → incon t1 t2 → t1 ~̸ t2
-  to~̸ .num ._ ICNum1 ()
-  to~̸ ._ .num ICNum2 ()
+  to~̸ .num ._ ICNumArr1 ()
+  to~̸ ._ .num ICNumArr2 ()
+  to~̸ .num ._ ICNumPlus1 ()
+  to~̸ ._ .num ICNumPlus2 ()
    -- arr cases
   to~̸ ._ ._ (ICArr1 incon) TCRefl = abort (incon-nrefl incon)
   to~̸ ._ ._ (ICArr1 incon) (TCArr x x₁) = to~̸ _ _ incon x
@@ -71,8 +77,8 @@ module judgemental-inconsistency where
 
   -- second half of iso
   from~̸ : (t1 t2 : τ̇) → t1 ~̸ t2 → incon t1 t2
-  from~̸ num (t2 ==> t3) ncon = ICNum1
-  from~̸ (t1 ==> t2) num ncon = ICNum2
+  from~̸ num (t2 ==> t3) ncon = ICNumArr1
+  from~̸ (t1 ==> t2) num ncon = ICNumArr2
   from~̸ (t1 ==> t2) (t3 ==> t4) ncon with lem==> ncon
   ... | Inl qq = ICArr1 (from~̸ _ _ qq)
   ... | Inr qq = ICArr2 (from~̸ _ _ qq)
