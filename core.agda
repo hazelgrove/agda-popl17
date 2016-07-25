@@ -516,116 +516,171 @@ module core where
                  case₂ e x ▹ e1 ◃ y e2 + move nextSib +>e case₃ e x e1 y ▹ e2 ◃
     EMCaseFirstChild : {e e1 e2 : ė} {x y : Nat} →
                 ▹ case e x e1 y e2 ◃ + move firstChild +>e case₁ ▹ e ◃ x e1 y e2
-  -- mutual
-  -- -- synthetic action expressions
-  --   data _⊢_=>_~_~>_=>_ : (Γ : ·ctx) → (e1 : ê) → (t1 : τ̇)
-  --                       → (α : action) → (e2 : ê) → (t2 : τ̇) → Set where
-  --     SAMove : {δ : direction} {e e' : ê} {Γ : ·ctx} {t : τ̇} →
-  --               (e + move δ +>e e') →
-  --               Γ ⊢ e => t ~ move δ ~> e' => t
-  --     SADel : {Γ : ·ctx} {e : ė} {t : τ̇} →
-  --               Γ ⊢ ▹ e ◃ => t ~ del ~> ▹ <||> ◃ => <||>
-  --     SAConAsc : {Γ : ·ctx} {e : ė} {t : τ̇} →
-  --               Γ ⊢ ▹ e ◃ => t ~ construct asc ~> (e ·:₂ ▹ t ◃ ) => t
-  --     SAConVar : {Γ : ·ctx} {x : Nat} {t : τ̇} →
-  --               (p : (x , t) ∈ Γ) →
-  --               Γ ⊢ ▹ <||> ◃ => <||> ~ construct (var x) ~> ▹ X x ◃ => t
-  --     SAConLam : {Γ : ·ctx} {x : Nat} →
-  --              (x # Γ) →
-  --               Γ ⊢ ▹ <||> ◃ => <||> ~ construct (lam x) ~>
-  --                  ((·λ x <||>) ·:₂ (▹ <||> ◃ ==>₁ <||>)) => (<||> ==> <||>)
-  --     SAConApArr : {Γ : ·ctx} {t t1 t2 : τ̇} {e : ė} →
-  --               t ▸arr (t1 ==> t2) →
-  --               Γ ⊢ ▹ e ◃ => t ~ construct ap ~>  e ∘₂ ▹ <||> ◃ => t2
-  --     SAConApOtw : {Γ : ·ctx} {t : τ̇} {e : ė} →
-  --               (t ~̸ (<||> ==> <||>)) →
-  --               Γ ⊢ ▹ e ◃ => t ~ construct ap ~> <| e |> ∘₂ ▹ <||> ◃ => <||>
-  --     SAConArg : {Γ : ·ctx} {e : ė} {t : τ̇} →
-  --               Γ ⊢ ▹ e ◃ => t ~ construct arg ~> ▹ <||> ◃ ∘₁ e => <||>
-  --     SAConNumlit : {Γ : ·ctx} {n : Nat} →
-  --               Γ ⊢ ▹ <||> ◃ => <||> ~ construct (numlit n) ~> ▹ N n ◃ => num
-  --     SAConPlus1 : {Γ : ·ctx} {e : ė} {t : τ̇} →
-  --               (t ~ num) →
-  --               Γ ⊢ ▹ e ◃ => t ~ construct plus ~> e ·+₂ ▹ <||> ◃  => num
-  --     SAConPlus2 : {Γ : ·ctx} {e : ė} {t : τ̇} →
-  --               (t ~̸ num) →
-  --               Γ ⊢ ▹ e ◃ => t ~ construct plus ~> <| e |> ·+₂ ▹ <||> ◃  => num
-  --     SAConNEHole : {Γ : ·ctx} {e : ė} {t : τ̇} →
-  --                 Γ ⊢ ▹ e ◃ => t ~ construct nehole ~> <| ▹ e ◃ |> => <||>
-  --     SAFinish : {Γ : ·ctx} {e : ė} {t : τ̇} →
-  --                (Γ ⊢ e => t) →
-  --                Γ ⊢ ▹ <| e |> ◃ => <||> ~ finish ~> ▹ e ◃ => t
-  --     SAZipAsc1 : {Γ : ·ctx} {e e' : ê} {α : action} {t : τ̇} →
-  --                 (Γ ⊢ e ~ α ~> e' ⇐ t) →
-  --                 Γ ⊢ (e ·:₁ t) => t ~ α ~> (e' ·:₁ t) => t
-  --     SAZipAsc2 : {Γ : ·ctx} {e : ė} {α : action} {t t' : τ̂} {t◆ t'◆ : τ̇} →
-  --                 (t + α +> t') →
-  --                 (erase-t t' t'◆) →
-  --                 (erase-t t t◆) →
-  --                 (Γ ⊢ e <= t'◆) →
-  --                 Γ ⊢ (e ·:₂ t) => t◆ ~ α ~> (e ·:₂ t') => t'◆
-  --     SAZipApArr : {Γ : ·ctx} {t t1 t2 t3 t4 : τ̇} {α : action} {eh eh' : ê} {e eh◆ : ė} →
-  --                (t ▸arr (t3 ==> t4)) →
-  --                (erase-e eh eh◆) →
-  --                (Γ ⊢ (eh◆) => t2) →
-  --                (Γ ⊢ eh => t2 ~ α ~> eh' => t) →
-  --                (Γ ⊢ e <= t3) →
-  --                Γ ⊢ (eh ∘₁ e) => t1 ~ α ~> (eh' ∘₁ e) => t4
-  --     SAZipApAna : {Γ : ·ctx} {t' t2 t : τ̇} {e : ė} {eh eh' : ê} {α : action} →
-  --                (t' ▸arr (t2 ==> t)) →
-  --                (Γ ⊢ e => t') →
-  --                (Γ ⊢ eh ~ α ~> eh' ⇐ t2) →
-  --                Γ ⊢ (e ∘₂ eh) => t ~ α ~> (e ∘₂ eh') => t
-  --     SAZipPlus1 : {Γ : ·ctx} {e : ė} {eh eh' : ê} {α : action} →
-  --                  (Γ ⊢ eh ~ α ~> eh' ⇐ num) →
-  --                  Γ ⊢ (eh ·+₁ e) => num ~ α ~> (eh' ·+₁ e) => num
-  --     SAZipPlus2 : {Γ : ·ctx} {e : ė} {eh eh' : ê} {α : action} →
-  --                  (Γ ⊢ eh ~ α ~> eh' ⇐ num) →
-  --                  Γ ⊢ (e ·+₂ eh) => num ~ α ~> (e ·+₂ eh') => num
-  --     SAZipHole : {Γ : ·ctx} {e e' : ê} {t t' : τ̇} {α : action} {e◆ : ė} →
-  --                  (erase-e e e◆) →
-  --                  (Γ ⊢ e◆ => t) →
-  --                  (Γ ⊢ e => t ~ α ~> e' => t') →
-  --                  Γ ⊢ <| e |> => <||> ~ α ~>  <| e' |> => <||>
+  mutual
+  -- synthetic action expressions
+    data _⊢_=>_~_~>_=>_ : (Γ : ·ctx) → (e1 : ê) → (t1 : τ̇)
+                        → (α : action) → (e2 : ê) → (t2 : τ̇) → Set where
+      SAMove : {δ : direction} {e e' : ê} {Γ : ·ctx} {t : τ̇} →
+                (e + move δ +>e e') →
+                Γ ⊢ e => t ~ move δ ~> e' => t
+      SADel : {Γ : ·ctx} {e : ė} {t : τ̇} →
+                Γ ⊢ ▹ e ◃ => t ~ del ~> ▹ <||> ◃ => <||>
+      SAConAsc : {Γ : ·ctx} {e : ė} {t : τ̇} →
+                Γ ⊢ ▹ e ◃ => t ~ construct asc ~> (e ·:₂ ▹ t ◃ ) => t
+      SAConVar : {Γ : ·ctx} {x : Nat} {t : τ̇} →
+                (p : (x , t) ∈ Γ) →
+                Γ ⊢ ▹ <||> ◃ => <||> ~ construct (var x) ~> ▹ X x ◃ => t
+      SAConLam : {Γ : ·ctx} {x : Nat} →
+               (x # Γ) →
+                Γ ⊢ ▹ <||> ◃ => <||> ~ construct (lam x) ~>
+                   ((·λ x <||>) ·:₂ (▹ <||> ◃ ==>₁ <||>)) => (<||> ==> <||>)
+      SAConApArr : {Γ : ·ctx} {t t1 t2 : τ̇} {e : ė} →
+                t ▸arr (t1 ==> t2) →
+                Γ ⊢ ▹ e ◃ => t ~ construct ap ~>  e ∘₂ ▹ <||> ◃ => t2
+      SAConApOtw : {Γ : ·ctx} {t : τ̇} {e : ė} →
+                (t ~̸ (<||> ==> <||>)) →
+                Γ ⊢ ▹ e ◃ => t ~ construct ap ~> <| e |> ∘₂ ▹ <||> ◃ => <||>
+      SAConArg : {Γ : ·ctx} {e : ė} {t : τ̇} →
+                Γ ⊢ ▹ e ◃ => t ~ construct arg ~> ▹ <||> ◃ ∘₁ e => <||>
+      SAConNumlit : {Γ : ·ctx} {n : Nat} →
+                Γ ⊢ ▹ <||> ◃ => <||> ~ construct (numlit n) ~> ▹ N n ◃ => num
+      SAConPlus1 : {Γ : ·ctx} {e : ė} {t : τ̇} →
+                (t ~ num) →
+                Γ ⊢ ▹ e ◃ => t ~ construct plus ~> e ·+₂ ▹ <||> ◃  => num
+      SAConPlus2 : {Γ : ·ctx} {e : ė} {t : τ̇} →
+                (t ~̸ num) →
+                Γ ⊢ ▹ e ◃ => t ~ construct plus ~> <| e |> ·+₂ ▹ <||> ◃  => num
+      SAConNEHole : {Γ : ·ctx} {e : ė} {t : τ̇} →
+                  Γ ⊢ ▹ e ◃ => t ~ construct nehole ~> <| ▹ e ◃ |> => <||>
+      SAFinish : {Γ : ·ctx} {e : ė} {t : τ̇} →
+                 (Γ ⊢ e => t) →
+                 Γ ⊢ ▹ <| e |> ◃ => <||> ~ finish ~> ▹ e ◃ => t
+      SAZipAsc1 : {Γ : ·ctx} {e e' : ê} {α : action} {t : τ̇} →
+                  (Γ ⊢ e ~ α ~> e' ⇐ t) →
+                  Γ ⊢ (e ·:₁ t) => t ~ α ~> (e' ·:₁ t) => t
+      SAZipAsc2 : {Γ : ·ctx} {e : ė} {α : action} {t t' : τ̂} {t◆ t'◆ : τ̇} →
+                  (t + α +> t') →
+                  (erase-t t' t'◆) →
+                  (erase-t t t◆) →
+                  (Γ ⊢ e <= t'◆) →
+                  Γ ⊢ (e ·:₂ t) => t◆ ~ α ~> (e ·:₂ t') => t'◆
+      SAZipApArr : {Γ : ·ctx} {t t1 t2 t3 t4 : τ̇} {α : action} {eh eh' : ê} {e eh◆ : ė} →
+                 (t ▸arr (t3 ==> t4)) →
+                 (erase-e eh eh◆) →
+                 (Γ ⊢ (eh◆) => t2) →
+                 (Γ ⊢ eh => t2 ~ α ~> eh' => t) →
+                 (Γ ⊢ e <= t3) →
+                 Γ ⊢ (eh ∘₁ e) => t1 ~ α ~> (eh' ∘₁ e) => t4
+      SAZipApAna : {Γ : ·ctx} {t' t2 t : τ̇} {e : ė} {eh eh' : ê} {α : action} →
+                 (t' ▸arr (t2 ==> t)) →
+                 (Γ ⊢ e => t') →
+                 (Γ ⊢ eh ~ α ~> eh' ⇐ t2) →
+                 Γ ⊢ (e ∘₂ eh) => t ~ α ~> (e ∘₂ eh') => t
+      SAZipPlus1 : {Γ : ·ctx} {e : ė} {eh eh' : ê} {α : action} →
+                   (Γ ⊢ eh ~ α ~> eh' ⇐ num) →
+                   Γ ⊢ (eh ·+₁ e) => num ~ α ~> (eh' ·+₁ e) => num
+      SAZipPlus2 : {Γ : ·ctx} {e : ė} {eh eh' : ê} {α : action} →
+                   (Γ ⊢ eh ~ α ~> eh' ⇐ num) →
+                   Γ ⊢ (e ·+₂ eh) => num ~ α ~> (e ·+₂ eh') => num
+      SAZipHole : {Γ : ·ctx} {e e' : ê} {t t' : τ̇} {α : action} {e◆ : ė} →
+                   (erase-e e e◆) →
+                   (Γ ⊢ e◆ => t) →
+                   (Γ ⊢ e => t ~ α ~> e' => t') →
+                   Γ ⊢ <| e |> => <||> ~ α ~>  <| e' |> => <||>
+      SAConInl : {Γ : ·ctx} {t : τ̇} →
+                  Γ ⊢ ▹ <||> ◃ => t ~ construct inl ~> inl <||> ·:₂ (▹ <||> ◃ ⊕₁ <||>) => (<||> ⊕ <||>)
+      SAConInr : {Γ : ·ctx} {t : τ̇} →
+                  Γ ⊢ ▹ <||> ◃ => t ~ construct inr ~> inr <||> ·:₂ (<||> ⊕₂ ▹ <||> ◃) => (<||> ⊕ <||>)
 
-  --   -- analytic action expressions
-  --   data _⊢_~_~>_⇐_ : (Γ : ·ctx) → (e : ê) → (α : action) →
-  --                     (e' : ê) → (t : τ̇) → Set where
-  --     AASubsume : {Γ : ·ctx} {e e' : ê} {t t' t'' : τ̇} {α : action} {e◆ : ė} →
-  --                 (erase-e e e◆) →
-  --                 (Γ ⊢ e◆ => t') →
-  --                 (Γ ⊢ e => t' ~ α ~> e' => t'') →
-  --                 (t ~ t'') →
-  --                 Γ ⊢ e ~ α ~> e' ⇐ t
-  --     AAMove : {e e' : ê} {δ : direction} {Γ : ·ctx} {t : τ̇} →
-  --                 (e + move δ +>e e') →
-  --                 Γ ⊢ e ~ move δ ~> e' ⇐ t
-  --     AADel : {e : ė} {Γ : ·ctx} {t : τ̇} →
-  --                Γ ⊢ ▹ e ◃ ~ del ~> ▹ <||> ◃ ⇐ t
-  --     AAConAsc : {Γ : ·ctx} {e : ė} {t : τ̇} →
-  --                Γ ⊢ ▹ e ◃ ~ construct asc ~> (e ·:₂ ▹ t ◃) ⇐ t
-  --     AAConVar : {Γ : ·ctx} {t t' : τ̇} {x : Nat} →
-  --                (t ~̸ t') →
-  --                (p : (x , t') ∈ Γ) →
-  --                Γ ⊢ ▹ <||> ◃ ~ construct (var x) ~> <| ▹ X x ◃ |> ⇐ t
-  --     AAConLam1 : {Γ : ·ctx} {x : Nat} {t t1 t2 : τ̇} →
-  --                 (x # Γ) →
-  --                 (t ▸arr (t1 ==> t2)) →
-  --                 Γ ⊢ ▹ <||> ◃ ~ construct (lam x) ~>
-  --                     ·λ x (▹ <||> ◃) ⇐ t
-  --     AAConLam2 : {Γ : ·ctx} {x : Nat} {t : τ̇} →
-  --                 (x # Γ) →
-  --                 (t ~̸ (<||> ==> <||>)) →
-  --                 Γ ⊢ ▹ <||> ◃ ~ construct (lam x) ~>
-  --                     <| ·λ x <||> ·:₂ (▹ <||> ◃ ==>₁ <||>) |> ⇐ t
-  --     AAConNumlit : {Γ : ·ctx} {t : τ̇} {n : Nat} →
-  --                   (t ~̸ num) →
-  --                   Γ ⊢ ▹ <||> ◃ ~ construct (numlit n) ~> <| ▹ (N n) ◃ |> ⇐ t
-  --     AAFinish : {Γ : ·ctx} {e : ė} {t : τ̇} →
-  --                (Γ ⊢ e <= t) →
-  --                Γ ⊢ ▹ <| e |> ◃ ~ finish ~> ▹ e ◃ ⇐ t
-  --     AAZipLam : {Γ : ·ctx} {x : Nat} {t t1 t2 : τ̇} {e e' : ê} {α : action} →
-  --                (x # Γ) →
-  --                (t ▸arr (t1 ==> t2)) →
-  --                ((Γ ,, (x , t1)) ⊢ e ~ α ~> e' ⇐ t2) →
-  --                Γ ⊢ (·λ x e) ~ α ~> (·λ x e') ⇐ t
+
+    -- analytic action expressions
+    data _⊢_~_~>_⇐_ : (Γ : ·ctx) → (e : ê) → (α : action) →
+                      (e' : ê) → (t : τ̇) → Set where
+      AASubsume : {Γ : ·ctx} {e e' : ê} {t t' t'' : τ̇} {α : action} {e◆ : ė} →
+                  (erase-e e e◆) →
+                  (Γ ⊢ e◆ => t') →
+                  (Γ ⊢ e => t' ~ α ~> e' => t'') →
+                  (t ~ t'') →
+                  Γ ⊢ e ~ α ~> e' ⇐ t
+      AAMove : {e e' : ê} {δ : direction} {Γ : ·ctx} {t : τ̇} →
+                  (e + move δ +>e e') →
+                  Γ ⊢ e ~ move δ ~> e' ⇐ t
+      AADel : {e : ė} {Γ : ·ctx} {t : τ̇} →
+                 Γ ⊢ ▹ e ◃ ~ del ~> ▹ <||> ◃ ⇐ t
+      AAConAsc : {Γ : ·ctx} {e : ė} {t : τ̇} →
+                 Γ ⊢ ▹ e ◃ ~ construct asc ~> (e ·:₂ ▹ t ◃) ⇐ t
+      AAConVar : {Γ : ·ctx} {t t' : τ̇} {x : Nat} →
+                 (t ~̸ t') →
+                 (p : (x , t') ∈ Γ) →
+                 Γ ⊢ ▹ <||> ◃ ~ construct (var x) ~> <| ▹ X x ◃ |> ⇐ t
+      AAConLam1 : {Γ : ·ctx} {x : Nat} {t t1 t2 : τ̇} →
+                  (x # Γ) →
+                  (t ▸arr (t1 ==> t2)) →
+                  Γ ⊢ ▹ <||> ◃ ~ construct (lam x) ~>
+                      ·λ x (▹ <||> ◃) ⇐ t
+      AAConLam2 : {Γ : ·ctx} {x : Nat} {t : τ̇} →
+                  (x # Γ) →
+                  (t ~̸ (<||> ==> <||>)) →
+                  Γ ⊢ ▹ <||> ◃ ~ construct (lam x) ~>
+                      <| ·λ x <||> ·:₂ (▹ <||> ◃ ==>₁ <||>) |> ⇐ t
+      AAConNumlit : {Γ : ·ctx} {t : τ̇} {n : Nat} →
+                    (t ~̸ num) →
+                    Γ ⊢ ▹ <||> ◃ ~ construct (numlit n) ~> <| ▹ (N n) ◃ |> ⇐ t
+      AAFinish : {Γ : ·ctx} {e : ė} {t : τ̇} →
+                 (Γ ⊢ e <= t) →
+                 Γ ⊢ ▹ <| e |> ◃ ~ finish ~> ▹ e ◃ ⇐ t
+      AAZipLam : {Γ : ·ctx} {x : Nat} {t t1 t2 : τ̇} {e e' : ê} {α : action} →
+                 (x # Γ) → -- todo: is this derivable?
+                 (t ▸arr (t1 ==> t2)) →
+                 ((Γ ,, (x , t1)) ⊢ e ~ α ~> e' ⇐ t2) →
+                 Γ ⊢ (·λ x e) ~ α ~> (·λ x e') ⇐ t
+      AAConInl1 : {Γ : ·ctx} {t+ : τ̇} →
+                t+ ▸plus (<||> ⊕ <||>) →
+                Γ ⊢ ▹ <||> ◃ ~ construct inl ~> inl ▹ <||> ◃ ⇐ t+
+      AAConInl2 : {Γ : ·ctx} {t : τ̇} →
+                t ~̸  (<||> ⊕ <||>) →
+                Γ ⊢ ▹ <||> ◃ ~ construct inl ~> <| inl <||> ·:₂ (▹ <||> ◃ ⊕₁ <||>) |> ⇐ t
+      AAConInr1 : {Γ : ·ctx} {t+ : τ̇} →
+                t+ ▸plus (<||> ⊕ <||>) →
+                Γ ⊢ ▹ <||> ◃ ~ construct inr ~> inr ▹ <||> ◃ ⇐ t+
+      AAConInr2 : {Γ : ·ctx} {t : τ̇} →
+                t ~̸  (<||> ⊕ <||>) →
+                Γ ⊢ ▹ <||> ◃ ~ construct inr ~> <| inr <||> ·:₂ (▹ <||> ◃ ⊕₁ <||>) |> ⇐ t
+      AAConCase : {Γ : ·ctx} {x y : Nat} {t : τ̇} →
+                x # Γ →
+                y # Γ →
+                Γ ⊢ ▹ <||> ◃ ~ construct (case x y) ~> case₁ ▹ <||> ◃ x <||> y <||> ⇐ t
+      AAZipInl : {Γ : ·ctx} {t+ t1 t2 : τ̇} {e e' : ê} {α : action} →
+                 t+ ▸plus (t1 ⊕ t2) →
+                 Γ ⊢ e ~ α ~> e' ⇐ t1 →
+                 Γ ⊢ inl e ~ α ~> inl e' ⇐ t1
+      AAZipInr : {Γ : ·ctx} {t+ t1 t2 : τ̇} {e e' : ê} {α : action} →
+                 t+ ▸plus (t1 ⊕ t2) →
+                 Γ ⊢ e ~ α ~> e' ⇐ t2 →
+                 Γ ⊢ inr e ~ α ~> inr e' ⇐ t2
+      AAZipCase1 : {Γ : ·ctx} {e e' : ê} {e◆ e1 e2 : ė} {x y : Nat} {t t0 t+ t1 t2 : τ̇} {α : action} →
+                 x # Γ →
+                 y # Γ → -- todo: these may be derivable
+                 erase-e e e◆ →
+                 Γ ⊢ e◆ => t0 →
+                 Γ ⊢ e => t0 ~ α ~> e' => t+ →
+                 t+ ▸plus (t1 ⊕ t2) →
+                 (Γ ,, (x , t1)) ⊢ e1 <= t →
+                 (Γ ,, (y , t2)) ⊢ e2 <= t →
+                 Γ ⊢ case₁ e x e1 y e2 ~ α ~> case₁ e' x e1 y e2 ⇐ t
+      AAZipCase2 : {Γ : ·ctx} {e1 e1' : ê} {e e2 : ė} {x y : Nat} {t t+ t1 t2 : τ̇} {α : action} →
+                 x # Γ →
+                 y # Γ → -- todo: these may be derivable
+                 Γ ⊢ e => t+ →
+                 t+ ▸plus (t1 ⊕ t2) →
+                 (Γ ,, (x , t1)) ⊢ e1 ~ α ~> e1' ⇐ t →
+                 (Γ ,, (y , t2)) ⊢ e2 <= t →
+                 Γ ⊢ case₂ e x e1 y e2 ~ α ~> case₂ e x e1' y e2 ⇐ t
+      AAZipCase3 : {Γ : ·ctx} {e2 e2' : ê} {e e1 : ė} {x y : Nat} {t t+ t1 t2 : τ̇} {α : action} →
+                 x # Γ →
+                 y # Γ → -- todo: these may be derivable
+                 Γ ⊢ e => t+ →
+                 t+ ▸plus (t1 ⊕ t2) →
+                 (Γ ,, (x , t1)) ⊢ e1 <= t →
+                 (Γ ,, (y , t2)) ⊢ e2 ~ α ~> e2' ⇐ t →
+                 Γ ⊢ case₃ e x e1 y e2 ~ α ~> case₃ e x e1 y e2' ⇐ t
