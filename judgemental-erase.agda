@@ -50,21 +50,28 @@ module judgemental-erase where
   (case₃ e x e1 y e2) ◆e = case e x e1 y (e2 ◆e)
 
   -- this pair of theorems moves from the judgmental form to the function form
-  -- erase-t◆ : {t : τ̂} {tr : τ̇} → (erase-t t tr) → (t ◆t == tr)
-  -- erase-t◆ ETTop       = refl
-  -- erase-t◆ (ETArrL p)  = ap1 (λ x → x ==> _) (erase-t◆ p)
-  -- erase-t◆ (ETArrR p)  = ap1 (λ x → _ ==> x) (erase-t◆ p)
+  erase-t◆ : {t : τ̂} {tr : τ̇} → (erase-t t tr) → (t ◆t == tr)
+  erase-t◆ ETTop       = refl
+  erase-t◆ (ETArrL p)  = ap1 (λ x → x ==> _) (erase-t◆ p)
+  erase-t◆ (ETArrR p)  = ap1 (λ x → _ ==> x) (erase-t◆ p)
+  erase-t◆ (ETPlusL p) = ap1 (λ x → x ⊕ _) (erase-t◆ p)
+  erase-t◆ (ETPlusR p) = ap1 (λ x → _ ⊕ x) (erase-t◆ p)
 
-  -- erase-e◆ : {e : ê} {er : ė} → (erase-e e er) → (e ◆e == er)
-  -- erase-e◆ EETop       = refl
-  -- erase-e◆ (EEAscL p)  = ap1 (λ x → x ·: _)  (erase-e◆ p)
-  -- erase-e◆ (EEAscR p)  = ap1 (λ x → _ ·: x)  (erase-t◆ p)
-  -- erase-e◆ (EELam p)   = ap1 (λ e → ·λ _ e)  (erase-e◆ p)
-  -- erase-e◆ (EEApL p)   = ap1 (λ x → x ∘ _)   (erase-e◆ p)
-  -- erase-e◆ (EEApR p)   = ap1 (λ x → _ ∘ x)   (erase-e◆ p)
-  -- erase-e◆ (EEPlusL p) = ap1 (λ x → x ·+ _)  (erase-e◆ p)
-  -- erase-e◆ (EEPlusR p) = ap1 (λ x → _ ·+ x)  (erase-e◆ p)
-  -- erase-e◆ (EENEHole p) = ap1 (λ x → <| x |>) (erase-e◆ p)
+  erase-e◆ : {e : ê} {er : ė} → (erase-e e er) → (e ◆e == er)
+  erase-e◆ EETop       = refl
+  erase-e◆ (EEAscL p)  = ap1 (λ x → x ·: _)  (erase-e◆ p)
+  erase-e◆ (EEAscR p)  = ap1 (λ x → _ ·: x)  (erase-t◆ p)
+  erase-e◆ (EELam p)   = ap1 (λ e → ·λ _ e)  (erase-e◆ p)
+  erase-e◆ (EEApL p)   = ap1 (λ x → x ∘ _)   (erase-e◆ p)
+  erase-e◆ (EEApR p)   = ap1 (λ x → _ ∘ x)   (erase-e◆ p)
+  erase-e◆ (EEPlusL p) = ap1 (λ x → x ·+ _)  (erase-e◆ p)
+  erase-e◆ (EEPlusR p) = ap1 (λ x → _ ·+ x)  (erase-e◆ p)
+  erase-e◆ (EENEHole p) = ap1 (λ x → <| x |>) (erase-e◆ p)
+  erase-e◆ (EEInl p)    = ap1 inl (erase-e◆ p)
+  erase-e◆ (EEInr p)    = ap1 inr (erase-e◆ p)
+  erase-e◆ (EECase1 p)  = ap1 (λ x → case x _ _ _ _) (erase-e◆ p)
+  erase-e◆ (EECase2 p)  = ap1 (λ x → case _ _ x _ _) (erase-e◆ p)
+  erase-e◆ (EECase3 p)  = ap1 (λ x → case _ _ _ _ x) (erase-e◆ p)
 
   -- -- this pair of theorems moves back from judgmental form to the function form
   -- ◆erase-t : (t : τ̂) (tr : τ̇) → (t ◆t == tr) → (erase-t t tr)
