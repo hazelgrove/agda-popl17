@@ -160,7 +160,7 @@ module core where
       AInr : {Γ : ·ctx} {e : ė} {t+ t1 t2 : τ̇} →
                  t+ ▸plus (t1 ⊕ t2) →
                  Γ ⊢ e <= t2 →
-                 Γ ⊢ inl e <= t+
+                 Γ ⊢ inr e <= t+
       ACase : {Γ : ·ctx} {e e1 e2 : ė} {t t+ t1 t2 : τ̇} {x y : Nat} →
                  x # Γ →
                  y # Γ →
