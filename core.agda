@@ -167,7 +167,7 @@ module core where
                  t+ ▸plus (t1 ⊕ t2) →
                  Γ ⊢ e => t+ →
                  (Γ ,, (x , t1)) ⊢ e1 <= t →
-                 (Γ ,, (x , t2)) ⊢ e2 <= t →
+                 (Γ ,, (y , t2)) ⊢ e2 <= t →
                  Γ ⊢ case e x e1 y e2 <= t
 
   ----- a couple of exmaples to demonstrate how the encoding above works
