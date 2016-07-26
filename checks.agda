@@ -278,7 +278,7 @@ module checks where
   ziplem-inr m DoRefl = DoRefl
   ziplem-inr m (DoAna x r) = DoAna (AAZipInr m x) (ziplem-inr m r)
 
-  ziplem-case1 : ∀ {x Γ y e e◆ t0 t+ e' e1 e2 L t1 t2 t} →
+  ziplem-case1a : ∀ {x Γ y e e◆ t0 t+ e' e1 e2 L t1 t2 t} →
                  x # Γ →
                  y # Γ →
                  erase-e e e◆ →
@@ -289,12 +289,27 @@ module checks where
                  (Γ ,, (y , t2)) ⊢ e2 <= t →
                  movements L →
                  runana Γ (case₁ e x e1 y e2) L (case₁ e' x e1 y e2) t
-  ziplem-case1 x# y# er wt0 DoRefl m wt1 wt2 mv = DoRefl
-  ziplem-case1 x# y# er wt0 (DoSynth α rs) m wt1 wt2 (AM:: mv)
+  ziplem-case1a x# y# er wt0 DoRefl m wt1 wt2 mv = DoRefl
+  ziplem-case1a x# y# er wt0 (DoSynth α rs) m wt1 wt2 (AM:: mv)
     with endpoints (actsense1 er (rel◆ _) α wt0) rs mv
   ... | refl with pin er wt0 α
   ... | refl = DoAna (AAZipCase1 x# y# er wt0 α m wt1 wt2)
-                     (ziplem-case1 x# y# (synth-move-er er wt0 α) wt0 rs m wt1 wt2 mv)
+                     (ziplem-case1a x# y# (synth-move-er er wt0 α) wt0 rs m wt1 wt2 mv)
+
+  ziplem-case1b : ∀ {Γ e e' t L t' x y t0 e◆ } →
+                  x # Γ →
+                  y # Γ →
+                  erase-e e e◆ →
+                  Γ ⊢ e◆ => t →
+                  runsynth Γ e t L e' t' →
+                  runana Γ (case₁ <| e  |> x <||> y <||>) L
+                           (case₁ <| e' |> x <||> y <||>) t0
+  ziplem-case1b _ _ _ _ DoRefl = DoRefl
+  ziplem-case1b x# y# er wt (DoSynth x₁ rs) =
+                   DoAna (AAZipCase1 x# y# (erase-in-hole er) (SNEHole wt) (SAZipHole er wt x₁)
+                          MPHole (ASubsume SEHole TCHole1) (ASubsume SEHole TCHole1))
+                     (ziplem-case1b x# y# (rel◆ _) (actsense1 er (rel◆ _) x₁ wt) rs)
+
 
   ziplem-case2  : ∀ {t t+ t1 t2 Γ x y e e1 e1' e2 l} →
                   x # Γ →

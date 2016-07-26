@@ -109,7 +109,7 @@ module reachability where
                        movements++ m (AM:: AM[])
     reachup-ana (EECase1 er) (ACase x₁ x₂ x₃ x₄ wt wt₁) with reachup-synth er x₄
     ... | l , ih , m = l ++ [ move parent ] ,
-                       runana++ {L1 = l} (ziplem-case1 x₁ x₂ er x₄ ih x₃ wt wt₁ m) (DoAna (AAMove EMCaseParent1) DoRefl) ,
+                       runana++ {L1 = l} (ziplem-case1a x₁ x₂ er x₄ ih x₃ wt wt₁ m) (DoAna (AAMove EMCaseParent1) DoRefl) ,
                        movements++ m (AM:: AM[])
     reachup-ana (EECase2 er) (ACase x₁ x₂ x₃ x₄ wt wt₁) with reachup-ana er wt
     ... | l , ih , m = l ++ [ move parent ] ,
@@ -209,7 +209,7 @@ module reachability where
                        AM:: m
     reachdown-ana (EECase1 er) (ACase x₁ x₂ x₃ x₄ wt wt₁) with reachdown-synth er x₄
     ... | l , ih , m = move firstChild :: l ,
-                       DoAna (AAMove EMCaseFirstChild) (ziplem-case1 x₁ x₂ EETop x₄ ih x₃ wt wt₁ m) ,
+                       DoAna (AAMove EMCaseFirstChild) (ziplem-case1a x₁ x₂ EETop x₄ ih x₃ wt wt₁ m) ,
                        AM:: m
     reachdown-ana (EECase2 er) (ACase x₁ x₂ x₃ x₄ wt wt₁) with reachdown-ana er wt
     ... | l , ih , m = move firstChild :: move nextSib :: l ,
