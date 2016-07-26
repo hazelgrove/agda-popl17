@@ -3,6 +3,12 @@
 This repository contains the formalization of Hazelnut and the associated
 metatheory as submitted to POPL 2017.
 
+The branch `sums` is formalization of the core calculus extended with sum
+types. Currently, all theorems that are true for one are true for the
+other. A good way to look at this and see what's required to extend
+Hazelnut is by using github to view the comparison of the branches, here
+https://github.com/hazelgrove/agda-popl17/compare/sums.
+
 File Descriptions
 =================
 
