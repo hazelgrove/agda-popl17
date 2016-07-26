@@ -634,14 +634,14 @@ module core where
                  (t ▸arr (t1 ==> t2)) →
                  ((Γ ,, (x , t1)) ⊢ e ~ α ~> e' ⇐ t2) →
                  Γ ⊢ (·λ x e) ~ α ~> (·λ x e') ⇐ t
-      AAConInl1 : {Γ : ·ctx} {t+ : τ̇} →
-                t+ ▸plus (<||> ⊕ <||>) →
+      AAConInl1 : {Γ : ·ctx} {t+ t1 t2 : τ̇} →
+                t+ ▸plus (t1 ⊕ t2) →
                 Γ ⊢ ▹ <||> ◃ ~ construct inl ~> inl ▹ <||> ◃ ⇐ t+
-      AAConInl2 : {Γ : ·ctx} {t : τ̇} →
-                t ~̸  (<||> ⊕ <||>) →
+      AAConInl2 : {Γ : ·ctx} {t t1 t2 : τ̇} →
+                t ~̸  (t1 ⊕ t2) →
                 Γ ⊢ ▹ <||> ◃ ~ construct inl ~> <| inl <||> ·:₂ (▹ <||> ◃ ⊕₁ <||>) |> ⇐ t
-      AAConInr1 : {Γ : ·ctx} {t+ : τ̇} →
-                t+ ▸plus (<||> ⊕ <||>) →
+      AAConInr1 : {Γ : ·ctx} {t+ t1 t2 : τ̇} →
+                t+ ▸plus (t1 ⊕ t2) →
                 Γ ⊢ ▹ <||> ◃ ~ construct inr ~> inr ▹ <||> ◃ ⇐ t+
       AAConInr2 : {Γ : ·ctx} {t : τ̇} →
                 t ~̸  (<||> ⊕ <||>) →

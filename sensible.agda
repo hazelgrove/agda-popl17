@@ -103,9 +103,9 @@ module sensible where
     ... | ih = ALam x₄ x₅ ih
 
       -- constructing injections
-    actsense2 EETop (EEInl EETop) (AAConInl1 e) _ = AInl e (ASubsume SEHole TCRefl)
+    actsense2 EETop (EEInl EETop) (AAConInl1 e) _ = AInl e (ASubsume SEHole TCHole1)
     actsense2 EETop (EENEHole (EEAscR (ETPlusL ETTop))) (AAConInl2 e) _ = ASubsume (SNEHole (SAsc (AInl MPPlus (ASubsume SEHole TCRefl)))) TCHole1
-    actsense2 EETop (EEInr EETop) (AAConInr1 e) _ = AInr e (ASubsume SEHole TCRefl)
+    actsense2 EETop (EEInr EETop) (AAConInr1 e) _ = AInr e (ASubsume SEHole TCHole1)
     actsense2 EETop (EENEHole (EEAscR (ETPlusL ETTop))) (AAConInr2 e) _ = ASubsume (SNEHole (SAsc (AInr MPPlus (ASubsume SEHole TCRefl)))) TCHole1
 
       -- constructing case
