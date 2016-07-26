@@ -28,3 +28,6 @@ module complete-dynamics where
   [ e1 / x ] <||>       = <||>
   [ e1 / x ] <| e2 |>   = <| [ e1 / x ] e2 |>
   [ e1 / x ] (e2 ∘ e3)  = ([ e1 / x ] e2) ∘ ([ e1 / x ] e3)
+  [ e1 / x ] (inl e) = {!!}
+  [ e1 / x ] (inr e) = {!!}
+  [ e' / z ] (case e x e1 y e2) = {!!}
