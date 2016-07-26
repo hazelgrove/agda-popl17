@@ -21,11 +21,17 @@ module constructability where
   construct-type num  = [ construct num ] , DoType TMConNum DoRefl
   construct-type <||> = [ del ]           , DoType TMDel DoRefl
   construct-type (t1 ==> t2) with construct-type t1 | construct-type t2
-  ... | (l1 , ih1) | (l2 , ih2)= l1 ++ construct arrow :: l2 ++ [ move parent ] ,
+  ... | (l1 , ih1) | (l2 , ih2) = l1 ++ construct arrow :: l2 ++ [ move parent ] ,
                                  runtype++ ih1
                                    (DoType TMConArrow
-                                     (runtype++ (ziplem-tm2 ih2)
-                                       (DoType TMParent2 DoRefl)))
+                                     (runtype++ (ziplem-tmarr2 ih2)
+                                       (DoType TMArrParent2 DoRefl)))
+  construct-type (t1 ⊕ t2) with construct-type t1 | construct-type t2
+  ... | (l1 , ih1) | (l2 , ih2) = l1 ++ construct tplus :: l2 ++ [ move parent ] ,
+                                  runtype++ ih1
+                                    (DoType TMConPlus
+                                       (runtype++ (ziplem-tmplus2 ih2)
+                                         (DoType TMPlusParent2 DoRefl)))
 
   mutual
     -- construction of expressions in synthetic positions
@@ -80,7 +86,24 @@ module constructability where
                           (DoAna (AAFinish (ASubsume x c)) DoRefl)))
 
     construct-ana (ALam a m e) with construct-ana e
-    ... | (l , ih) = construct (lam _) :: (l ++ [ move parent ])
-                     , DoAna (AAConLam1 a m)
+    ... | (l , ih) = construct (lam _) :: (l ++ [ move parent ]) ,
+                     DoAna (AAConLam1 a m)
                          (runana++ (ziplem-lam a m ih)
                           (DoAna (AAMove EMLamParent) DoRefl))
+
+    construct-ana (AInl m wt) with construct-ana wt
+    ... | (l , ih) = construct inl :: l ++ [ move parent ]  ,
+                     DoAna (AAConInl1 m)
+                       (runana++ (ziplem-inl m ih)
+                         (DoAna (AAMove EMInlParent) DoRefl))
+
+    construct-ana (AInr m wt) with construct-ana wt
+    ... | (l , ih) = construct inr :: l ++ [ move parent ]  ,
+                     DoAna (AAConInr1 m)
+                       (runana++ (ziplem-inr m ih)
+                         (DoAna (AAMove EMInrParent) DoRefl))
+
+    construct-ana (ACase x# y# m wt0 wt1 wt2) with construct-synth wt0 | construct-ana wt1 | construct-ana wt2
+    ... | (l0 , ih0) | (l1 , ih1) | (l2 , ih2) =
+                         {!!} ,
+                         {!!}
