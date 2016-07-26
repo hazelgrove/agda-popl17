@@ -55,6 +55,9 @@ module structural where
   fresh x <||> = ⊤
   fresh x <| e |> = fresh x e
   fresh x (e1 ∘ e2) = fresh x e1 × fresh x e2
+  fresh x (inl e) = {!!}
+  fresh x (inr e) = {!!}
+  fresh z (case e x e1 y e2) = {!!}
 
   mutual
     wt-weak-synth : {Γ : ·ctx} {x : Nat} {t t' : τ̇} {e : ė} →
@@ -82,6 +85,9 @@ module structural where
     wt-weak-ana {x = x} A F (ALam {x = x₁} x₂ x₃ wt) with natEQ x x₁
     wt-weak-ana A F (ALam x₂ x₃ wt) | Inl refl = abort F
     wt-weak-ana A F (ALam x₂ x₃ wt) | Inr neq  = {!!} -- ALam (lem-extend {!!} {!!}) x₃ (wt-weak-ana {!!} {!!} wt)
+    wt-weak-ana A F (AInl a b) = {!!}
+    wt-weak-ana A F (AInr a b) = {!!}
+    wt-weak-ana A F (ACase a b c d e f) = {!!}
 
   -- the contraction cases are much easier and don't require induction over
   -- the typing jugement, because the contexts in question are indeed
