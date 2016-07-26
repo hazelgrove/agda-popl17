@@ -630,7 +630,7 @@ module core where
                  (Γ ⊢ e <= t) →
                  Γ ⊢ ▹ <| e |> ◃ ~ finish ~> ▹ e ◃ ⇐ t
       AAZipLam : {Γ : ·ctx} {x : Nat} {t t1 t2 : τ̇} {e e' : ê} {α : action} →
-                 (x # Γ) → -- todo: is this derivable?
+                 x # Γ →
                  (t ▸arr (t1 ==> t2)) →
                  ((Γ ,, (x , t1)) ⊢ e ~ α ~> e' ⇐ t2) →
                  Γ ⊢ (·λ x e) ~ α ~> (·λ x e') ⇐ t
@@ -660,7 +660,7 @@ module core where
                  Γ ⊢ inr e ~ α ~> inr e' ⇐ t+
       AAZipCase1 : {Γ : ·ctx} {e e' : ê} {e◆ e1 e2 : ė} {x y : Nat} {t t0 t+ t1 t2 : τ̇} {α : action} →
                  x # Γ →
-                 y # Γ → -- todo: these may be derivable
+                 y # Γ →
                  erase-e e e◆ →
                  Γ ⊢ e◆ => t0 →
                  Γ ⊢ e => t0 ~ α ~> e' => t+ →
@@ -670,7 +670,7 @@ module core where
                  Γ ⊢ case₁ e x e1 y e2 ~ α ~> case₁ e' x e1 y e2 ⇐ t
       AAZipCase2 : {Γ : ·ctx} {e1 e1' : ê} {e e2 : ė} {x y : Nat} {t t+ t1 t2 : τ̇} {α : action} →
                  x # Γ →
-                 y # Γ → -- todo: these may be derivable
+                 y # Γ →
                  Γ ⊢ e => t+ →
                  t+ ▸plus (t1 ⊕ t2) →
                  (Γ ,, (x , t1)) ⊢ e1 ~ α ~> e1' ⇐ t →
@@ -678,7 +678,7 @@ module core where
                  Γ ⊢ case₂ e x e1 y e2 ~ α ~> case₂ e x e1' y e2 ⇐ t
       AAZipCase3 : {Γ : ·ctx} {e2 e2' : ê} {e e1 : ė} {x y : Nat} {t t+ t1 t2 : τ̇} {α : action} →
                  x # Γ →
-                 y # Γ → -- todo: these may be derivable
+                 y # Γ →
                  Γ ⊢ e => t+ →
                  t+ ▸plus (t1 ⊕ t2) →
                  (Γ ,, (x , t1)) ⊢ e1 <= t →

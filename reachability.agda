@@ -101,26 +101,24 @@ module reachability where
                        movements++ m (AM:: AM[])
     reachup-ana (EEInl er) (AInl x wt) with reachup-ana er wt
     ... | l , ih , m = l ++ [ move parent ] ,
-                       runana++ {L1 = l} (ziplem-inl x ih) (DoAna (AAMove EMInlParent) DoRefl) ,
+                       runana++ (ziplem-inl x ih) (DoAna (AAMove EMInlParent) DoRefl) ,
                        movements++ m (AM:: AM[])
     reachup-ana (EEInr er) (AInr x wt) with reachup-ana er wt
     ... | l , ih , m = l ++ [ move parent ] ,
-                       runana++ {L1 = l} (ziplem-inr x ih) (DoAna (AAMove EMInrParent) DoRefl) ,
+                       runana++ (ziplem-inr x ih) (DoAna (AAMove EMInrParent) DoRefl) ,
                        movements++ m (AM:: AM[])
     reachup-ana (EECase1 er) (ACase x₁ x₂ x₃ x₄ wt wt₁) with reachup-synth er x₄
     ... | l , ih , m = l ++ [ move parent ] ,
-                       runana++ {L1 = l} {!!} (DoAna (AAMove EMCaseParent1) DoRefl) ,
+                       runana++ {L1 = l} (ziplem-case1 x₁ x₂ er x₄ ih x₃ wt wt₁ m) (DoAna (AAMove EMCaseParent1) DoRefl) ,
                        movements++ m (AM:: AM[])
     reachup-ana (EECase2 er) (ACase x₁ x₂ x₃ x₄ wt wt₁) with reachup-ana er wt
     ... | l , ih , m = l ++ [ move parent ] ,
-                       runana++ {L1 = l} {!!} (DoAna (AAMove EMCaseParent2) DoRefl) ,
+                       runana++ (ziplem-case2 x₁ x₂ x₄ wt₁ x₃ ih) (DoAna (AAMove EMCaseParent2) DoRefl) ,
                        movements++ m (AM:: AM[])
     reachup-ana (EECase3 er) (ACase x₁ x₂ x₃ x₄ wt wt₁) with reachup-ana er wt₁
     ... | l , ih , m = l ++ [ move parent ] ,
-                       runana++ {L1 = l} {!!} (DoAna (AAMove EMCaseParent3) DoRefl) ,
+                       runana++ (ziplem-case3 x₁ x₂ x₄ wt x₃ ih) (DoAna (AAMove EMCaseParent3) DoRefl) ,
                        movements++ m (AM:: AM[])
-
-
 
 
   --------------------------
@@ -137,13 +135,13 @@ module reachability where
                         DoType TMArrFirstChild (DoType TMArrNextSib (ziplem-tmarr2 ih)) ,
                         AM:: (AM:: m)
   reachdown-type (ETPlusL er) with reachdown-type er
-  ... | (l , ih , m ) = l ++ [ move parent ] ,
-                        {!!} , -- runtype++ (ziplem-tm1 ih) (DoType TMArrParent1 DoRefl) ,
-                        movements++ m (AM:: AM[])
+  ... | (l , ih , m ) = move firstChild :: l ,
+                        DoType TMPlusFirstChild (ziplem-tmplus1 ih) ,
+                        AM:: m
   reachdown-type (ETPlusR er) with reachdown-type er
-  ... | (l , ih , m ) = l ++ [ move parent ] ,
-                        {!!} , -- runtype++ (ziplem-tm2 ih) (DoType TMArrParent2 DoRefl) ,
-                        movements++ m (AM:: AM[])
+  ... | (l , ih , m ) = move firstChild :: move nextSib :: l ,
+                        DoType TMPlusFirstChild (DoType TMPlusNextSib (ziplem-tmplus2 ih)) ,
+                        AM:: (AM:: m)
 
 
   mutual
@@ -201,11 +199,31 @@ module reachability where
     ... | l , ih , m = move firstChild :: l ,
                        DoAna (AAMove EMLamFirstChild) (ziplem-lam x₁ x₂ ih) ,
                        AM:: m
-    reachdown-ana (EEInl er) wt = {!!}
-    reachdown-ana (EEInr er) wt = {!!}
-    reachdown-ana (EECase1 er) wt = {!!}
-    reachdown-ana (EECase2 er) wt = {!!}
-    reachdown-ana (EECase3 er) wt = {!!}
+    reachdown-ana (EEInl er) (AInl x wt) with reachdown-ana er wt
+    ... | l , ih , m = move firstChild :: l ,
+                       DoAna (AAMove EMInlFirstChild) (ziplem-inl x ih) ,
+                       AM:: m
+    reachdown-ana (EEInr er) (AInr x wt) with reachdown-ana er wt
+    ... | l , ih , m = move firstChild :: l ,
+                       DoAna (AAMove EMInrFirstChild) (ziplem-inr x ih) ,
+                       AM:: m
+    reachdown-ana (EECase1 er) (ACase x₁ x₂ x₃ x₄ wt wt₁) with reachdown-synth er x₄
+    ... | l , ih , m = move firstChild :: l ,
+                       DoAna (AAMove EMCaseFirstChild) (ziplem-case1 x₁ x₂ EETop x₄ ih x₃ wt wt₁ m) ,
+                       AM:: m
+    reachdown-ana (EECase2 er) (ACase x₁ x₂ x₃ x₄ wt wt₁) with reachdown-ana er wt
+    ... | l , ih , m = move firstChild :: move nextSib :: l ,
+                       DoAna (AAMove EMCaseFirstChild)
+                         (DoAna (AAMove EMCaseNextSib1)
+                            (ziplem-case2 x₁ x₂ x₄ wt₁ x₃ ih)) ,
+                       AM:: (AM:: m)
+    reachdown-ana (EECase3 er) (ACase x₁ x₂ x₃ x₄ wt wt₁) with reachdown-ana er wt₁
+    ... | l , ih , m = move firstChild :: move nextSib :: move nextSib :: l ,
+                       DoAna (AAMove EMCaseFirstChild)
+                         (DoAna (AAMove EMCaseNextSib1)
+                            (DoAna (AAMove EMCaseNextSib2)
+                              (ziplem-case3 x₁ x₂ x₄ wt x₃ ih))) ,
+                       AM:: (AM:: (AM:: m))
 
 
   --------------------------

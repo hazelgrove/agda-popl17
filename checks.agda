@@ -228,27 +228,16 @@ module checks where
   ... | er' =  DoSynth (SAZipAsc2 x er' er wt) (ziplem-moves-asc2 m er' wt rt)
 
 
-  --- this is a restricted form of determinism that's just enough to let
-  --- the lemma below go through, which is needed for reachability
-  pin : ∀ {Γ e t e' e◆ t' δ} →
-          erase-e e e◆ →
-          Γ ⊢ e◆ => t →
-          Γ ⊢ e => t ~ move δ ~> e' => t' →
-          t == t'
-  pin _ _ (SAMove x) = refl
-  pin _ _ (SAZipAsc1 x) = refl
-  pin _ _ (SAZipAsc2 x x₁ x₂ x₃) = eraset-det (lem-erase-step x₂ x) x₁
-  pin _ _ (SAZipApAna x x₁ x₂) = refl
-  pin _ _ (SAZipPlus1 x) = refl
-  pin _ _ (SAZipPlus2 x) = refl
-  pin _ _ (SAZipHole x x₁ d) = refl
-  pin (EEApL er) (SAp wt x x₁) (SAZipApArr x₂ x₃ x₄ d x₅)
-    with pin x₃ x₄ d
-  ... | refl with erasee-det er x₃
-  ... | refl with synthunicity x₄ wt
-  ... | refl with matcharrunicity x x₂
-  ... | refl = refl
 
+  endpoints : ∀{ Γ e t L e' t'} →
+                  Γ ⊢ (e ◆e) => t →
+                  runsynth Γ e t L e' t' →
+                  movements L →
+                  t == t'
+  endpoints _ DoRefl AM[] = refl
+  endpoints wt (DoSynth x rs) (AM:: mv)
+    with endpoints (actsense1 (rel◆ _) (rel◆ _) x wt) rs mv
+  ... | refl = pin (rel◆ _) wt x
 
   synthana-moves : ∀{t t' l e e' Γ} →
                    Γ ⊢ e ◆e => t' →
@@ -260,7 +249,6 @@ module checks where
   synthana-moves wt (AM:: m) c (DoSynth x rs) with pin (rel◆ _) wt x
   ... | refl = DoAna (AASubsume (rel◆ _) wt x c)
                      (synthana-moves (actsense1 (rel◆ _) (rel◆ _) x wt) m c rs)
-
 
   ziplem-moves-ap1 : ∀{Γ l e1 e1' e2 t t' tx} →
                    Γ ⊢ e1 ◆e => t →
@@ -290,6 +278,46 @@ module checks where
   ziplem-inr m DoRefl = DoRefl
   ziplem-inr m (DoAna x r) = DoAna (AAZipInr m x) (ziplem-inr m r)
 
-  -- ziplem-case1
-  -- ziplem-case2
-  -- ziplem-case3
+  ziplem-case1 : ∀ {x Γ y e e◆ t0 t+ e' e1 e2 L t1 t2 t} →
+                 x # Γ →
+                 y # Γ →
+                 erase-e e e◆ →
+                 Γ ⊢ e◆ => t0 →
+                 runsynth Γ e t0 L e' t+ →
+                 t+ ▸plus (t1 ⊕ t2) →
+                 (Γ ,, (x , t1)) ⊢ e1 <= t →
+                 (Γ ,, (y , t2)) ⊢ e2 <= t →
+                 movements L →
+                 runana Γ (case₁ e x e1 y e2) L (case₁ e' x e1 y e2) t
+  ziplem-case1 x# y# er wt0 DoRefl m wt1 wt2 mv = DoRefl
+  ziplem-case1 x# y# er wt0 (DoSynth α rs) m wt1 wt2 (AM:: mv)
+    with endpoints (actsense1 er (rel◆ _) α wt0) rs mv
+  ... | refl with pin er wt0 α
+  ... | refl = DoAna (AAZipCase1 x# y# er wt0 α m wt1 wt2)
+                     (ziplem-case1 x# y# (synth-move-er er wt0 α) wt0 rs m wt1 wt2 mv)
+
+  ziplem-case2  : ∀ {t t+ t1 t2 Γ x y e e1 e1' e2 l} →
+                  x # Γ →
+                  y # Γ →
+                  Γ ⊢ e => t+ →
+                  (Γ ,, (y , t2)) ⊢ e2 <= t →
+                  t+ ▸plus (t1 ⊕ t2) →
+                  runana (Γ ,, (x , t1)) e1 l e1' t →
+                  runana Γ (case₂ e x e1 y e2) l (case₂ e x e1' y e2) t
+  ziplem-case2 x# y# wt1 wt2 m DoRefl = DoRefl
+  ziplem-case2 x# y# wt1 wt2 m (DoAna x₁ ra) =
+                     DoAna (AAZipCase2 x# y# wt1 m x₁ wt2)
+                           (ziplem-case2 x# y# wt1 wt2 m ra)
+
+  ziplem-case3  : ∀ {t t+ t1 t2 Γ x y e e1 e2 e2' l} →
+                  x # Γ →
+                  y # Γ →
+                  Γ ⊢ e => t+ →
+                  (Γ ,, (x , t1)) ⊢ e1 <= t →
+                  t+ ▸plus (t1 ⊕ t2) →
+                  runana (Γ ,, (y , t2)) e2 l e2' t →
+                  runana Γ (case₃ e x e1 y e2) l (case₃ e x e1 y e2') t
+  ziplem-case3 x# y# wt1 wt2 m DoRefl = DoRefl
+  ziplem-case3 x# y# wt1 wt2 m (DoAna x₁ ra) =
+                     DoAna  (AAZipCase3 x# y# wt1 m wt2 x₁)
+                            (ziplem-case3 x# y# wt1 wt2 m ra)
