@@ -105,17 +105,34 @@ module constructability where
 
     construct-ana (ACase {e = e} {e1 = e1} {e2 = e2} {x = x} {y = y} x# y# m wt0 wt1 wt2) with construct-synth wt0 | construct-ana wt1 | construct-ana wt2
     ... | (l0 , ih0) | (l1 , ih1) | (l2 , ih2) =
-                         construct (case x y) :: l0 ++ (move nextSib :: l1 ++ (move nextSib :: l2 ++  [ move parent ])) ,
+                         -- construct (case x y) :: l0 ++ (move nextSib :: l1 ++ (move nextSib :: l2 ++  [ move parent ])) ,
+                         -- DoAna (AAConCase x# y#)
+                         --   (runana++ {L1 = l0} {e' = case₁ ▹ e ◃ x <||> y <||>} {!!}
+                         --             (DoAna (AAMove EMCaseNextSib1)
+                         --               (runana++ {L1 = l1} {e' = case₂ e x ▹ e1 ◃ y <||>} (ziplem-case2 x# y# wt0 (ASubsume SEHole TCHole1) m ih1)
+                         --                 (DoAna (AAMove EMCaseNextSib2)
+                         --                   (runana++ {L1 = l2} {e' = case₃ e x e1 y ▹ e2 ◃} (ziplem-case3 x# y# wt0 wt1 m ih2)
+                         --                     (DoAna (AAMove EMCaseParent3) DoRefl))))))
+                         construct (case x y) :: construct nehole :: l0 ++ (move parent :: finish :: move nextSib :: l1 ++ (move nextSib :: l2 ++  [ move parent ])) ,
                          DoAna (AAConCase x# y#)
-                           (runana++ {L1 = l0} {e' = case₁ (▹ e ◃) x <||> y <||>} {!!}
-                                     (DoAna (AAMove EMCaseNextSib1)
-                                       (runana++ {L1 = l1} {e' = case₂ e x ▹ e1 ◃ y <||>} (ziplem-case2 x# y# wt0 (ASubsume SEHole TCHole1) m ih1)
-                                         (DoAna (AAMove EMCaseNextSib2)
-                                           (runana++ {L1 = l2} {e' = case₃ e x e1 y ▹ e2 ◃} (ziplem-case3 x# y# wt0 wt1 m ih2)
-                                             (DoAna (AAMove EMCaseParent3) DoRefl))))))
+                           (DoAna {e' = case₁ (<| ▹ <||> ◃ |>) x <||> y <||>} (AAZipCase1 x# y# EETop SEHole SAConNEHole MPHole
+                                                                                 (ASubsume SEHole TCHole1) (ASubsume SEHole TCHole1))
+                                (runana++ {L1 = l0} {e' = case₁ <| ▹ e ◃ |> x <||> y <||>} {!!}
+                                  (DoAna (AAZipCase1 x# y# (EENEHole EETop) (SNEHole wt0)
+                                            (SAMove EMNEHoleParent) MPHole (ASubsume SEHole TCHole1)
+                                            (ASubsume SEHole TCHole1))
+                                        (DoAna (AAZipCase1 x# y# EETop (SNEHole wt0) (SAFinish wt0) m
+                                                  (ASubsume SEHole TCHole1) (ASubsume SEHole TCHole1))
+                                            (DoAna (AAMove EMCaseNextSib1)
+                                              (runana++ {L1 = l1} {e' = case₂ e x ▹ e1 ◃ y <||>} (ziplem-case2 x# y# wt0 (ASubsume SEHole TCHole1) m ih1)
+                                                (DoAna (AAMove EMCaseNextSib2)
+                                                  (runana++ {L1 = l2} {e' = case₃ e x e1 y ▹ e2 ◃} (ziplem-case3 x# y# wt0 wt1 m ih2)
+                                                    (DoAna (AAMove EMCaseParent3) DoRefl)))))))))
 
-                             -- (DoAna (AAMove EMCaseNextSib1)
-                             --   (runana++ {L1 = l1} (ziplem-case2 x# y# wt0 wt2 m ih1)
-                             --     (DoAna (AAMove EMCaseNextSib2)
-                             --            (runana++ {!!} -- (ziplem-case3 x# y# wt0 wt1 m {!ih2!})
-                             --              (DoAna (AAMove EMCaseParent3) DoRefl))))))
+                                           -- {!!}))))
+                         --   (runana++ {L1 = l0} {e' = case₁ ▹ e ◃ x <||> y <||>} {!!}
+                         --             (DoAna (AAMove EMCaseNextSib1)
+                         --               (runana++ {L1 = l1} {e' = case₂ e x ▹ e1 ◃ y <||>} (ziplem-case2 x# y# wt0 (ASubsume SEHole TCHole1) m ih1)
+                         --                 (DoAna (AAMove EMCaseNextSib2)
+                         --                   (runana++ {L1 = l2} {e' = case₃ e x e1 y ▹ e2 ◃} (ziplem-case3 x# y# wt0 wt1 m ih2)
+                         --                     (DoAna (AAMove EMCaseParent3) DoRefl))))))
