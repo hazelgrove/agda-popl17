@@ -9,23 +9,31 @@ module deterministic where
             (t + α +> t') →
             (t + α +> t'') →
             (t' == t'')
-  actdet1 TMFirstChild TMFirstChild = refl
-  actdet1 TMParent1 TMParent1 = refl
-  actdet1 TMParent1 (TMZip1 ())
-  actdet1 TMParent2 TMParent2 = refl
-  actdet1 TMParent2 (TMZip2 ())
-  actdet1 TMNextSib TMNextSib = refl
-  actdet1 TMNextSib (TMZip1 ())
+  actdet1 TMArrFirstChild TMArrFirstChild = refl
+  actdet1 TMArrParent1 TMArrParent1 = refl
+  actdet1 TMArrParent1 (TMArrZip1 ())
+  actdet1 TMArrParent2 TMArrParent2 = refl
+  actdet1 TMArrParent2 (TMArrZip2 ())
+  actdet1 TMArrNextSib TMArrNextSib = refl
+  actdet1 TMArrNextSib (TMArrZip1 ())
   actdet1 TMDel TMDel = refl
   actdet1 TMConArrow TMConArrow = refl
   actdet1 TMConNum TMConNum = refl
-  actdet1 (TMZip1 ()) TMParent1
-  actdet1 (TMZip1 ()) TMNextSib
-  actdet1 (TMZip1 p1) (TMZip1 p2) with actdet1 p1 p2
+  actdet1 (TMArrZip1 ()) TMArrParent1
+  actdet1 (TMArrZip1 ()) TMArrNextSib
+  actdet1 (TMArrZip1 p1) (TMArrZip1 p2) with actdet1 p1 p2
   ... | refl = refl
-  actdet1 (TMZip2 ()) TMParent2
-  actdet1 (TMZip2 p1) (TMZip2 p2) with actdet1 p1 p2
+  actdet1 (TMArrZip2 ()) TMArrParent2
+  actdet1 (TMArrZip2 p1) (TMArrZip2 p2) with actdet1 p1 p2
   ... | refl = refl
+  actdet1 {._} {_} {._} {._} _ (TMPlusFirstChild {_} {_})  = {!!}
+  actdet1 {._} {_} {._} {._} _ (TMPlusParent1 {_} {_}) = {!!}
+  actdet1 {._} {_} {._} {._} _ (TMPlusParent2 {_} {_}) = {!!}
+  actdet1 {._} {_} {._} {._} _ (TMPlusNextSib {_} {_}) = {!!}
+  actdet1 {._} {_} {._} {._} _ (TMConPlus {_}) = {!!}
+  actdet1 {._} {_} {._} {_} _ (TMPlusZip1 {_} {_} {_} {._} _) = {!!}
+  actdet1 {._} {_} {._} {_} _ (TMPlusZip2 {_} {_} {_} {._} _) = {!!}
+
 
   -- all expressions only move to one other expression
   movedet : {e e' e'' : ê} {δ : direction} →
@@ -48,6 +56,17 @@ module deterministic where
   movedet EMApNextSib EMApNextSib = refl
   movedet EMNEHoleFirstChild EMNEHoleFirstChild = refl
   movedet EMNEHoleParent EMNEHoleParent = refl
+  movedet {._} {_} {._} {._} _ (EMInlFirstChild {_}) = {!!}
+  movedet {._} {_} {._} {._} _ (EMInlParent {_}) = {!!}
+  movedet {._} {_} {._} {._} _ (EMInrFirstChild {_}) = {!!}
+  movedet {._} {_} {._} {._} _ (EMInrParent {_}) = {!!}
+  movedet {._} {_} {._} {._} _ (EMCaseParent1 {_} {_} {_} {_} {_}) = {!!}
+  movedet {._} {_} {._} {._} _ (EMCaseParent2 {_} {_} {_} {_} {_}) = {!!}
+  movedet {._} {_} {._} {._} _ (EMCaseParent3 {_} {_} {_} {_} {_}) = {!!}
+  movedet {._} {_} {._} {._} _ (EMCaseNextSib1 {_} {_} {_} {_} {_}) = {!!}
+  movedet {._} {_} {._} {._} _ (EMCaseNextSib2 {_} {_} {_} {_} {_}) = {!!}
+  movedet {._} {_} {._} {._} _ (EMCaseFirstChild {_} {_} {_} {_} {_}) = {!!}
+
 
   -- non-movement lemmas; theses show up pervasively throughout and save a
   -- lot of pattern matching.
@@ -103,12 +122,18 @@ module deterministic where
     actdet2 EETop (SAsc x) (SAConPlus1 x₁) (SAConPlus2 x₂) = abort (x₂ x₁)
     actdet2 EETop (SAsc x) (SAConPlus2 x₁) (SAConPlus1 x₂) = abort (x₁ x₂)
     actdet2 EETop (SAsc x) (SAConPlus2 x₁) (SAConPlus2 x₂) = refl , refl
-    actdet2 EETop (SAsc x) (SAConApArr x₁) (SAConApArr x₂) with matchunicity x₁ x₂
+    actdet2 EETop (SAsc x) (SAConApArr x₁) (SAConApArr x₂) with matcharrunicity x₁ x₂
     ... | refl = refl , refl
     actdet2 EETop (SAsc x) (SAConApArr x₁) (SAConApOtw x₂) = abort (x₂ (matchconsist x₁))
     actdet2 EETop (SAsc x) (SAConApOtw x₁) (SAConApArr x₂) = abort (x₁ (matchconsist x₂))
     actdet2 EETop (SAsc x) (SAConApOtw x₁) (SAConApOtw x₂) = refl , refl
     actdet2 EETop (SAsc x) SAConNEHole SAConNEHole = refl , refl
+
+    actdet2 {_} {._} {_} {._} {._} {._} {_} {._} {._} (EETop {._})
+          (SEHole {._}) _ (SAConInl {._} {._}) = {!!}
+    actdet2 {_} {._} {_} {._} {._} {._} {_} {._} {._} (EETop {._})
+          (SEHole {._}) _ (SAConInr {._} {._}) = {!!}
+
 
     actdet2 (EEAscL E) (SAsc x) (SAMove x₁) (SAMove x₂) = movedet x₁ x₂ , refl
     actdet2 (EEAscL E) (SAsc x) (SAMove EMAscParent1) (SAZipAsc1 x₂) = abort (lem-nomove-para x₂)
@@ -134,7 +159,7 @@ module deterministic where
     actdet2 EETop (SVar x) (SAConPlus1 x₁) (SAConPlus2 x₂) = abort (x₂ x₁)
     actdet2 EETop (SVar x) (SAConPlus2 x₁) (SAConPlus1 x₂) = abort (x₁ x₂)
     actdet2 EETop (SVar x) (SAConPlus2 x₁) (SAConPlus2 x₂) = refl , refl
-    actdet2 EETop (SVar x) (SAConApArr x₁) (SAConApArr x₂) with matchunicity x₁ x₂
+    actdet2 EETop (SVar x) (SAConApArr x₁) (SAConApArr x₂) with matcharrunicity x₁ x₂
     ... | refl = refl , refl
     actdet2 EETop (SVar x) (SAConApArr x₁) (SAConApOtw x₂) = abort (x₂ (matchconsist x₁))
     actdet2 EETop (SVar x) (SAConApOtw x₁) (SAConApArr x₂) = abort (x₁ (matchconsist x₂))
@@ -149,7 +174,7 @@ module deterministic where
     actdet2 EETop (SAp m wt x) (SAConPlus1 x₁) (SAConPlus2 x₂) = abort (x₂ x₁)
     actdet2 EETop (SAp m wt x) (SAConPlus2 x₁) (SAConPlus1 x₂) = abort (x₁ x₂)
     actdet2 EETop (SAp m wt x) (SAConPlus2 x₁) (SAConPlus2 x₂) = refl , refl
-    actdet2 EETop (SAp m wt x) (SAConApArr x₁) (SAConApArr x₂) with matchunicity x₁ x₂
+    actdet2 EETop (SAp m wt x) (SAConApArr x₁) (SAConApArr x₂) with matcharrunicity x₁ x₂
     ... | refl = refl , refl
     actdet2 EETop (SAp m wt x) (SAConApArr x₁) (SAConApOtw x₂) = abort (x₂ (matchconsist x₁))
     actdet2 EETop (SAp m wt x) (SAConApOtw x₁) (SAConApArr x₂) = abort (x₁ (matchconsist x₂))
@@ -166,7 +191,7 @@ module deterministic where
     ... | refl with synthunicity x₂ x₅
     ... | refl with erasee-det E x₁
     ... | refl with actdet2 E x₅ d1 d2
-    ... | refl , refl with matchunicity a b
+    ... | refl , refl with matcharrunicity a b
     ... | refl = refl , refl
 
     actdet2 (EEApR E) (SAp m wt x) (SAMove x₁) (SAMove x₂) = movedet x₁ x₂ , refl
@@ -174,9 +199,9 @@ module deterministic where
     actdet2 (EEApR E) (SAp m wt x) (SAZipApAna x₁ x₂ x₃) (SAMove EMApParent2) = abort (lem-nomove-para x₃)
     actdet2 (EEApR E) (SAp m wt x) (SAZipApAna x₁ x₂ d1) (SAZipApAna x₄ x₅ d2)
      with synthunicity m x₂
-    ... | refl with matchunicity x₁ wt
+    ... | refl with matcharrunicity x₁ wt
     ... | refl with synthunicity m x₅
-    ... | refl with matchunicity x₄ wt
+    ... | refl with matcharrunicity x₄ wt
     ... | refl with actdet3 E x d1 d2
     ... | refl = refl , refl
 
@@ -188,7 +213,7 @@ module deterministic where
     actdet2 EETop SNum (SAConPlus1 x) (SAConPlus2 x₁) = abort (x₁ x)
     actdet2 EETop SNum (SAConPlus2 x) (SAConPlus1 x₁) = abort (x x₁)
     actdet2 EETop SNum (SAConPlus2 x) (SAConPlus2 x₁) = refl , refl
-    actdet2 EETop SNum (SAConApArr x) (SAConApArr x₁) with matchunicity x x₁
+    actdet2 EETop SNum (SAConApArr x) (SAConApArr x₁) with matcharrunicity x x₁
     ... | refl = refl , refl
     actdet2 EETop SNum (SAConApArr x) (SAConApOtw x₁) = abort (x₁ (matchconsist x))
     actdet2 EETop SNum (SAConApOtw x) (SAConApArr x₁) = abort (x (matchconsist x₁))
@@ -203,7 +228,7 @@ module deterministic where
     actdet2 EETop (SPlus x x₁) (SAConPlus1 x₂) (SAConPlus2 x₃) = abort (x₃ x₂)
     actdet2 EETop (SPlus x x₁) (SAConPlus2 x₂) (SAConPlus1 x₃) = abort (x₂ x₃)
     actdet2 EETop (SPlus x x₁) (SAConPlus2 x₂) (SAConPlus2 x₃) = refl , refl
-    actdet2 EETop (SPlus x x₁) (SAConApArr x₂) (SAConApArr x₃) with matchunicity x₂ x₃
+    actdet2 EETop (SPlus x x₁) (SAConApArr x₂) (SAConApArr x₃) with matcharrunicity x₂ x₃
     ... | refl = refl , refl
     actdet2 EETop (SPlus x x₁) (SAConApArr x₂) (SAConApOtw x₃) = abort (matchnotnum x₂)
     actdet2 EETop (SPlus x x₁) (SAConApOtw x₂) (SAConApArr x₃) = abort (matchnotnum x₃)
@@ -235,7 +260,7 @@ module deterministic where
     actdet2 EETop SEHole (SAConPlus1 x) (SAConPlus2 x₁) = abort (x₁ x)
     actdet2 EETop SEHole (SAConPlus2 x) (SAConPlus1 x₁) = abort (x x₁)
     actdet2 EETop SEHole (SAConPlus2 x) (SAConPlus2 x₁) = refl , refl
-    actdet2 EETop SEHole (SAConApArr x) (SAConApArr x₁) with matchunicity x x₁
+    actdet2 EETop SEHole (SAConApArr x) (SAConApArr x₁) with matcharrunicity x x₁
     ... | refl = refl , refl
     actdet2 EETop SEHole (SAConApArr x) (SAConApOtw x₁) = abort (x₁ TCHole2)
     actdet2 EETop SEHole (SAConApOtw x) (SAConApArr x₁) = abort (x TCHole2)
@@ -251,7 +276,7 @@ module deterministic where
     actdet2 EETop (SNEHole wt) (SAConPlus2 x) (SAConPlus1 x₁) = abort (x x₁)
     actdet2 EETop (SNEHole wt) (SAConPlus2 x) (SAConPlus2 x₁) = refl , refl
     actdet2 EETop (SNEHole wt) (SAFinish x) (SAFinish x₁) = refl , synthunicity x x₁
-    actdet2 EETop (SNEHole wt) (SAConApArr x) (SAConApArr x₁) with matchunicity x x₁
+    actdet2 EETop (SNEHole wt) (SAConApArr x) (SAConApArr x₁) with matcharrunicity x x₁
     ... | refl = refl , refl
     actdet2 EETop (SNEHole wt) (SAConApArr x) (SAConApOtw x₁) = abort (x₁ TCHole2)
     actdet2 EETop (SNEHole wt) (SAConApOtw x) (SAConApArr x₁) = abort (x TCHole2)
@@ -299,8 +324,8 @@ module deterministic where
 
     -- and for the remaining case, recurr on the smaller derivations
     actdet3 (EELam er) (ALam x₁ x₂ wt) (AAZipLam x₃ x₄ d1) (AAZipLam x₅ x₆ d2)
-       with matchunicity x₄ x₆
-    ... | refl with matchunicity x₄ x₂
+       with matcharrunicity x₄ x₆
+    ... | refl with matcharrunicity x₄ x₂
     ... | refl with actdet3 er wt d1 d2
     ... | refl = refl
 
@@ -367,3 +392,81 @@ module deterministic where
       -- subsume / finish
     actdet3 er (ASubsume a b) (AAFinish x) (AASubsume x₁ x₂ (SAFinish x₃) x₄) = refl
     actdet3 er (ASubsume a b) (AAFinish x) (AAFinish x₁) = refl
+
+
+    -- new cases for sums
+    actdet3 (EETop) (ASubsume _ _) (AASubsume (EETop ) _ _ _) (AAConInl1 _) = {!!}
+    actdet3 (EETop) (ASubsume _ _) (AASubsume (EETop ) _ _ _) (AAConInl2 _) = {!!}
+    actdet3 (EETop) (ASubsume  _ _) (AASubsume (EETop) _ _ _) (AAConInr1  _) = {!!}
+    actdet3 (EETop) (ASubsume  _ _) (AASubsume (EETop) _ _ _) (AAConInr2 _) = {!!}
+    actdet3 (EETop) (ASubsume  _ _) (AASubsume (EETop) _ _ _) (AAConCase  _ _) = {!!}
+    actdet3 (EETop) (AInl _ _) (AASubsume  (EETop) _ _ _) _ = {!!}
+    actdet3 (EETop) (AInr _ _) (AASubsume  (EETop) _ _ _) _ = {!!}
+    actdet3 (EETop) (ACase _ _ _ _ _ _) (AASubsume  (EETop) _ _ _) _ = {!!}
+    actdet3 (EETop) (AInl _ _) (AAMove _) (AASubsume  (EETop) _ _ _) = {!!}
+    actdet3 (EETop) (AInr _ _) (AAMove _) (AASubsume  (EETop) _ _ _) = {!!}
+    actdet3 (EETop) (ACase _ _ _ _ _ _) (AAMove _) (AASubsume  (EETop) _ _ _) = {!!}
+    actdet3 (EETop) (AInl _ _) (AAMove _) (AAMove _) = {!!}
+    actdet3 (EETop) (AInr _ _) (AAMove _) (AAMove _) = {!!}
+    actdet3 (EETop) (ACase _ _ _ _ _ _) (AAMove _) (AAMove _) = {!!}
+    actdet3 (EETop) (AInl _ _) (AADel) (AASubsume  (EETop) _ _ _) = {!!}
+    actdet3 (EETop) (AInr _ _) (AADel) (AASubsume  (EETop) _ _ _) = {!!}
+    actdet3 (EETop) (ACase _ _ _ _ _ _) (AADel) (AASubsume  (EETop) _ _ _) = {!!}
+    actdet3 (EETop) (AInl _ _) (AADel) (AADel) = {!!}
+    actdet3 (EETop) (AInr _ _) (AADel) (AADel) = {!!}
+    actdet3 (EETop) (ACase _ _ _ _ _ _) (AADel) (AADel) = {!!}
+    actdet3 (EETop) (AInl _ _) (AAConAsc) (AASubsume  (EETop) _ _ _) = {!!}
+    actdet3 (EETop) (AInr _ _) (AAConAsc) (AASubsume  (EETop) _ _ _) = {!!}
+    actdet3 (EETop) (ACase _ _ _ _ _ _) (AAConAsc) (AASubsume  (EETop) _ _ _) = {!!}
+    actdet3 (EETop) (AInl _ _) (AAConAsc) (AAConAsc) = {!!}
+    actdet3 (EETop) (AInr _ _) (AAConAsc) (AAConAsc) = {!!}
+    actdet3 (EETop) (ACase _ _ _ _ _ _) (AAConAsc) (AAConAsc) = {!!}
+    actdet3 (EETop) (ASubsume  _ _) (AAConInl1  _) (AASubsume  (EETop) _ _ _) = {!!}
+    actdet3 (EETop) _ (AAConInl1  _) (AAConInl1  _) = {!!}
+    actdet3 (EETop) _  (AAConInl1  _) (AAConInl2  _) = {!!}
+    actdet3 (EETop) (ASubsume  _ _) (AAConInl2  _) (AASubsume  (EETop) _ _ _) = {!!}
+    actdet3 (EETop) _ (AAConInl2  _) (AAConInl1  _) = {!!}
+    actdet3 (EETop) _ (AAConInl2  _) (AAConInl2  _) = {!!}
+    actdet3 (EETop) (ASubsume  _ _) (AAConInr1  _) (AASubsume  (EETop) _ _ _) = {!!}
+    actdet3 (EETop) _ (AAConInr1  _) (AAConInr1  _) = {!!}
+    actdet3 (EETop) _ (AAConInr1  _) (AAConInr2 _) = {!!}
+    actdet3 (EETop) (ASubsume  _ _) (AAConInr2 _) (AASubsume  (EETop) _ _ _) = {!!}
+    actdet3 (EETop) _ (AAConInr2 _) (AAConInr1  _) = {!!}
+    actdet3 (EETop) _ (AAConInr2 _) (AAConInr2 _) = {!!}
+    actdet3 (EETop) (ASubsume  _ _) (AAConCase  _ _) (AASubsume  (EETop) _ _ _) = {!!}
+    actdet3 (EETop) _ (AAConCase  _ _) (AAConCase  _ _) = {!!}
+    actdet3 (EEInl _) (AInl _ _) (AASubsume  _ _ _ _) (AASubsume  _ _ _ _) = {!!}
+    actdet3 (EEInl _) (AInl _ _) (AAMove _) (AASubsume  _ _ _ _) = {!!}
+    actdet3 (EEInl _) _ (AAZipInl  _ _) (AASubsume  _ _ _ _) = {!!}
+    actdet3 (EEInl _) (AInl _ _) (AASubsume  _ _ _ _) (AAMove _) = {!!}
+    actdet3 (EEInl _) (AInl _ _) (AAMove _) (AAMove _) = {!!}
+    actdet3 (EEInl _) _ (AAZipInl  _ _) (AAMove _) = {!!}
+    actdet3 (EEInl _) _ _ (AAZipInl  _ _) = {!!}
+    actdet3 (EEInr _) (AInr _ _) (AASubsume  _ _ _ _) (AASubsume  _ _ _ _) = {!!}
+    actdet3 (EEInr _) (AInr _ _) (AAMove _) (AASubsume  _ _ _ _) = {!!}
+    actdet3 (EEInr _) _ (AAZipInr  _ _) (AASubsume  _ _ _ _) = {!!}
+    actdet3 (EEInr _) (AInr _ _) (AASubsume  _ _ _ _) (AAMove _) = {!!}
+    actdet3 (EEInr _) (AInr _ _) (AAMove _) (AAMove _) = {!!}
+    actdet3 (EEInr _) _ (AAZipInr  _ _) (AAMove _) = {!!}
+    actdet3 (EEInr _) _ _ (AAZipInr  _ _) = {!!}
+    actdet3 (EECase1  _) (ACase _ _ _ _ _ _) (AASubsume  _ _ _ _) (AASubsume  _ _ _ _) = {!!}
+    actdet3 (EECase1  _) (ACase _ _ _ _ _ _) (AAMove _) (AASubsume  _ _ _ _) = {!!}
+    actdet3 (EECase1  _) _ (AAZipCase1  _ _ _ _ _ _ _ _) (AASubsume  _ _ _ _) = {!!}
+    actdet3 (EECase1  _) (ACase _ _ _ _ _ _) (AASubsume  _ _ _ _) (AAMove _) = {!!}
+    actdet3 (EECase1  _) (ACase _ _ _ _ _ _) (AAMove _) (AAMove _) = {!!}
+    actdet3 (EECase1  _) _ (AAZipCase1  _ _ _ _ _ _ _ _) (AAMove _) = {!!}
+    actdet3 (EECase1  _) _ _ (AAZipCase1  _ _ _ _ _ _ _ _) = {!!}
+    actdet3 (EECase2  _) (ACase _ _ _ _ _ _) (AASubsume  _ _ _ _) (AASubsume  _ _ _ _) = {!!}
+    actdet3 (EECase2  _) (ACase _ _ _ _ _ _) (AAMove _) (AASubsume  _ _ _ _) = {!!}
+    actdet3 (EECase2  _) _ (AAZipCase2 _ _   _ _ _ _) (AASubsume  _ _ _ _) = {!!}
+    actdet3 (EECase2  _) (ACase _ _ _ _ _ _) (AASubsume  _ _ _ _) (AAMove _) = {!!}
+    actdet3 (EECase2  _) (ACase _ _ _ _ _ _) (AAMove _) (AAMove _) = {!!}
+    actdet3 (EECase2  _) _ (AAZipCase2 _ _   _ _ _ _) (AAMove _) = {!!}
+    actdet3 (EECase2  _) _ _ (AAZipCase2 _ _   _ _ _ _) = {!!}
+    actdet3 (EECase3  _) (ACase _ _ _ _ _ _) (AASubsume  _ _ _ _) (AASubsume  _ _ _ _) = {!!}
+    actdet3 (EECase3  _) (ACase _ _ _ _ _ _) (AAMove _) (AASubsume  _ _ _ _) = {!!}
+    actdet3 (EECase3  _) _ (AAZipCase3 _ _   _ _ _ _) (AASubsume  _ _ _ _) = {!!}
+    actdet3 (EECase3  _) (ACase _ _ _ _ _ _) (AASubsume  _ _ _ _) (AAMove _) = {!!}
+    actdet3 (EECase3  _) (ACase _ _ _ _ _ _) (AAMove _) (AAMove _) = {!!}
+    actdet3 (EECase3  _) _ (AAZipCase3 _ _   _ _ _ _) (AAMove _) = {!!}
+    actdet3 (EECase3  _) _ _ (AAZipCase3 _ _   _ _ _ _) = {!!}
