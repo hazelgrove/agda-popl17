@@ -637,8 +637,8 @@ module core where
       AAConInl1 : {Γ : ·ctx} {t+ t1 t2 : τ̇} →
                 t+ ▸plus (t1 ⊕ t2) →
                 Γ ⊢ ▹ <||> ◃ ~ construct inl ~> inl ▹ <||> ◃ ⇐ t+
-      AAConInl2 : {Γ : ·ctx} {t t1 t2 : τ̇} →
-                t ~̸  (t1 ⊕ t2) →
+      AAConInl2 : {Γ : ·ctx} {t : τ̇} →
+                t ~̸ (<||> ⊕ <||>) →
                 Γ ⊢ ▹ <||> ◃ ~ construct inl ~> <| inl <||> ·:₂ (▹ <||> ◃ ⊕₁ <||>) |> ⇐ t
       AAConInr1 : {Γ : ·ctx} {t+ t1 t2 : τ̇} →
                 t+ ▸plus (t1 ⊕ t2) →
