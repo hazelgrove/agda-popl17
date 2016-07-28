@@ -112,6 +112,21 @@ module deterministic where
   synthmovedet (SAZipPlus2 x) EMPlusParent2       = abort (lem-nomove-para x)
   synthmovedet (SAZipHole _ _ x) EMNEHoleParent   = abort (lem-nomove-pars x)
 
+  anamovedet : {Γ : ·ctx} {e e' e'' : ê} {t : τ̇} {δ : direction} →
+         (Γ ⊢ e ~ move δ ~> e'' ⇐ t) →
+         (e + move δ +>e e') →
+         e'' == e'
+  anamovedet (AASubsume x₂ x x₃ x₁) m = synthmovedet x₃ m
+  anamovedet (AAMove x) m = movedet x m
+  anamovedet (AAZipLam x₁ x₂ d) EMLamParent = abort (lem-nomove-para d)
+  anamovedet (AAZipInl x d) EMInlParent = abort (lem-nomove-para d)
+  anamovedet (AAZipInr x d) EMInrParent = abort (lem-nomove-para d)
+  anamovedet (AAZipCase1 x₁ x₂ x₇ x₃ x₈ x₄ x₅ x₆) EMCaseParent1 = abort (lem-nomove-pars x₈)
+  anamovedet (AAZipCase1 x₁ x₂ x₇ x₃ x₈ x₄ x₅ x₆) EMCaseNextSib1 = abort (lem-nomove-nss x₈)
+  anamovedet (AAZipCase2 x₁ x₂ x₃ x₄ d x₅) EMCaseParent2 = abort (lem-nomove-para d)
+  anamovedet (AAZipCase2 x₁ x₂ x₃ x₄ d x₅) EMCaseNextSib2 = abort (lem-nomove-nsa d)
+  anamovedet (AAZipCase3 x₁ x₂ x₃ x₄ x₅ d) EMCaseParent3 = abort (lem-nomove-para d)
+
   lem-holematch : ∀ {t t1 t2} → t ~̸ (<||> ⊕ <||>) → t ~ <||> → t ▸plus (t1 ⊕ t2) → ⊥
   lem-holematch a TCRefl MPHole = a TCHole2
   lem-holematch a TCHole1 MPHole = a TCHole2
@@ -450,40 +465,52 @@ module deterministic where
     actdet3 EETop (ASubsume x x₁) (AAConCase x₃ x₄) (AASubsume EETop x₅ () x₆)
     actdet3 EETop _ (AAConCase  _ _) (AAConCase  _ _) = refl
 
-    actdet3 (EEInl _) (AInl a b) (AASubsume  _ _ _ _) (AASubsume  _ _ _ _) = {!!}
-    actdet3 (EEInl _) (AInl _ _) (AAMove _) (AASubsume  _ _ _ _) = {!!}
-    actdet3 (EEInl _) _ (AAZipInl  _ _) (AASubsume  _ _ _ _) = {!!}
-    actdet3 (EEInl _) (AInl _ _) (AASubsume  _ _ _ _) (AAMove _) = {!!}
-    actdet3 (EEInl _) (AInl _ _) (AAMove _) (AAMove _) = {!!}
-    actdet3 (EEInl _) _ (AAZipInl  _ _) (AAMove _) = {!!}
-    actdet3 (EEInl _) _ _ (AAZipInl  _ _) = {!!}
-    actdet3 (EEInr _) (AInr _ _) (AASubsume  _ _ _ _) (AASubsume  _ _ _ _) = {!!}
-    actdet3 (EEInr _) (AInr _ _) (AAMove _) (AASubsume  _ _ _ _) = {!!}
-    actdet3 (EEInr _) _ (AAZipInr  _ _) (AASubsume  _ _ _ _) = {!!}
-    actdet3 (EEInr _) (AInr _ _) (AASubsume  _ _ _ _) (AAMove _) = {!!}
-    actdet3 (EEInr _) (AInr _ _) (AAMove _) (AAMove _) = {!!}
-    actdet3 (EEInr _) _ (AAZipInr  _ _) (AAMove _) = {!!}
-    actdet3 (EEInr _) _ _ (AAZipInr  _ _) = {!!}
+    actdet3 (EEInl _) _ D (AAMove y) = anamovedet D y
+    actdet3 (EEInl _) _ (AAMove y) D =  ! (anamovedet D y)
+    actdet3 (EEInl er) (AInl a b) (AASubsume (EEInl c) d e₁ f) (AASubsume (EEInl g) () i j)
+    actdet3 (EEInl er) a (AAZipInl b c) (AASubsume (EEInl d) () f g)
+    actdet3 (EEInl er) a (AASubsume (EEInl x) () x₂ x₃) (AAZipInl c d)
+    actdet3 (EEInl er) (ASubsume () x₁) (AAZipInl x₂ b) (AAZipInl c d)
+    actdet3 (EEInl er) (AInl x a) (AAZipInl x₁ b) (AAZipInl c d)
+      with matchplusunicity  x  c
+    ... | refl with matchplusunicity x x₁
+    ... | refl with actdet3 er a b d
+    ... | refl = refl
 
-    actdet3 (EECase1  _) (ACase _ _ _ _ _ _) (AASubsume  _ _ _ _) (AASubsume  _ _ _ _) = {!!}
-    actdet3 (EECase1  _) (ACase _ _ _ _ _ _) (AAMove _) (AASubsume  _ _ _ _) = {!!}
-    actdet3 (EECase1  _) _ (AAZipCase1  _ _ _ _ _ _ _ _) (AASubsume  _ _ _ _) = {!!}
-    actdet3 (EECase1  _) (ACase _ _ _ _ _ _) (AASubsume  _ _ _ _) (AAMove _) = {!!}
-    actdet3 (EECase1  _) (ACase _ _ _ _ _ _) (AAMove _) (AAMove _) = {!!}
-    actdet3 (EECase1  _) _ (AAZipCase1  _ _ _ _ _ _ _ _) (AAMove _) = {!!}
-    actdet3 (EECase1  _) _ _ (AAZipCase1  _ _ _ _ _ _ _ _) = {!!}
+    actdet3 (EEInr _) _ D (AAMove y) = anamovedet D y
+    actdet3 (EEInr _) _ (AAMove y) D =  ! (anamovedet D y)
+    actdet3 (EEInr er) (AInr x x₁) (AASubsume x₂ x₃ x₄ x₅) (AASubsume (EEInr a) () x₆ x₇)
+    actdet3 (EEInr er) x (AAZipInr x₁ x₂) (AASubsume (EEInr a) () x₃ x₄)
+    actdet3 (EEInr er) (ASubsume () x₁) b (AAZipInr c d)
+    actdet3 (EEInr er) (AInr x a) (AASubsume (EEInr x₁) () x₃ x₄) (AAZipInr c d)
+    actdet3 (EEInr er) (AInr x a) (AAZipInr x₁ b) (AAZipInr c d)
+      with matchplusunicity x x₁
+    ... | refl with matchplusunicity x c
+    ... | refl with actdet3 er a b d
+    ... | refl = refl
 
-    actdet3 (EECase2  _) (ACase _ _ _ _ _ _) (AASubsume  _ _ _ _) (AASubsume  _ _ _ _) = {!!}
-    actdet3 (EECase2  _) (ACase _ _ _ _ _ _) (AAMove _) (AASubsume  _ _ _ _) = {!!}
-    actdet3 (EECase2  _) _ (AAZipCase2 _ _   _ _ _ _) (AASubsume  _ _ _ _) = {!!}
-    actdet3 (EECase2  _) (ACase _ _ _ _ _ _) (AASubsume  _ _ _ _) (AAMove _) = {!!}
-    actdet3 (EECase2  _) (ACase _ _ _ _ _ _) (AAMove _) (AAMove _) = {!!}
-    actdet3 (EECase2  _) _ (AAZipCase2 _ _   _ _ _ _) (AAMove _) = {!!}
-    actdet3 (EECase2  _) _ _ (AAZipCase2 _ _   _ _ _ _) = {!!}
-    actdet3 (EECase3  _) (ACase _ _ _ _ _ _) (AASubsume  _ _ _ _) (AASubsume  _ _ _ _) = {!!}
-    actdet3 (EECase3  _) (ACase _ _ _ _ _ _) (AAMove _) (AASubsume  _ _ _ _) = {!!}
-    actdet3 (EECase3  _) _ (AAZipCase3 _ _   _ _ _ _) (AASubsume  _ _ _ _) = {!!}
-    actdet3 (EECase3  _) (ACase _ _ _ _ _ _) (AASubsume  _ _ _ _) (AAMove _) = {!!}
-    actdet3 (EECase3  _) (ACase _ _ _ _ _ _) (AAMove _) (AAMove _) = {!!}
-    actdet3 (EECase3  _) _ (AAZipCase3 _ _   _ _ _ _) (AAMove _) = {!!}
-    actdet3 (EECase3  _) _ _ (AAZipCase3 _ _   _ _ _ _) = {!!}
+    actdet3 (EECase1 _) _ D (AAMove y) = anamovedet D y
+    actdet3 (EECase1 _) _ (AAMove y) D =  ! (anamovedet D y)
+    actdet3 (EECase1 x₁) (ACase x₂ x₃ x₄ x₅ x₆ x₇) (AASubsume (EECase1 a) () x₈ x₉) (AASubsume x₁₀ x₁₁ x₁₂ x₁₃)
+    actdet3 (EECase1 x₁) x₂ (AAZipCase1 x₃ x₄ x₅ x₆ x₇ x₈ x₉ x₁₀) (AASubsume (EECase1 a) () x₁₁ x₁₂)
+    actdet3 (EECase1 x₁) a (AASubsume (EECase1 x₂) () x₄ x₅) (AAZipCase1 x₆ x₇ x₈ x₉ x₁₀ x₁₁ x₁₂ x₁₃)
+    actdet3 (EECase1 x₁) (ASubsume () x₃) (AAZipCase1 x₄ x₅ x₆ x₇ x₈ x₉ x₁₀ x₁₁) (AAZipCase1 x₁₂ x₁₃ x₁₄ x₁₅ x₁₆ x₁₇ x₁₈ x₁₉)
+    actdet3 (EECase1 x₁) (ACase x₂ x₃ x₄ x₅ a a₁) (AAZipCase1 x₆ x₇ x₈ x₉ x₁₀ x₁₁ x₁₂ x₁₃) (AAZipCase1 x₁₄ x₁₅ x₁₆ x₁₇ x₁₈ x₁₉ x₂₀ x₂₁)
+      with erasee-det x₁₆ x₈
+    ... | refl with synthunicity x₁₇ x₉
+    ... | refl with actdet2 x₈ x₁₇ x₁₈ x₁₀
+    ... | refl , refl = refl
+
+    actdet3 (EECase2 _) _ D (AAMove y) = anamovedet D y
+    actdet3 (EECase2 _) _ (AAMove y) D =  ! (anamovedet D y)
+    actdet3 (EECase2 x₁) (ACase x₂ x₃ x₄ x₅ x₆ x₇) (AASubsume (EECase2 a) () x₈ x₉) (AASubsume x₁₀ x₁₁ x₁₂ x₁₃)
+    actdet3 (EECase2 x₁) x₂ (AAZipCase2 x₃ x₄ x₅ x₆ x₇ x₈) (AASubsume (EECase2 a) () x₉ x₁₀)
+    actdet3 (EECase2 x₁) (ASubsume () x₃) b (AAZipCase2 x₄ x₅ x₆ x₇ x₈ x₉)
+    actdet3 (EECase2 x₁) (ACase x₂ x₃ x₄ x₅ a a₁) (AASubsume (EECase2 x₆) () x₈ x₉) (AAZipCase2 x₁₀ x₁₁ x₁₂ x₁₃ x₁₄ x₁₅)
+    actdet3 (EECase2 x₁) (ACase x₂ x₃ x₄ x₅ a a₁) (AAZipCase2 x₆ x₇ x₈ x₉ b x₁₀) (AAZipCase2 x₁₁ x₁₂ x₁₃ x₁₄ x₁₅ x₁₆) = {!!}
+
+    actdet3 (EECase3 _) _ D (AAMove y) = anamovedet D y
+    actdet3 (EECase3 _) _ (AAMove y) D =  ! (anamovedet D y)
+    actdet3 (EECase3 x₁) (ACase x₂ x₃ x₄ x₅ x₆ x₇) (AASubsume (EECase3 a) () x₈ x₉) (AASubsume x₁₀ x₁₁ x₁₂ x₁₃)
+    actdet3 (EECase3 x₁) x₂ (AAZipCase3 x₃ x₄ x₅ x₆ x₇ x₈) (AASubsume (EECase3 a) () x₉ x₁₀)
+    actdet3 (EECase3 _) _ _ (AAZipCase3 _ _  _ _ _ _) = {!!}
