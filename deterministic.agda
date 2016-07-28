@@ -112,6 +112,13 @@ module deterministic where
   synthmovedet (SAZipPlus2 x) EMPlusParent2       = abort (lem-nomove-para x)
   synthmovedet (SAZipHole _ _ x) EMNEHoleParent   = abort (lem-nomove-pars x)
 
+  lem-holematch : ∀ {t t1 t2} → t ~̸ (<||> ⊕ <||>) → t ~ <||> → t ▸plus (t1 ⊕ t2) → ⊥
+  lem-holematch a TCRefl MPHole = a TCHole2
+  lem-holematch a TCHole1 MPHole = a TCHole2
+  lem-holematch a TCHole1 MPPlus = a (TCPlus TCHole1 TCHole1)
+  lem-holematch a TCHole2 MPHole = a TCHole2
+
+
   mutual
     -- an action on an expression in a synthetic position produces one
     -- resultant expression and type.
@@ -402,48 +409,48 @@ module deterministic where
 
 
     -- new cases for sums
-    actdet3 (EETop) (ASubsume _ _) (AASubsume (EETop ) _ _ _) (AAConInl1 _) = {!!}
-    actdet3 (EETop) (ASubsume _ _) (AASubsume (EETop ) _ _ _) (AAConInl2 _) = {!!}
-    actdet3 (EETop) (ASubsume  _ _) (AASubsume (EETop) _ _ _) (AAConInr1  _) = {!!}
-    actdet3 (EETop) (ASubsume  _ _) (AASubsume (EETop) _ _ _) (AAConInr2 _) = {!!}
-    actdet3 (EETop) (ASubsume  _ _) (AASubsume (EETop) _ _ _) (AAConCase  _ _) = {!!}
-    actdet3 (EETop) (AInl _ _) (AASubsume  (EETop) _ _ _) _ = {!!}
-    actdet3 (EETop) (AInr _ _) (AASubsume  (EETop) _ _ _) _ = {!!}
-    actdet3 (EETop) (ACase _ _ _ _ _ _) (AASubsume  (EETop) _ _ _) _ = {!!}
-    actdet3 (EETop) (AInl _ _) (AAMove _) (AASubsume  (EETop) _ _ _) = {!!}
-    actdet3 (EETop) (AInr _ _) (AAMove _) (AASubsume  (EETop) _ _ _) = {!!}
-    actdet3 (EETop) (ACase _ _ _ _ _ _) (AAMove _) (AASubsume  (EETop) _ _ _) = {!!}
-    actdet3 (EETop) (AInl _ _) (AAMove d1) (AAMove d2) = movedet d1 d2
-    actdet3 (EETop) (AInr _ _) (AAMove d1) (AAMove d2) = movedet d1 d2
-    actdet3 (EETop) (ACase _ _ _ _ _ _) (AAMove _) (AAMove _) = {!!}
-    actdet3 (EETop) (AInl _ _) (AADel) (AASubsume  (EETop) _ _ _) = {!!}
-    actdet3 (EETop) (AInr _ _) (AADel) (AASubsume  (EETop) _ _ _) = {!!}
-    actdet3 (EETop) (ACase _ _ _ _ _ _) (AADel) (AASubsume  (EETop) _ _ _) = {!!}
-    actdet3 (EETop) (AInl _ _) (AADel) (AADel) = refl
-    actdet3 (EETop) (AInr _ _) (AADel) (AADel) = refl
-    actdet3 (EETop) (ACase _ _ _ _ _ _) (AADel) (AADel) = {!!}
-    actdet3 (EETop) (AInl _ _) (AAConAsc) (AASubsume  (EETop) _ _ _) = {!!}
-    actdet3 (EETop) (AInr _ _) (AAConAsc) (AASubsume  (EETop) _ _ _) = {!!}
-    actdet3 (EETop) (ACase _ _ _ _ _ _) (AAConAsc) (AASubsume  (EETop) _ _ _) = {!!}
-    actdet3 (EETop) (AInl _ _) (AAConAsc) (AAConAsc) = {!!}
-    actdet3 (EETop) (AInr _ _) (AAConAsc) (AAConAsc) = {!!}
-    actdet3 (EETop) (ACase _ _ _ _ _ _) (AAConAsc) (AAConAsc) = {!!}
-    actdet3 (EETop) (ASubsume  _ _) (AAConInl1  _) (AASubsume  (EETop) _ _ _) = {!!}
-    actdet3 (EETop) _ (AAConInl1  _) (AAConInl1  _) = {!!}
-    actdet3 (EETop) _  (AAConInl1  _) (AAConInl2  _) = {!!}
-    actdet3 (EETop) (ASubsume  _ _) (AAConInl2  _) (AASubsume  (EETop) _ _ _) = {!!}
-    actdet3 (EETop) _ (AAConInl2  _) (AAConInl1  _) = {!!}
-    actdet3 (EETop) _ (AAConInl2  _) (AAConInl2  _) = {!!}
-    actdet3 (EETop) (ASubsume  _ _) (AAConInr1  _) (AASubsume  (EETop) _ _ _) = {!!}
-    actdet3 (EETop) _ (AAConInr1  _) (AAConInr1  _) = {!!}
-    actdet3 (EETop) _ (AAConInr1  _) (AAConInr2 _) = {!!}
-    actdet3 (EETop) (ASubsume  _ _) (AAConInr2 _) (AASubsume  (EETop) _ _ _) = {!!}
-    actdet3 (EETop) _ (AAConInr2 _) (AAConInr1  _) = {!!}
-    actdet3 (EETop) _ (AAConInr2 _) (AAConInr2 _) = {!!}
-    actdet3 (EETop) (ASubsume  _ _) (AAConCase  _ _) (AASubsume  (EETop) _ _ _) = {!!}
-    actdet3 (EETop) _ (AAConCase  _ _) (AAConCase  _ _) = {!!}
+    actdet3 EETop (ASubsume SEHole b) (AASubsume EETop SEHole SAConInl e) (AAConInl1 f) = {!!}
+    actdet3 EETop (ASubsume SEHole b) (AASubsume EETop SEHole SAConInl e) (AAConInl2 f) = abort (f e)
+    actdet3 EETop (ASubsume SEHole b) (AASubsume EETop SEHole SAConInr e) (AAConInr1 f) = {!!}
+    actdet3 EETop (ASubsume SEHole b) (AASubsume EETop SEHole SAConInr e) (AAConInr2 f) = abort (f e)
+    actdet3 EETop (ASubsume SEHole b) (AASubsume EETop SEHole () e) (AAConCase f g)
+    actdet3 EETop (AInl a b) (AASubsume EETop () d e₁) f
+    actdet3 EETop (AInr a b) (AASubsume EETop () d e₁) f
+    actdet3 EETop (ACase a b c d e₁ f) (AASubsume EETop () h i) j
+    actdet3 EETop (AInl a b) (AAMove c) (AASubsume EETop () e₁ f)
+    actdet3 EETop (AInr a b) (AAMove c) (AASubsume EETop () e₁ f)
+    actdet3 EETop (ACase a b c d e₁ f) (AAMove g) (AASubsume EETop () i j)
+    actdet3 EETop (AInl _ _) (AAMove d1) (AAMove d2) = movedet d1 d2
+    actdet3 EETop (AInr _ _) (AAMove d1) (AAMove d2) = movedet d1 d2
+    actdet3 EETop (ACase a b c d e f) (AAMove g) (AAMove h) = movedet g h
+    actdet3 EETop (AInl a b) AADel (AASubsume EETop c SADel e₁) = refl
+    actdet3 EETop (AInr a b) AADel (AASubsume EETop c SADel e₁) = refl
+    actdet3 EETop (ACase x₁ x₂ x₃ x₄ x₅ x₆) AADel (AASubsume EETop x₇ SADel x₈) = refl
+    actdet3 EETop (AInl _ _) (AADel) (AADel) = refl
+    actdet3 EETop (AInr _ _) (AADel) (AADel) = refl
+    actdet3 EETop (ACase _ _ _ _ _ _) (AADel) (AADel) = refl
+    actdet3 EETop (AInl x x₁) AAConAsc (AASubsume EETop () SAConAsc x₃)
+    actdet3 EETop (AInr x x₁) AAConAsc (AASubsume EETop () SAConAsc x₃)
+    actdet3 EETop (ACase x₁ x₂ x₃ x₄ x₅ x₆) AAConAsc (AASubsume EETop () SAConAsc x₈)
+    actdet3 EETop (AInl _ _) (AAConAsc) (AAConAsc) = refl
+    actdet3 EETop (AInr _ _) (AAConAsc) (AAConAsc) = refl
+    actdet3 EETop (ACase _ _ _ _ _ _) (AAConAsc) (AAConAsc) = refl
+    actdet3 EETop (ASubsume SEHole x₁) (AAConInl1 x₂) (AASubsume EETop SEHole SAConInl x₄) = {!!}
+    actdet3 EETop _ (AAConInl1  _) (AAConInl1  _) = refl
+    actdet3 EETop (ASubsume SEHole a)  (AAConInl1 b) (AAConInl2 c) = abort (lem-holematch c a b)
+    actdet3 EETop (ASubsume x x₁) (AAConInl2 x₂) (AASubsume EETop x₃ SAConInl x₄) = abort (x₂ x₄)
+    actdet3 EETop (ASubsume SEHole a) (AAConInl2 b) (AAConInl1 c) = abort (lem-holematch b a c)
+    actdet3 EETop a (AAConInl2 b) (AAConInl2 c) = refl
+    actdet3 EETop (ASubsume SEHole b) (AAConInr1 c) (AASubsume EETop SEHole SAConInr x₁) = {!!}
+    actdet3 EETop _ (AAConInr1  _) (AAConInr1  _) = refl
+    actdet3 EETop (ASubsume SEHole x₁) (AAConInr1 x₂) (AAConInr2 x₃) = abort (lem-holematch x₃ x₁ x₂)
+    actdet3 EETop (ASubsume x x₁) (AAConInr2 x₂) (AASubsume EETop x₃ SAConInr x₄) = abort (x₂ x₄)
+    actdet3 EETop (ASubsume x x₁) (AAConInr2 x₂) (AAConInr1 x₃) = abort (lem-holematch x₂ TCHole1 x₃)
+    actdet3 EETop _ (AAConInr2 _) (AAConInr2 _) = refl
+    actdet3 EETop (ASubsume x x₁) (AAConCase x₃ x₄) (AASubsume EETop x₅ () x₆)
+    actdet3 EETop _ (AAConCase  _ _) (AAConCase  _ _) = refl
 
-    actdet3 (EEInl _) (AInl _ _) (AASubsume  _ _ _ _) (AASubsume  _ _ _ _) = {!!}
+    actdet3 (EEInl _) (AInl a b) (AASubsume  _ _ _ _) (AASubsume  _ _ _ _) = {!!}
     actdet3 (EEInl _) (AInl _ _) (AAMove _) (AASubsume  _ _ _ _) = {!!}
     actdet3 (EEInl _) _ (AAZipInl  _ _) (AASubsume  _ _ _ _) = {!!}
     actdet3 (EEInl _) (AInl _ _) (AASubsume  _ _ _ _) (AAMove _) = {!!}
