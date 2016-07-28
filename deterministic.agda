@@ -334,6 +334,10 @@ module deterministic where
     -- an erased lambda can't be typechecked with subsume
     actdet3 (EELam _) (ASubsume () _) _ _
 
+    actdet3 _ _ D (AAMove y) = anamovedet D y
+    actdet3 _ _ (AAMove y) D =  ! (anamovedet D y)
+
+
     -- lambdas never match with subsumption actions, because it won't be well typed.
     actdet3 EETop      (ALam x₁ x₂ wt) (AASubsume EETop () x₅ x₆) _
     actdet3 (EELam _) (ALam x₁ x₂ wt) (AASubsume (EELam x₃) () x₅ x₆) _
@@ -341,15 +345,15 @@ module deterministic where
     actdet3 (EELam _) (ALam x₁ x₂ wt) _ (AASubsume (EELam x₃) () x₅ x₆)
 
     -- movements are the same reguardless of erasure
-    actdet3 _ (ALam x₁ x₂ wt) (AAMove x₃) (AAMove x₄) = movedet x₃ x₄
+    -- actdet3 _ (ALam x₁ x₂ wt) (AAMove x₃) (AAMove x₄) = movedet x₃ x₄
 
     -- with the cursor at the top, there are only two possible actions
     actdet3 EETop (ALam x₁ x₂ wt) AADel AADel = refl
     actdet3 EETop (ALam x₁ x₂ wt) AAConAsc AAConAsc = refl
 
     -- otherwise, it has to be a zip. movement doesnt' cohere..
-    actdet3 (EELam er) (ALam x₁ x₂ wt) (AAMove EMLamParent) (AAZipLam x₄ x₅ d2) = abort (lem-nomove-para d2)
-    actdet3 (EELam er) (ALam x₁ x₂ wt) (AAZipLam x₃ x₄ d1) (AAMove EMLamParent) = abort (lem-nomove-para d1)
+    -- actdet3 (EELam er) (ALam x₁ x₂ wt) (AAMove EMLamParent) (AAZipLam x₄ x₅ d2) = abort (lem-nomove-para d2)
+    -- actdet3 (EELam er) (ALam x₁ x₂ wt) (AAZipLam x₃ x₄ d1) (AAMove EMLamParent) = abort (lem-nomove-para d1)
 
     -- and for the remaining case, recurr on the smaller derivations
     actdet3 (EELam er) (ALam x₁ x₂ wt) (AAZipLam x₃ x₄ d1) (AAZipLam x₅ x₆ d2)
@@ -367,7 +371,7 @@ module deterministic where
     ... | refl = π1 (actdet2 x x₅ x₂ x₆)
 
     -- (these are all repeated below, irritatingly.)
-    actdet3 er (ASubsume a b) (AASubsume x x₁ x₃ x₂) (AAMove x₄) = synthmovedet x₃ x₄
+    -- actdet3 er (ASubsume a b) (AASubsume x x₁ x₃ x₂) (AAMove x₄) = synthmovedet x₃ x₄
     actdet3 EETop (ASubsume a b) (AASubsume EETop x SADel x₁) AADel = refl
     actdet3 EETop (ASubsume a b) (AASubsume EETop x SAConAsc x₁) AAConAsc
       with synthunicity a x
@@ -381,8 +385,8 @@ module deterministic where
     actdet3 EETop (ASubsume a b) (AASubsume EETop x (SAFinish x₂) x₁) (AAFinish x₄) = refl
 
       -- subsume / move
-    actdet3 er (ASubsume a b) (AAMove x) (AASubsume x₁ x₂ x₃ x₄) = ! (synthmovedet x₃ x)
-    actdet3 er (ASubsume a b) (AAMove x) (AAMove x₁) = movedet x x₁
+    -- actdet3 er (ASubsume a b) (AAMove x) (AASubsume x₁ x₂ x₃ x₄) = ! (synthmovedet x₃ x)
+    -- actdet3 er (ASubsume a b) (AAMove x) (AAMove x₁) = movedet x x₁
 
       -- subsume / del
     actdet3 er (ASubsume a b) AADel (AASubsume x x₁ SADel x₃) = refl
@@ -432,12 +436,12 @@ module deterministic where
     actdet3 EETop (AInl a b) (AASubsume EETop () d e₁) f
     actdet3 EETop (AInr a b) (AASubsume EETop () d e₁) f
     actdet3 EETop (ACase a b c d e₁ f) (AASubsume EETop () h i) j
-    actdet3 EETop (AInl a b) (AAMove c) (AASubsume EETop () e₁ f)
-    actdet3 EETop (AInr a b) (AAMove c) (AASubsume EETop () e₁ f)
-    actdet3 EETop (ACase a b c d e₁ f) (AAMove g) (AASubsume EETop () i j)
-    actdet3 EETop (AInl _ _) (AAMove d1) (AAMove d2) = movedet d1 d2
-    actdet3 EETop (AInr _ _) (AAMove d1) (AAMove d2) = movedet d1 d2
-    actdet3 EETop (ACase a b c d e f) (AAMove g) (AAMove h) = movedet g h
+    -- actdet3 EETop (AInl a b) (AAMove c) (AASubsume EETop () e₁ f)
+    -- actdet3 EETop (AInr a b) (AAMove c) (AASubsume EETop () e₁ f)
+    -- actdet3 EETop (ACase a b c d e₁ f) (AAMove g) (AASubsume EETop () i j)
+    -- actdet3 EETop (AInl _ _) (AAMove d1) (AAMove d2) = movedet d1 d2
+    -- actdet3 EETop (AInr _ _) (AAMove d1) (AAMove d2) = movedet d1 d2
+    -- actdet3 EETop (ACase a b c d e f) (AAMove g) (AAMove h) = movedet g h
     actdet3 EETop (AInl a b) AADel (AASubsume EETop c SADel e₁) = refl
     actdet3 EETop (AInr a b) AADel (AASubsume EETop c SADel e₁) = refl
     actdet3 EETop (ACase x₁ x₂ x₃ x₄ x₅ x₆) AADel (AASubsume EETop x₇ SADel x₈) = refl
@@ -465,8 +469,8 @@ module deterministic where
     actdet3 EETop (ASubsume x x₁) (AAConCase x₃ x₄) (AASubsume EETop x₅ () x₆)
     actdet3 EETop _ (AAConCase  _ _) (AAConCase  _ _) = refl
 
-    actdet3 (EEInl _) _ D (AAMove y) = anamovedet D y
-    actdet3 (EEInl _) _ (AAMove y) D =  ! (anamovedet D y)
+    -- actdet3 (EEInl _) _ D (AAMove y) = anamovedet D y
+    -- actdet3 (EEInl _) _ (AAMove y) D =  ! (anamovedet D y)
     actdet3 (EEInl er) (AInl a b) (AASubsume (EEInl c) d e₁ f) (AASubsume (EEInl g) () i j)
     actdet3 (EEInl er) a (AAZipInl b c) (AASubsume (EEInl d) () f g)
     actdet3 (EEInl er) a (AASubsume (EEInl x) () x₂ x₃) (AAZipInl c d)
@@ -477,8 +481,8 @@ module deterministic where
     ... | refl with actdet3 er a b d
     ... | refl = refl
 
-    actdet3 (EEInr _) _ D (AAMove y) = anamovedet D y
-    actdet3 (EEInr _) _ (AAMove y) D =  ! (anamovedet D y)
+    -- actdet3 (EEInr _) _ D (AAMove y) = anamovedet D y
+    -- actdet3 (EEInr _) _ (AAMove y) D =  ! (anamovedet D y)
     actdet3 (EEInr er) (AInr x x₁) (AASubsume x₂ x₃ x₄ x₅) (AASubsume (EEInr a) () x₆ x₇)
     actdet3 (EEInr er) x (AAZipInr x₁ x₂) (AASubsume (EEInr a) () x₃ x₄)
     actdet3 (EEInr er) (ASubsume () x₁) b (AAZipInr c d)
@@ -489,8 +493,8 @@ module deterministic where
     ... | refl with actdet3 er a b d
     ... | refl = refl
 
-    actdet3 (EECase1 _) _ D (AAMove y) = anamovedet D y
-    actdet3 (EECase1 _) _ (AAMove y) D =  ! (anamovedet D y)
+    -- actdet3 (EECase1 _) _ D (AAMove y) = anamovedet D y
+    -- actdet3 (EECase1 _) _ (AAMove y) D =  ! (anamovedet D y)
     actdet3 (EECase1 x₁) (ACase x₂ x₃ x₄ x₅ x₆ x₇) (AASubsume (EECase1 a) () x₈ x₉) (AASubsume x₁₀ x₁₁ x₁₂ x₁₃)
     actdet3 (EECase1 x₁) x₂ (AAZipCase1 x₃ x₄ x₅ x₆ x₇ x₈ x₉ x₁₀) (AASubsume (EECase1 a) () x₁₁ x₁₂)
     actdet3 (EECase1 x₁) a (AASubsume (EECase1 x₂) () x₄ x₅) (AAZipCase1 x₆ x₇ x₈ x₉ x₁₀ x₁₁ x₁₂ x₁₃)
@@ -501,16 +505,14 @@ module deterministic where
     ... | refl with actdet2 x₈ x₁₇ x₁₈ x₁₀
     ... | refl , refl = refl
 
-    actdet3 (EECase2 _) _ D (AAMove y) = anamovedet D y
-    actdet3 (EECase2 _) _ (AAMove y) D =  ! (anamovedet D y)
+    -- actdet3 (EECase2 _) _ D (AAMove y) = anamovedet D y
+    -- actdet3 (EECase2 _) _ (AAMove y) D =  ! (anamovedet D y)
     actdet3 (EECase2 x₁) (ACase x₂ x₃ x₄ x₅ x₆ x₇) (AASubsume (EECase2 a) () x₈ x₉) (AASubsume x₁₀ x₁₁ x₁₂ x₁₃)
     actdet3 (EECase2 x₁) x₂ (AAZipCase2 x₃ x₄ x₅ x₆ x₇ x₈) (AASubsume (EECase2 a) () x₉ x₁₀)
     actdet3 (EECase2 x₁) (ASubsume () x₃) b (AAZipCase2 x₄ x₅ x₆ x₇ x₈ x₉)
     actdet3 (EECase2 x₁) (ACase x₂ x₃ x₄ x₅ a a₁) (AASubsume (EECase2 x₆) () x₈ x₉) (AAZipCase2 x₁₀ x₁₁ x₁₂ x₁₃ x₁₄ x₁₅)
     actdet3 (EECase2 x₁) (ACase x₂ x₃ x₄ x₅ a a₁) (AAZipCase2 x₆ x₇ x₈ x₉ b x₁₀) (AAZipCase2 x₁₁ x₁₂ x₁₃ x₁₄ x₁₅ x₁₆) = {!!}
 
-    actdet3 (EECase3 _) _ D (AAMove y) = anamovedet D y
-    actdet3 (EECase3 _) _ (AAMove y) D =  ! (anamovedet D y)
     actdet3 (EECase3 x₁) (ACase x₂ x₃ x₄ x₅ x₆ x₇) (AASubsume (EECase3 a) () x₈ x₉) (AASubsume x₁₀ x₁₁ x₁₂ x₁₃)
     actdet3 (EECase3 x₁) x₂ (AAZipCase3 x₃ x₄ x₅ x₆ x₇ x₈) (AASubsume (EECase3 a) () x₉ x₁₀)
     actdet3 (EECase3 _) _ _ (AAZipCase3 _ _  _ _ _ _) = {!!}
