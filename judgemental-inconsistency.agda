@@ -23,10 +23,10 @@ module judgemental-inconsistency where
   -- if an arrow type is ~̸, either the domain or the range must be ~̸. this
   -- is aggressively classical in flavor BUT happens to be true
   -- constructively, if only because ~ is deciable.
-  lem : ∀{t1 t2 t3 t4} →
+  lem==> : ∀{t1 t2 t3 t4} →
         (t1 ==> t2) ~̸ (t3 ==> t4) →
         (t1 ~̸ t3) + (t2 ~̸ t4)
-  lem {t1} {t2} {t3} {t4} ncon with ~dec t1 t3
+  lem==> {t1} {t2} {t3} {t4} ncon with ~dec t1 t3
   ... | Inl x = Inr (λ x₁ → ncon (TCArr x x₁))
   ... | Inr x = Inl x
 
@@ -48,7 +48,7 @@ module judgemental-inconsistency where
   from~̸ : (t1 t2 : τ̇) → t1 ~̸ t2 → incon t1 t2
   from~̸ num (t2 ==> t3) ncon = ICNumArr1
   from~̸ (t1 ==> t2) num ncon = ICNumArr2
-  from~̸ (t1 ==> t2) (t3 ==> t4) ncon with lem ncon
+  from~̸ (t1 ==> t2) (t3 ==> t4) ncon with lem==> ncon
   ... | Inl qq = ICArr1 (from~̸ _ _ qq)
   ... | Inr qq = ICArr2 (from~̸ _ _ qq)
   -- the remaining consistent types all lead to absurdities
