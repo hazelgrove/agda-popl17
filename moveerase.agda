@@ -91,3 +91,48 @@ module moveerase where
   ... | refl with synthunicity x₄ wt
   ... | refl with matcharrunicity x x₂
   ... | refl = refl
+
+  -- more generally, movement actions don't change the erasure, even if
+  -- they occur within a zipper
+  mutual
+    synth-move-er : ∀{Γ e e◆ e' t δ } →
+                   erase-e e e◆ →
+                   Γ ⊢ e◆ => t →
+                   Γ ⊢ e => t ~ move δ ~> e' => t →
+                   erase-e e' e◆
+    synth-move-er er wt (SAMove x) = moveerase' er x
+    synth-move-er (EEAscL er) (SAsc x) (SAZipAsc1 x₁) = EEAscL (ana-move-er er x x₁)
+    synth-move-er (EEAscR x) (SAsc x₁) (SAZipAsc2 x₂ x₃ x₄ x₅) = EEAscR (lem-erase-step x₄ x₂)
+    synth-move-er (EEApL er) (SAp wt x x₁) (SAZipApArr x₂ x₃ x₄ α x₅)
+      with pin x₃ x₄ α
+    ... | refl with erasee-det x₃ er
+    ... | refl with synthunicity wt x₄
+    ... | refl = EEApL (synth-move-er er wt α)
+    synth-move-er (EEApR er) (SAp wt x x₁) (SAZipApAna x₂ x₃ x₄)
+      with synthunicity x₃ wt
+    ... | refl with matcharrunicity x₂ x
+    ... | refl = EEApR (ana-move-er er x₁ x₄)
+    synth-move-er (EEPlusL er) (SPlus x x₁) (SAZipPlus1 x₂) = EEPlusL (ana-move-er er x x₂)
+    synth-move-er (EEPlusR er) (SPlus x x₁) (SAZipPlus2 x₂) = EEPlusR (ana-move-er er x₁ x₂)
+    synth-move-er (EENEHole er) (SNEHole wt) (SAZipHole x x₁ α)
+      with erasee-det x er
+    ... | refl with synthunicity x₁ wt
+    ... | refl with pin x x₁ α
+    ... | refl = EENEHole (synth-move-er er wt α)
+
+    ana-move-er : ∀{Γ e e◆ e' t δ } →
+                        erase-e e e◆ →
+                        Γ ⊢ e◆ <= t →
+                        Γ ⊢ e ~ move δ ~> e' ⇐ t →
+                        erase-e e' e◆
+    ana-move-er (EELam _) (ASubsume () _) _
+
+    ana-move-er er wt (AASubsume x x₁ x₂ x₃)
+      with pin x x₁ x₂
+    ... | refl with erasee-det er x
+    ... | refl = synth-move-er x x₁ x₂
+    ana-move-er er wt (AAMove x) = moveerase' er x
+
+    ana-move-er (EELam er) (ALam x₁ x₂ wt) (AAZipLam x₃ x₄ α)
+      with matcharrunicity x₄ x₂
+    ... | refl = EELam (ana-move-er er wt α)

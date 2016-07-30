@@ -206,6 +206,16 @@ module checks where
   -- actions. they are not true for general actions, but because
   -- reachability is restricted to movements, we get some milage out of
   -- them anyway.
+  endpoints : ∀{ Γ e t L e' t'} →
+                  Γ ⊢ (e ◆e) => t →
+                  runsynth Γ e t L e' t' →
+                  movements L →
+                  t == t'
+  endpoints _ DoRefl AM[] = refl
+  endpoints wt (DoSynth x rs) (AM:: mv)
+    with endpoints (actsense1 (rel◆ _) (rel◆ _) x wt) rs mv
+  ... | refl = pin (rel◆ _) wt x
+
   ziplem-moves-asc2 : ∀{ Γ l t t' e t◆ } →
                       movements l →
                       erase-t t t◆ →
