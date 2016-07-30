@@ -27,6 +27,16 @@ module moveerase where
   moveerase EMNEHoleFirstChild = refl
   moveerase EMNEHoleParent = refl
 
+  moveeraset : {t t' : τ̂} {δ : direction} →
+            (t + move δ +> t') →
+            (t ◆t) == (t' ◆t)
+  moveeraset TMArrFirstChild = refl
+  moveeraset TMArrParent1 = refl
+  moveeraset TMArrParent2 = refl
+  moveeraset TMArrNextSib = refl
+  moveeraset (TMArrZip1 {t2 = t2} m) = ap1 (λ x → x ==> t2) (moveeraset m)
+  moveeraset (TMArrZip2 {t1 = t1} m) = ap1 (λ x → t1 ==> x) (moveeraset m)
+
   -- this form is essentially the same as above, but for judgemental erasure
   moveerase' : {e e' : ê} {e◆ : ė} {δ : direction} →
             erase-e e e◆ →
@@ -58,9 +68,5 @@ module moveerase where
                  erase-t t t◆ →
                  t + move δ +> t'' →
                  erase-t t'' t◆
-  lem-erase-step ETTop TMArrFirstChild = ETArrL ETTop
-  lem-erase-step (ETArrL ETTop) TMArrParent1 = ETTop
-  lem-erase-step (ETArrL ETTop) TMArrNextSib = ETArrR ETTop
-  lem-erase-step (ETArrL er) (TMArrZip1 m) = ETArrL (lem-erase-step er m)
-  lem-erase-step (ETArrR ETTop) TMArrParent2 = ETTop
-  lem-erase-step (ETArrR er) (TMArrZip2 m) = ETArrR (lem-erase-step er m)
+  lem-erase-step er m with erase-t◆ er
+  lem-erase-step er m | refl = ◆erase-t _ _ (! (moveeraset m))
