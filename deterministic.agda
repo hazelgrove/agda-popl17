@@ -86,6 +86,14 @@ module deterministic where
   synthmovedet (SAZipPlus2 x) EMPlusParent2       = abort (lem-nomove-para x)
   synthmovedet (SAZipHole _ _ x) EMNEHoleParent   = abort (lem-nomove-pars x)
 
+  anamovedet : {Γ : ·ctx} {e e' e'' : ê} {t : τ̇} {δ : direction} →
+         (Γ ⊢ e ~ move δ ~> e'' ⇐ t) →
+         (e + move δ +>e e') →
+         e'' == e'
+  anamovedet (AASubsume x₂ x x₃ x₁) m = synthmovedet x₃ m
+  anamovedet (AAMove x) m = movedet x m
+  anamovedet (AAZipLam x₁ x₂ d) EMLamParent = abort (lem-nomove-para d)
+
   mutual
     -- an action on an expression in a synthetic position produces one
     -- resultant expression and type.
@@ -280,22 +288,19 @@ module deterministic where
     -- an erased lambda can't be typechecked with subsume
     actdet3 (EELam _) (ASubsume () _) _ _
 
+    -- for things paired with movements, punt to the move determinism case
+    actdet3 _ _ D (AAMove y) = anamovedet D y
+    actdet3 _ _ (AAMove y) D =  ! (anamovedet D y)
+
     -- lambdas never match with subsumption actions, because it won't be well typed.
     actdet3 EETop      (ALam x₁ x₂ wt) (AASubsume EETop () x₅ x₆) _
     actdet3 (EELam _) (ALam x₁ x₂ wt) (AASubsume (EELam x₃) () x₅ x₆) _
     actdet3 EETop      (ALam x₁ x₂ wt) _ (AASubsume EETop () x₅ x₆)
     actdet3 (EELam _) (ALam x₁ x₂ wt) _ (AASubsume (EELam x₃) () x₅ x₆)
 
-    -- movements are the same reguardless of erasure
-    actdet3 _ (ALam x₁ x₂ wt) (AAMove x₃) (AAMove x₄) = movedet x₃ x₄
-
     -- with the cursor at the top, there are only two possible actions
     actdet3 EETop (ALam x₁ x₂ wt) AADel AADel = refl
     actdet3 EETop (ALam x₁ x₂ wt) AAConAsc AAConAsc = refl
-
-    -- otherwise, it has to be a zip. movement doesnt' cohere..
-    actdet3 (EELam er) (ALam x₁ x₂ wt) (AAMove EMLamParent) (AAZipLam x₄ x₅ d2) = abort (lem-nomove-para d2)
-    actdet3 (EELam er) (ALam x₁ x₂ wt) (AAZipLam x₃ x₄ d1) (AAMove EMLamParent) = abort (lem-nomove-para d1)
 
     -- and for the remaining case, recurr on the smaller derivations
     actdet3 (EELam er) (ALam x₁ x₂ wt) (AAZipLam x₃ x₄ d1) (AAZipLam x₅ x₆ d2)
@@ -313,7 +318,6 @@ module deterministic where
     ... | refl = π1 (actdet2 x x₅ x₂ x₆)
 
     -- (these are all repeated below, irritatingly.)
-    actdet3 er (ASubsume a b) (AASubsume x x₁ x₃ x₂) (AAMove x₄) = synthmovedet x₃ x₄
     actdet3 EETop (ASubsume a b) (AASubsume EETop x SADel x₁) AADel = refl
     actdet3 EETop (ASubsume a b) (AASubsume EETop x SAConAsc x₁) AAConAsc
       with synthunicity a x
@@ -325,10 +329,6 @@ module deterministic where
     actdet3 EETop (ASubsume a b) (AASubsume EETop x₁ (SAConLam x₃) x₂) (AAConLam2 x₅ x₆) = abort (x₆ x₂)
     actdet3 EETop (ASubsume a b) (AASubsume EETop x₁ SAConNumlit x₂) (AAConNumlit x₄) = abort (x₄ x₂)
     actdet3 EETop (ASubsume a b) (AASubsume EETop x (SAFinish x₂) x₁) (AAFinish x₄) = refl
-
-      -- subsume / move
-    actdet3 er (ASubsume a b) (AAMove x) (AASubsume x₁ x₂ x₃ x₄) = ! (synthmovedet x₃ x)
-    actdet3 er (ASubsume a b) (AAMove x) (AAMove x₁) = movedet x x₁
 
       -- subsume / del
     actdet3 er (ASubsume a b) AADel (AASubsume x x₁ SADel x₃) = refl
