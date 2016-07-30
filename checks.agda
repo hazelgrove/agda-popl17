@@ -217,18 +217,6 @@ module checks where
   -- actions. they are not true for general actions, but because
   -- reachability is restricted to movements, we get some milage out of
   -- them anyway.
-  ziplem-moves-asc2 : ∀{ Γ l t t' e t◆ } →
-                      movements l →
-                      erase-t t t◆ →
-                      Γ ⊢ e <= t◆ →
-                      runtype t l t' →
-                      runsynth Γ (e ·:₂ t) t◆ l (e ·:₂ t') t◆
-  ziplem-moves-asc2 _ _ _ DoRefl = DoRefl
-  ziplem-moves-asc2 (AM:: m) er wt (DoType x rt) with lem-erase-step er x
-  ... | er' =  DoSynth (SAZipAsc2 x er' er wt) (ziplem-moves-asc2 m er' wt rt)
-
-
-
   endpoints : ∀{ Γ e t L e' t'} →
                   Γ ⊢ (e ◆e) => t →
                   runsynth Γ e t L e' t' →
@@ -238,6 +226,16 @@ module checks where
   endpoints wt (DoSynth x rs) (AM:: mv)
     with endpoints (actsense1 (rel◆ _) (rel◆ _) x wt) rs mv
   ... | refl = pin (rel◆ _) wt x
+
+  ziplem-moves-asc2 : ∀{ Γ l t t' e t◆ } →
+                      movements l →
+                      erase-t t t◆ →
+                      Γ ⊢ e <= t◆ →
+                      runtype t l t' →
+                      runsynth Γ (e ·:₂ t) t◆ l (e ·:₂ t') t◆
+  ziplem-moves-asc2 _ _ _ DoRefl = DoRefl
+  ziplem-moves-asc2 (AM:: m) er wt (DoType x rt) with lem-erase-step er x
+  ... | er' =  DoSynth (SAZipAsc2 x er' er wt) (ziplem-moves-asc2 m er' wt rt)
 
   synthana-moves : ∀{t t' l e e' Γ} →
                    Γ ⊢ e ◆e => t' →
