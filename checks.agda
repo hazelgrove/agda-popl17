@@ -70,9 +70,9 @@ module checks where
   figure1 : runsynth ∅ ▹ <||> ◃ <||> l (·λ 0 (X 0 ·+₂ ▹ N 1 ◃) ·:₁ (num ==> num)) (num ==> num)
   figure1 =
         DoSynth (SAConLam refl)
-        (DoSynth (SAZipAsc2 (TMZip1 TMConNum) (ETArrL ETTop) (ETArrL ETTop) (ALam refl MAArr (ASubsume SEHole TCRefl)))
+        (DoSynth (SAZipAsc2 (TMArrZip1 TMConNum) (ETArrL ETTop) (ETArrL ETTop) (ALam refl MAArr (ASubsume SEHole TCRefl)))
         (DoSynth (SAZipAsc2 TMArrNextSib (ETArrR ETTop) (ETArrL ETTop) (ALam refl MAArr (ASubsume SEHole TCRefl)))
-        (DoSynth (SAZipAsc2 (TMZip2 TMConNum) (ETArrR ETTop) (ETArrR ETTop) (ALam refl MAArr (ASubsume SEHole TCHole1)))
+        (DoSynth (SAZipAsc2 (TMArrZip2 TMConNum) (ETArrR ETTop) (ETArrR ETTop) (ALam refl MAArr (ASubsume SEHole TCHole1)))
         (DoSynth (SAZipAsc2 TMArrParent2 ETTop (ETArrR ETTop) (ALam refl MAArr (ASubsume SEHole TCHole1)))
         (DoSynth (SAMove EMAscParent2)
         (DoSynth (SAMove EMAscFirstChild)
@@ -137,13 +137,13 @@ module checks where
             runtype t1' L t1 →
             runtype (t1' ==>₁ t2) L (t1 ==>₁ t2)
   ziplem-tm1 DoRefl = DoRefl
-  ziplem-tm1 (DoType x L') = DoType (TMZip1 x) (ziplem-tm1 L')
+  ziplem-tm1 (DoType x L') = DoType (TMArrZip1 x) (ziplem-tm1 L')
 
   ziplem-tm2 : ∀ {t1 t2 t2' L } →
             runtype t2' L t2 →
             runtype (t1 ==>₂ t2') L (t1 ==>₂ t2)
   ziplem-tm2 DoRefl = DoRefl
-  ziplem-tm2 (DoType x L') = DoType (TMZip2 x) (ziplem-tm2 L')
+  ziplem-tm2 (DoType x L') = DoType (TMArrZip2 x) (ziplem-tm2 L')
 
 
     -- expression zippers

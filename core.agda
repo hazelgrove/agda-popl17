@@ -350,10 +350,10 @@ module core where
     TMConArrow  : {t : τ̇} →
                 (▹ t ◃) + construct arrow +> (t ==>₂ ▹ <||> ◃)
     TMConNum  : (▹ <||> ◃) + construct num +> (▹ num ◃)
-    TMZip1 : {t1 t1' : τ̂} {t2 : τ̇} {α : action} →
+    TMArrZip1 : {t1 t1' : τ̂} {t2 : τ̇} {α : action} →
                 (t1 + α +> t1') →
                 ((t1 ==>₁ t2) + α +> (t1' ==>₁ t2))
-    TMZip2 : {t2 t2' : τ̂} {t1 : τ̇} {α : action} →
+    TMArrZip2 : {t2 t2' : τ̂} {t1 : τ̇} {α : action} →
                 (t2 + α +> t2') →
                 ((t1 ==>₂ t2) + α +> (t1 ==>₂ t2'))
 
