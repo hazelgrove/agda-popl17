@@ -24,7 +24,7 @@ module constructability where
   ... | (l1 , ih1) | (l2 , ih2)= l1 ++ construct arrow :: l2 ++ [ move parent ] ,
                                  runtype++ ih1
                                    (DoType TMConArrow
-                                     (runtype++ (ziplem-tm2 ih2)
+                                     (runtype++ (ziplem-tmarr2 ih2)
                                        (DoType TMArrParent2 DoRefl)))
 
   mutual

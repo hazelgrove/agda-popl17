@@ -28,11 +28,11 @@ module reachability where
   reachup-type ETTop = [] , DoRefl , AM[]
   reachup-type (ETArrL er) with reachup-type er
   ... | (l , ih , m ) = l ++ [ move parent ] ,
-                        runtype++ (ziplem-tm1 ih) (DoType TMArrParent1 DoRefl) ,
+                        runtype++ (ziplem-tmarr1 ih) (DoType TMArrParent1 DoRefl) ,
                         movements++ m (AM:: AM[])
   reachup-type (ETArrR er) with reachup-type er
   ... | (l , ih , m ) = l ++ [ move parent ] ,
-                        runtype++ (ziplem-tm2 ih) (DoType TMArrParent2 DoRefl) ,
+                        runtype++ (ziplem-tmarr2 ih) (DoType TMArrParent2 DoRefl) ,
                         movements++ m (AM:: AM[])
 
   mutual
@@ -92,11 +92,11 @@ module reachability where
   reachdown-type ETTop = [] , DoRefl , AM[]
   reachdown-type (ETArrL er) with reachdown-type er
   ... | (l , ih , m ) = move firstChild :: l ,
-                        DoType TMArrFirstChild (ziplem-tm1 ih) ,
+                        DoType TMArrFirstChild (ziplem-tmarr1 ih) ,
                         AM:: m
   reachdown-type (ETArrR er) with reachdown-type er
   ... | (l , ih , m ) = move firstChild :: move nextSib :: l ,
-                        DoType TMArrFirstChild (DoType TMArrNextSib (ziplem-tm2 ih)) ,
+                        DoType TMArrFirstChild (DoType TMArrNextSib (ziplem-tmarr2 ih)) ,
                         AM:: (AM:: m)
 
   mutual

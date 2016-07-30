@@ -133,17 +133,17 @@ module checks where
   -- proofs, not anything that's more general.
 
     -- type zippers
-  ziplem-tm1 : ∀ {t1 t1' t2 L } →
+  ziplem-tmarr1 : ∀ {t1 t1' t2 L } →
             runtype t1' L t1 →
             runtype (t1' ==>₁ t2) L (t1 ==>₁ t2)
-  ziplem-tm1 DoRefl = DoRefl
-  ziplem-tm1 (DoType x L') = DoType (TMArrZip1 x) (ziplem-tm1 L')
+  ziplem-tmarr1 DoRefl = DoRefl
+  ziplem-tmarr1 (DoType x L') = DoType (TMArrZip1 x) (ziplem-tmarr1 L')
 
-  ziplem-tm2 : ∀ {t1 t2 t2' L } →
+  ziplem-tmarr2 : ∀ {t1 t2 t2' L } →
             runtype t2' L t2 →
             runtype (t1 ==>₂ t2') L (t1 ==>₂ t2)
-  ziplem-tm2 DoRefl = DoRefl
-  ziplem-tm2 (DoType x L') = DoType (TMArrZip2 x) (ziplem-tm2 L')
+  ziplem-tmarr2 DoRefl = DoRefl
+  ziplem-tmarr2 (DoType x L') = DoType (TMArrZip2 x) (ziplem-tmarr2 L')
 
 
     -- expression zippers
