@@ -168,43 +168,6 @@ module core where
                  (Γ ,, (y , t2)) ⊢ e2 <= t →
                  Γ ⊢ case e x e1 y e2 <= t
 
-  ----- a couple of exmaples to demonstrate how the encoding above works
-
-  -- the function (λx. x + 1) where x is named "0".
-  add0 : ė
-  add0 = ·λ 0 (X 0 ·+ N 1)
-
-  -- this is the derivation that fn has type num ==> num
-  ex1 : ∅ ⊢ add0 <= (num ==> num)
-  ex1 = ALam refl MAArr (ASubsume
-                           (SPlus (ASubsume (SVar refl) TCRefl) (ASubsume SNum TCRefl))
-                           TCRefl)
-
-  -- the derivation that when applied to the numeric argument 10 add0
-  -- produces a num.
-  ex2 : ∅ ⊢ (add0 ·: (num ==> num)) ∘ (N 10) => num
-  ex2 = SAp (SAsc ex1) MAArr (ASubsume SNum TCRefl)
-
-  -- the slightly longer derivation that argues that add0 applied to a
-  -- variable that's known to be a num produces a num
-  ex2b : (∅ ,, (1 , num)) ⊢ (add0 ·: (num ==> num)) ∘ (X 1) => num
-  ex2b = SAp (SAsc (ALam refl MAArr (ASubsume
-                                       (SPlus (ASubsume (SVar refl) TCRefl) (ASubsume SNum TCRefl))
-                                       TCRefl))) MAArr (ASubsume (SVar refl) TCRefl)
-
-  -- eta-expanding addition to curry it gets num → num → num
-  ex3 : ∅ ⊢ ·λ 0 ( (·λ 1 (X 0 ·+ X 1)) ·: (num ==> num)  )
-               <= (num ==> (num ==> num))
-  ex3 = ALam refl MAArr (ASubsume (SAsc (ALam refl MAArr (ASubsume
-                                                            (SPlus (ASubsume (SVar refl) TCRefl) (ASubsume (SVar refl) TCRefl))
-                                                            TCRefl))) TCRefl)
-
-  -- applying three to four has type hole -- but there is no action that
-  -- can fill the hole in the type so this term is forever incomplete.
-  ex4 : ∅ ⊢ ((N 3) ·: <||>) ∘ (N 4) => <||>
-  ex4 = SAp (SAsc (ASubsume SNum TCHole2)) MAHole (ASubsume SNum TCHole2)
-
-
   ----- some theorems about the rules and judgement presented so far.
 
   -- a variable is apart from any context from which it is removed
