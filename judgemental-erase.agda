@@ -105,7 +105,6 @@ module judgemental-erase where
   erase-e-mode : (e : ê) → Σ[ er ∈ ė ] (erase-e e er)
   erase-e-mode e = (e ◆e) , (◆erase-e e (e ◆e) refl)
 
-
   -- some translations. these are not needed to show that this is an ok
   -- encoding pair, but they are helpful when actually using it.
 
