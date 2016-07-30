@@ -17,6 +17,7 @@ open import moveerase
 
 -- first wave theorems
 open import sensible
+open import aasubsume-min
 -- open import deterministic
 
 -- second wave theorems (checksums)
