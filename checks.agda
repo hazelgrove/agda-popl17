@@ -288,7 +288,6 @@ module checks where
   ... | refl = DoAna (AASubsume (rel◆ _) wt x c)
                      (synthana-moves (actsense1 (rel◆ _) (rel◆ _) x wt) m c rs)
 
-
   ziplem-moves-ap1 : ∀{Γ l e1 e1' e2 t t' tx} →
                    Γ ⊢ e1 ◆e => t →
                    t ▸arr (tx ==> t') →
