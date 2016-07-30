@@ -254,29 +254,6 @@ module checks where
   ziplem-moves-asc2 (AM:: m) er wt (DoType x rt) with lem-erase-step er x
   ... | er' =  DoSynth (SAZipAsc2 x er' er wt) (ziplem-moves-asc2 m er' wt rt)
 
-
-  --- this is a restricted form of determinism that's just enough to let
-  --- the lemma below go through, which is needed for reachability
-  pin : ∀ {Γ e t e' e◆ t' δ} →
-          erase-e e e◆ →
-          Γ ⊢ e◆ => t →
-          Γ ⊢ e => t ~ move δ ~> e' => t' →
-          t == t'
-  pin _ _ (SAMove x) = refl
-  pin _ _ (SAZipAsc1 x) = refl
-  pin _ _ (SAZipAsc2 x x₁ x₂ x₃) = eraset-det (lem-erase-step x₂ x) x₁
-  pin _ _ (SAZipApAna x x₁ x₂) = refl
-  pin _ _ (SAZipPlus1 x) = refl
-  pin _ _ (SAZipPlus2 x) = refl
-  pin _ _ (SAZipHole x x₁ d) = refl
-  pin (EEApL er) (SAp wt x x₁) (SAZipApArr x₂ x₃ x₄ d x₅)
-    with pin x₃ x₄ d
-  ... | refl with erasee-det er x₃
-  ... | refl with synthunicity x₄ wt
-  ... | refl with matcharrunicity x x₂
-  ... | refl = refl
-
-
   synthana-moves : ∀{t t' l e e' Γ} →
                    Γ ⊢ e ◆e => t' →
                    movements l →
