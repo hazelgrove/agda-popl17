@@ -309,7 +309,7 @@ module core where
     EEApR   : ∀{e1 e2 e2'} → erase-e e2 e2' → erase-e (e1 ∘₂ e2) (e1 ∘ e2')
     EEPlusL : ∀{e1 e1' e2} → erase-e e1 e1' → erase-e (e1 ·+₁ e2) (e1' ·+ e2)
     EEPlusR : ∀{e1 e2 e2'} → erase-e e2 e2' → erase-e (e1 ·+₂ e2) (e1 ·+ e2')
-    EENEHole : ∀{e e'}      → erase-e e e'   → erase-e <| e |>  <| e' |>
+    EENEHole : ∀{e e'}     → erase-e e e'   → erase-e <| e |>  <| e' |>
 
   -- the three grammars that define actions
   data direction : Set where
