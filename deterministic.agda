@@ -9,22 +9,22 @@ module deterministic where
             (t + α +> t') →
             (t + α +> t'') →
             (t' == t'')
-  actdet1 TMFirstChild TMFirstChild = refl
-  actdet1 TMParent1 TMParent1 = refl
-  actdet1 TMParent1 (TMZip1 ())
-  actdet1 TMParent2 TMParent2 = refl
-  actdet1 TMParent2 (TMZip2 ())
-  actdet1 TMNextSib TMNextSib = refl
-  actdet1 TMNextSib (TMZip1 ())
+  actdet1 TMArrFirstChild TMArrFirstChild = refl
+  actdet1 TMArrParent1 TMArrParent1 = refl
+  actdet1 TMArrParent1 (TMArrZip1 ())
+  actdet1 TMArrParent2 TMArrParent2 = refl
+  actdet1 TMArrParent2 (TMArrZip2 ())
+  actdet1 TMArrNextSib TMArrNextSib = refl
+  actdet1 TMArrNextSib (TMArrZip1 ())
   actdet1 TMDel TMDel = refl
   actdet1 TMConArrow TMConArrow = refl
   actdet1 TMConNum TMConNum = refl
-  actdet1 (TMZip1 ()) TMParent1
-  actdet1 (TMZip1 ()) TMNextSib
-  actdet1 (TMZip1 p1) (TMZip1 p2) with actdet1 p1 p2
+  actdet1 (TMArrZip1 ()) TMArrParent1
+  actdet1 (TMArrZip1 ()) TMArrNextSib
+  actdet1 (TMArrZip1 p1) (TMArrZip1 p2) with actdet1 p1 p2
   ... | refl = refl
-  actdet1 (TMZip2 ()) TMParent2
-  actdet1 (TMZip2 p1) (TMZip2 p2) with actdet1 p1 p2
+  actdet1 (TMArrZip2 ()) TMArrParent2
+  actdet1 (TMArrZip2 p1) (TMArrZip2 p2) with actdet1 p1 p2
   ... | refl = refl
 
   -- all expressions only move to one other expression
