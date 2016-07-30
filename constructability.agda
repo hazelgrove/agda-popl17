@@ -21,7 +21,7 @@ module constructability where
   construct-type num  = [ construct num ] , DoType TMConNum DoRefl
   construct-type <||> = [ del ]           , DoType TMDel DoRefl
   construct-type (t1 ==> t2) with construct-type t1 | construct-type t2
-  ... | (l1 , ih1) | (l2 , ih2)= l1 ++ construct arrow :: l2 ++ [ move parent ] ,
+  ... | (l1 , ih1) | (l2 , ih2) = l1 ++ construct arrow :: l2 ++ [ move parent ] ,
                                  runtype++ ih1
                                    (DoType TMConArrow
                                      (runtype++ (ziplem-tmarr2 ih2)
@@ -80,7 +80,7 @@ module constructability where
                           (DoAna (AAFinish (ASubsume x c)) DoRefl)))
 
     construct-ana (ALam a m e) with construct-ana e
-    ... | (l , ih) = construct (lam _) :: (l ++ [ move parent ])
-                     , DoAna (AAConLam1 a m)
+    ... | (l , ih) = construct (lam _) :: (l ++ [ move parent ]) ,
+                     DoAna (AAConLam1 a m)
                          (runana++ (ziplem-lam a m ih)
                           (DoAna (AAMove EMLamParent) DoRefl))
