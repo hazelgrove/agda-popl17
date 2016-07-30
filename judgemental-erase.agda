@@ -112,20 +112,10 @@ module judgemental-erase where
   -- even more specifically, the relation relates an expression to its
   -- functional erasure.
   rel◆t : (t : τ̂) → (erase-t t (t ◆t))
-  rel◆t ▹ x ◃ = ETTop
-  rel◆t (t ==>₁ x) = ETArrL (rel◆t t)
-  rel◆t (x ==>₂ t) = ETArrR (rel◆t t)
+  rel◆t t = ◆erase-t t (t ◆t) refl
 
   rel◆ : (e : ê) → (erase-e e (e ◆e))
-  rel◆ ▹ x ◃ = EETop
-  rel◆ (e ·:₁ x) = EEAscL (rel◆ e)
-  rel◆ (x ·:₂ x₁) = EEAscR (rel◆t x₁)
-  rel◆ (·λ x e) = EELam (rel◆ e)
-  rel◆ (e ∘₁ x) = EEApL (rel◆ e)
-  rel◆ (x ∘₂ e) = EEApR (rel◆ e)
-  rel◆ (e ·+₁ x) = EEPlusL (rel◆ e)
-  rel◆ (x ·+₂ e) = EEPlusR (rel◆ e)
-  rel◆ <| e |> = EENEHole (rel◆ e)
+  rel◆ e = ◆erase-e e (e ◆e) refl
 
   lem-erase-ana : ∀{e e' Γ t} → erase-e e e' → Γ ⊢ e' <= t → Γ ⊢ (e ◆e) <= t
   lem-erase-ana er wt = tr (λ x → _ ⊢ x <= _) (! (erase-e◆ er)) wt
