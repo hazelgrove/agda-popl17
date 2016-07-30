@@ -25,7 +25,7 @@ module constructability where
                                  runtype++ ih1
                                    (DoType TMConArrow
                                      (runtype++ (ziplem-tm2 ih2)
-                                       (DoType TMParent2 DoRefl)))
+                                       (DoType TMArrParent2 DoRefl)))
 
   mutual
     -- construction of expressions in synthetic positions

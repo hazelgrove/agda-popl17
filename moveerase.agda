@@ -58,9 +58,9 @@ module moveerase where
                  erase-t t t◆ →
                  t + move δ +> t'' →
                  erase-t t'' t◆
-  lem-erase-step ETTop TMFirstChild = ETArrL ETTop
-  lem-erase-step (ETArrL ETTop) TMParent1 = ETTop
-  lem-erase-step (ETArrL ETTop) TMNextSib = ETArrR ETTop
+  lem-erase-step ETTop TMArrFirstChild = ETArrL ETTop
+  lem-erase-step (ETArrL ETTop) TMArrParent1 = ETTop
+  lem-erase-step (ETArrL ETTop) TMArrNextSib = ETArrR ETTop
   lem-erase-step (ETArrL er) (TMZip1 m) = ETArrL (lem-erase-step er m)
-  lem-erase-step (ETArrR ETTop) TMParent2 = ETTop
+  lem-erase-step (ETArrR ETTop) TMArrParent2 = ETTop
   lem-erase-step (ETArrR er) (TMZip2 m) = ETArrR (lem-erase-step er m)

@@ -71,9 +71,9 @@ module checks where
   figure1 =
         DoSynth (SAConLam refl)
         (DoSynth (SAZipAsc2 (TMZip1 TMConNum) (ETArrL ETTop) (ETArrL ETTop) (ALam refl MAArr (ASubsume SEHole TCRefl)))
-        (DoSynth (SAZipAsc2 TMNextSib (ETArrR ETTop) (ETArrL ETTop) (ALam refl MAArr (ASubsume SEHole TCRefl)))
+        (DoSynth (SAZipAsc2 TMArrNextSib (ETArrR ETTop) (ETArrL ETTop) (ALam refl MAArr (ASubsume SEHole TCRefl)))
         (DoSynth (SAZipAsc2 (TMZip2 TMConNum) (ETArrR ETTop) (ETArrR ETTop) (ALam refl MAArr (ASubsume SEHole TCHole1)))
-        (DoSynth (SAZipAsc2 TMParent2 ETTop (ETArrR ETTop) (ALam refl MAArr (ASubsume SEHole TCHole1)))
+        (DoSynth (SAZipAsc2 TMArrParent2 ETTop (ETArrR ETTop) (ALam refl MAArr (ASubsume SEHole TCHole1)))
         (DoSynth (SAMove EMAscParent2)
         (DoSynth (SAMove EMAscFirstChild)
         (DoSynth (SAZipAsc1 (AAMove EMLamFirstChild))

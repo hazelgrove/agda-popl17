@@ -337,13 +337,13 @@ module core where
 
   -- type actions
   data _+_+>_ : (t : τ̂) → (α : action) → (t' : τ̂) → Set where
-    TMFirstChild : {t1 t2 : τ̇} →
+    TMArrFirstChild : {t1 t2 : τ̇} →
                ▹ t1 ==> t2 ◃ + move firstChild +> (▹ t1 ◃ ==>₁ t2)
-    TMParent1 : {t1 t2 : τ̇} →
+    TMArrParent1 : {t1 t2 : τ̇} →
                (▹ t1 ◃ ==>₁ t2) + move parent +> ▹ t1 ==> t2 ◃
-    TMParent2 : {t1 t2 : τ̇} →
+    TMArrParent2 : {t1 t2 : τ̇} →
                (t1 ==>₂ ▹ t2 ◃) + move parent +> ▹ t1 ==> t2 ◃
-    TMNextSib : {t1 t2 : τ̇} →
+    TMArrNextSib : {t1 t2 : τ̇} →
                (▹ t1 ◃ ==>₁ t2) + move nextSib +> (t1 ==>₂ ▹ t2 ◃)
     TMDel     : {t : τ̇} →
                 (▹ t ◃) + del +> (▹ <||> ◃)
