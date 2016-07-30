@@ -273,7 +273,7 @@ module checks where
     with pin x₃ x₄ d
   ... | refl with erasee-det er x₃
   ... | refl with synthunicity x₄ wt
-  ... | refl with matchunicity x x₂
+  ... | refl with matcharrunicity x x₂
   ... | refl = refl
 
 

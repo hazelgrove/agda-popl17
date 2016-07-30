@@ -103,7 +103,7 @@ module deterministic where
     actdet2 EETop (SAsc x) (SAConPlus1 x₁) (SAConPlus2 x₂) = abort (x₂ x₁)
     actdet2 EETop (SAsc x) (SAConPlus2 x₁) (SAConPlus1 x₂) = abort (x₁ x₂)
     actdet2 EETop (SAsc x) (SAConPlus2 x₁) (SAConPlus2 x₂) = refl , refl
-    actdet2 EETop (SAsc x) (SAConApArr x₁) (SAConApArr x₂) with matchunicity x₁ x₂
+    actdet2 EETop (SAsc x) (SAConApArr x₁) (SAConApArr x₂) with matcharrunicity x₁ x₂
     ... | refl = refl , refl
     actdet2 EETop (SAsc x) (SAConApArr x₁) (SAConApOtw x₂) = abort (x₂ (matchconsist x₁))
     actdet2 EETop (SAsc x) (SAConApOtw x₁) (SAConApArr x₂) = abort (x₁ (matchconsist x₂))
@@ -134,7 +134,7 @@ module deterministic where
     actdet2 EETop (SVar x) (SAConPlus1 x₁) (SAConPlus2 x₂) = abort (x₂ x₁)
     actdet2 EETop (SVar x) (SAConPlus2 x₁) (SAConPlus1 x₂) = abort (x₁ x₂)
     actdet2 EETop (SVar x) (SAConPlus2 x₁) (SAConPlus2 x₂) = refl , refl
-    actdet2 EETop (SVar x) (SAConApArr x₁) (SAConApArr x₂) with matchunicity x₁ x₂
+    actdet2 EETop (SVar x) (SAConApArr x₁) (SAConApArr x₂) with matcharrunicity x₁ x₂
     ... | refl = refl , refl
     actdet2 EETop (SVar x) (SAConApArr x₁) (SAConApOtw x₂) = abort (x₂ (matchconsist x₁))
     actdet2 EETop (SVar x) (SAConApOtw x₁) (SAConApArr x₂) = abort (x₁ (matchconsist x₂))
@@ -149,7 +149,7 @@ module deterministic where
     actdet2 EETop (SAp m wt x) (SAConPlus1 x₁) (SAConPlus2 x₂) = abort (x₂ x₁)
     actdet2 EETop (SAp m wt x) (SAConPlus2 x₁) (SAConPlus1 x₂) = abort (x₁ x₂)
     actdet2 EETop (SAp m wt x) (SAConPlus2 x₁) (SAConPlus2 x₂) = refl , refl
-    actdet2 EETop (SAp m wt x) (SAConApArr x₁) (SAConApArr x₂) with matchunicity x₁ x₂
+    actdet2 EETop (SAp m wt x) (SAConApArr x₁) (SAConApArr x₂) with matcharrunicity x₁ x₂
     ... | refl = refl , refl
     actdet2 EETop (SAp m wt x) (SAConApArr x₁) (SAConApOtw x₂) = abort (x₂ (matchconsist x₁))
     actdet2 EETop (SAp m wt x) (SAConApOtw x₁) (SAConApArr x₂) = abort (x₁ (matchconsist x₂))
@@ -166,7 +166,7 @@ module deterministic where
     ... | refl with synthunicity x₂ x₅
     ... | refl with erasee-det E x₁
     ... | refl with actdet2 E x₅ d1 d2
-    ... | refl , refl with matchunicity a b
+    ... | refl , refl with matcharrunicity a b
     ... | refl = refl , refl
 
     actdet2 (EEApR E) (SAp m wt x) (SAMove x₁) (SAMove x₂) = movedet x₁ x₂ , refl
@@ -174,9 +174,9 @@ module deterministic where
     actdet2 (EEApR E) (SAp m wt x) (SAZipApAna x₁ x₂ x₃) (SAMove EMApParent2) = abort (lem-nomove-para x₃)
     actdet2 (EEApR E) (SAp m wt x) (SAZipApAna x₁ x₂ d1) (SAZipApAna x₄ x₅ d2)
      with synthunicity m x₂
-    ... | refl with matchunicity x₁ wt
+    ... | refl with matcharrunicity x₁ wt
     ... | refl with synthunicity m x₅
-    ... | refl with matchunicity x₄ wt
+    ... | refl with matcharrunicity x₄ wt
     ... | refl with actdet3 E x d1 d2
     ... | refl = refl , refl
 
@@ -188,7 +188,7 @@ module deterministic where
     actdet2 EETop SNum (SAConPlus1 x) (SAConPlus2 x₁) = abort (x₁ x)
     actdet2 EETop SNum (SAConPlus2 x) (SAConPlus1 x₁) = abort (x x₁)
     actdet2 EETop SNum (SAConPlus2 x) (SAConPlus2 x₁) = refl , refl
-    actdet2 EETop SNum (SAConApArr x) (SAConApArr x₁) with matchunicity x x₁
+    actdet2 EETop SNum (SAConApArr x) (SAConApArr x₁) with matcharrunicity x x₁
     ... | refl = refl , refl
     actdet2 EETop SNum (SAConApArr x) (SAConApOtw x₁) = abort (x₁ (matchconsist x))
     actdet2 EETop SNum (SAConApOtw x) (SAConApArr x₁) = abort (x (matchconsist x₁))
@@ -203,7 +203,7 @@ module deterministic where
     actdet2 EETop (SPlus x x₁) (SAConPlus1 x₂) (SAConPlus2 x₃) = abort (x₃ x₂)
     actdet2 EETop (SPlus x x₁) (SAConPlus2 x₂) (SAConPlus1 x₃) = abort (x₂ x₃)
     actdet2 EETop (SPlus x x₁) (SAConPlus2 x₂) (SAConPlus2 x₃) = refl , refl
-    actdet2 EETop (SPlus x x₁) (SAConApArr x₂) (SAConApArr x₃) with matchunicity x₂ x₃
+    actdet2 EETop (SPlus x x₁) (SAConApArr x₂) (SAConApArr x₃) with matcharrunicity x₂ x₃
     ... | refl = refl , refl
     actdet2 EETop (SPlus x x₁) (SAConApArr x₂) (SAConApOtw x₃) = abort (matchnotnum x₂)
     actdet2 EETop (SPlus x x₁) (SAConApOtw x₂) (SAConApArr x₃) = abort (matchnotnum x₃)
@@ -235,7 +235,7 @@ module deterministic where
     actdet2 EETop SEHole (SAConPlus1 x) (SAConPlus2 x₁) = abort (x₁ x)
     actdet2 EETop SEHole (SAConPlus2 x) (SAConPlus1 x₁) = abort (x x₁)
     actdet2 EETop SEHole (SAConPlus2 x) (SAConPlus2 x₁) = refl , refl
-    actdet2 EETop SEHole (SAConApArr x) (SAConApArr x₁) with matchunicity x x₁
+    actdet2 EETop SEHole (SAConApArr x) (SAConApArr x₁) with matcharrunicity x x₁
     ... | refl = refl , refl
     actdet2 EETop SEHole (SAConApArr x) (SAConApOtw x₁) = abort (x₁ TCHole2)
     actdet2 EETop SEHole (SAConApOtw x) (SAConApArr x₁) = abort (x TCHole2)
@@ -251,7 +251,7 @@ module deterministic where
     actdet2 EETop (SNEHole wt) (SAConPlus2 x) (SAConPlus1 x₁) = abort (x x₁)
     actdet2 EETop (SNEHole wt) (SAConPlus2 x) (SAConPlus2 x₁) = refl , refl
     actdet2 EETop (SNEHole wt) (SAFinish x) (SAFinish x₁) = refl , synthunicity x x₁
-    actdet2 EETop (SNEHole wt) (SAConApArr x) (SAConApArr x₁) with matchunicity x x₁
+    actdet2 EETop (SNEHole wt) (SAConApArr x) (SAConApArr x₁) with matcharrunicity x x₁
     ... | refl = refl , refl
     actdet2 EETop (SNEHole wt) (SAConApArr x) (SAConApOtw x₁) = abort (x₁ TCHole2)
     actdet2 EETop (SNEHole wt) (SAConApOtw x) (SAConApArr x₁) = abort (x TCHole2)
@@ -299,8 +299,8 @@ module deterministic where
 
     -- and for the remaining case, recurr on the smaller derivations
     actdet3 (EELam er) (ALam x₁ x₂ wt) (AAZipLam x₃ x₄ d1) (AAZipLam x₅ x₆ d2)
-       with matchunicity x₄ x₆
-    ... | refl with matchunicity x₄ x₂
+       with matcharrunicity x₄ x₆
+    ... | refl with matcharrunicity x₄ x₂
     ... | refl with actdet3 er wt d1 d2
     ... | refl = refl
 

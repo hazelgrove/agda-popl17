@@ -76,12 +76,12 @@ module core where
     MAArr  : {t1 t2 : τ̇} → (t1 ==> t2) ▸arr (t1 ==> t2)
 
   -- matching produces unique answers
-  matchunicity : ∀{ t t2 t3 } →
+  matcharrunicity : ∀{ t t2 t3 } →
                  t ▸arr t2 →
                  t ▸arr t3 →
                  t2 == t3
-  matchunicity MAHole MAHole = refl
-  matchunicity MAArr MAArr = refl
+  matcharrunicity MAHole MAHole = refl
+  matcharrunicity MAArr MAArr = refl
 
   -- if a type matches, then it's consistent with the least restrictive
   -- function type

@@ -48,7 +48,7 @@ module sensible where
     ... | ih = SAp ih x x₃
     actsense1 (EEApR er) (EEApR er') (SAZipApAna x x₁ x₂) (SAp wt x₃ x₄)
       with synthunicity x₁ wt
-    ... | refl with matchunicity x x₃
+    ... | refl with matcharrunicity x x₃
     ... | refl with actsense2 er er' x₂ x₄
     ... | ih = SAp wt x ih
 
@@ -95,6 +95,6 @@ module sensible where
     -- that leaves only the zipper cases for lambda, where we force the
     -- forms and then recurr into the body of the lambda being checked.
     actsense2 (EELam er1) (EELam er2) (AAZipLam x₁ x₂ act) (ALam x₄ x₅ wt)
-      with matchunicity x₂ x₅
+      with matcharrunicity x₂ x₅
     ... | refl with actsense2 er1 er2 act wt
     ... | ih = ALam x₄ x₅ ih
