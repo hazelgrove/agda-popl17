@@ -114,8 +114,6 @@ module core where
   matchnotnum : ∀{t1 t2} → num ▸arr (t1 ==> t2) → ⊥
   matchnotnum ()
 
-  -- todo: will need similar things here for ▸plus
-
   -- bidirectional type checking judgements for ė
   mutual
     -- synthesis
