@@ -507,7 +507,7 @@ module core where
                  (Γ ⊢ e <= t) →
                  Γ ⊢ ▹ <| e |> ◃ ~ finish ~> ▹ e ◃ ⇐ t
       AAZipLam : {Γ : ·ctx} {x : Nat} {t t1 t2 : τ̇} {e e' : ê} {α : action} →
-                 (x # Γ) →
+                 x # Γ →
                  (t ▸arr (t1 ==> t2)) →
                  ((Γ ,, (x , t1)) ⊢ e ~ α ~> e' ⇐ t2) →
                  Γ ⊢ (·λ x e) ~ α ~> (·λ x e') ⇐ t
