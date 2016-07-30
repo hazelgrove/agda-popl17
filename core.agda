@@ -72,7 +72,7 @@ module core where
 
   --- matching for arrows
   data _▸arr_ : τ̇ → τ̇ → Set where
-    MAHole :                  <||>     ▸arr (<||> ==> <||>)
+    MAHole : <||> ▸arr (<||> ==> <||>)
     MAArr  : {t1 t2 : τ̇} → (t1 ==> t2) ▸arr (t1 ==> t2)
 
   -- matching produces unique answers
