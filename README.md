@@ -24,6 +24,10 @@ internally, but we give a brief description here in alphabetical order.
 
 - [README.md](README.md) is this file you're reading right now.
 
+- [aasubsume-min.agda](aasubsume-min.agda) describes a mapping from action
+  derivations to a subset of the same type that is deterministic. This is
+  work in progress that will probably change the statement of determinism.
+
 - [all.agda](all.agda) acts as an ad-hoc make file for the project. If you
   run `agda all.agda` at the commandline in a clone with no `.agdai` files,
   it will check all the complete proofs from scratch. The files that
@@ -50,6 +54,10 @@ internally, but we give a brief description here in alphabetical order.
 - [deterministic.agda](deterministic.agda) is incomplete, but very nearly
   proves that the action semantics are deterministic. There are two cases
   that fail. Fixing this is on the short todo list.
+
+- [examples.agda](examples.agda) is a handful of small examples of the
+  judgements and definitions from the other files in actions, showing small
+  typing and action semantics derivations to help intuition.
 
 - [future-work.agda](future-work.agda) is full of half-baked crack pot
   ideas about possible things we might want to prove soon.
