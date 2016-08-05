@@ -5,17 +5,15 @@ metatheory as submitted to POPL 2017.
 
 The branch `sums` is formalization of the core calculus extended with sum
 types. Currently, all theorems that are true for one are true for the
-other. A good way to see what's required to extend Hazelnut with a new
-language construct is to run the command `git diff master sums` and see
-what was added in each file. (The github comparison of the branches
-displays their difference compared to their most recent common ancestor,
-which is not helpful in this case.)
+other. The best way to look at this and see what's required to extend the
+Hazelnut core and metatheory for new language features is to run the
+command `git diff master sums`.
 
 File Descriptions
 =================
 
-[core.agda](core.agda) is the best file to start reading in, as it gives
-the basic definitions and syntax for the rest. Each file is documented
+[core.agda](core.agda) is the best file to start with. It gives
+the basic definitions and syntax. Each file is documented
 internally, but we give a brief description here in alphabetical order.
 
 - [LICENSE](LICENSE) is the license for this work
