@@ -39,7 +39,7 @@ module reachability where
     reachup-synth : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
                       erase-e e e' →
                       Γ ⊢ e' => t →
-                     Σ[ L ∈ List action ] runsynth Γ e t L ▹ e' ◃ t × movements L
+                     Σ[ L ∈ List action ] (runsynth Γ e t L ▹ e' ◃ t × movements L)
     reachup-synth (EELam _) ()
     reachup-synth EETop _ = [] , DoRefl , AM[]
     reachup-synth (EEAscL er) (SAsc x) with reachup-ana er x
@@ -74,7 +74,7 @@ module reachability where
     reachup-ana : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
                       erase-e e e' →
                       Γ ⊢ e' <= t →
-                      Σ[ L ∈ List action ] runana Γ e L ▹ e' ◃ t × movements L
+                      Σ[ L ∈ List action ] (runana Γ e L ▹ e' ◃ t × movements L)
     reachup-ana EETop _ = [] , DoRefl , AM[]
     reachup-ana er (ASubsume x x₁) with reachup-synth er x
     ... | l , ih , m = l ,
@@ -88,7 +88,7 @@ module reachability where
   --------------------------
 
   reachdown-type : {t : τ̇} {t' : τ̂} → (p : erase-t t' t) →
-                     Σ[ L ∈ List action ] runtype (▹ t ◃) L t' × movements L
+                     Σ[ L ∈ List action ] (runtype (▹ t ◃) L t' × movements L)
   reachdown-type ETTop = [] , DoRefl , AM[]
   reachdown-type (ETArrL er) with reachdown-type er
   ... | (l , ih , m ) = move firstChild :: l ,
@@ -103,7 +103,7 @@ module reachability where
     reachdown-synth : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
                       (p : erase-e e e') →
                       (wt : Γ ⊢ e' => t) →
-                      Σ[ L ∈ List action ] runsynth Γ ▹ e' ◃ t L e t × movements L
+                      Σ[ L ∈ List action ] (runsynth Γ ▹ e' ◃ t L e t × movements L)
     reachdown-synth (EELam _) ()
     reachdown-synth EETop _ = [] , DoRefl , AM[]
     reachdown-synth (EEAscL er) (SAsc x) with reachdown-ana er x
@@ -138,7 +138,7 @@ module reachability where
     reachdown-ana : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
                       (p : erase-e e e') →
                       (wt : Γ ⊢ e' <= t) →
-                      Σ[ L ∈ List action ] runana Γ ▹ e' ◃ L e  t × movements L
+                      Σ[ L ∈ List action ] (runana Γ ▹ e' ◃ L e  t × movements L)
     reachdown-ana EETop _ = [] , DoRefl , AM[]
     reachdown-ana er (ASubsume x x₁) with reachdown-synth er x
     ... | l , ih , m = l ,
@@ -162,7 +162,7 @@ module reachability where
   -- the type of things because the typing judgement is defined on the
   -- cursor-erased terms and types.
   reachability-types : (t1 t2 : τ̂) → (t1 ◆t) == (t2 ◆t) →
-                           Σ[ L ∈ List action ] runtype t1 L t2 × movements L
+                           Σ[ L ∈ List action ] (runtype t1 L t2 × movements L)
   reachability-types t1 t2 eq
     with ◆erase-t t1 (t2 ◆t) eq | ◆erase-t t2 (t1 ◆t) (! eq)
   ... | er1 | er2 with reachup-type er1 | reachdown-type er2
@@ -174,7 +174,7 @@ module reachability where
   reachability-synth : (Γ : ·ctx) (t : τ̇) (e1 e2 : ê) →
                             Γ ⊢ e1 ◆e => t →
                             e1 ◆e == e2 ◆e →
-                            Σ[ L ∈ List action ] runsynth Γ e1 t L e2 t × movements L
+                            Σ[ L ∈ List action ] (runsynth Γ e1 t L e2 t × movements L)
   reachability-synth Γ t e1 e2 wt1 eq
     with ◆erase-e e1 (e2 ◆e) eq | ◆erase-e e2 (e1 ◆e) (! eq)
   ... | er1 | er2 with reachup-synth er1 (tr (λ x → Γ ⊢ x => t) eq wt1)
@@ -187,7 +187,7 @@ module reachability where
   reachability-ana : (Γ : ·ctx) (t : τ̇) (e1 e2 : ê) →
                             Γ ⊢ e1 ◆e <= t →
                             e1 ◆e == e2 ◆e →
-                            Σ[ L ∈ List action ] runana Γ e1 L e2 t × movements L
+                            Σ[ L ∈ List action ] (runana Γ e1 L e2 t × movements L)
   reachability-ana Γ t e1 e2 wt1 eq
     with ◆erase-e e1 (e2 ◆e) eq | ◆erase-e e2 (e1 ◆e) (! eq)
   ... | er1 | er2 with reachup-ana er1 (tr (λ x → Γ ⊢ x <= t) eq wt1)
