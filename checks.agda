@@ -165,7 +165,7 @@ module checks where
                 runsynth Γ <| e |> <||> L <| e' |> <||>
   ziplem-nehole-a wt DoRefl = DoRefl
   ziplem-nehole-a wt (DoSynth {e = e} x d) =
-    DoSynth (SAZipHole (rel◆ e) wt x) (ziplem-nehole-a (actsense1 (rel◆ e) (rel◆ _) x wt) d)
+    DoSynth (SAZipHole (rel◆ e) wt x) (ziplem-nehole-a (actsense-synth (rel◆ e) (rel◆ _) x wt) d)
 
   ziplem-nehole-b : ∀{Γ e e' L t t' t''} →
                 (Γ ⊢ e ◆e => t) →
@@ -175,7 +175,7 @@ module checks where
   ziplem-nehole-b wt c DoRefl = DoRefl
   ziplem-nehole-b wt c (DoSynth x rs) =
                      DoAna (AASubsume (erase-in-hole (rel◆ _)) (SNEHole wt) (SAZipHole (rel◆ _) wt x) TCHole1)
-                           (ziplem-nehole-b (actsense1 (rel◆ _) (rel◆ _) x wt) c rs)
+                           (ziplem-nehole-b (actsense-synth (rel◆ _) (rel◆ _) x wt) c rs)
 
 
   -- because the point of the reachability theorems is to show that we
@@ -213,7 +213,7 @@ module checks where
                   t == t'
   endpoints _ DoRefl AM[] = refl
   endpoints wt (DoSynth x rs) (AM:: mv)
-    with endpoints (actsense1 (rel◆ _) (rel◆ _) x wt) rs mv
+    with endpoints (actsense-synth (rel◆ _) (rel◆ _) x wt) rs mv
   ... | refl = pin (rel◆ _) wt x
 
   ziplem-moves-asc2 : ∀{ Γ l t t' e t◆ } →
@@ -235,7 +235,7 @@ module checks where
   synthana-moves _ _ _ DoRefl = DoRefl
   synthana-moves wt (AM:: m) c (DoSynth x rs) with pin (rel◆ _) wt x
   ... | refl = DoAna (AASubsume (rel◆ _) wt x c)
-                     (synthana-moves (actsense1 (rel◆ _) (rel◆ _) x wt) m c rs)
+                     (synthana-moves (actsense-synth (rel◆ _) (rel◆ _) x wt) m c rs)
 
   ziplem-moves-ap1 : ∀{Γ l e1 e1' e2 t t' tx} →
                    Γ ⊢ e1 ◆e => t →
@@ -247,5 +247,5 @@ module checks where
   ziplem-moves-ap1 _ _ _ _ DoRefl = DoRefl
   ziplem-moves-ap1 wt1 mch wt2 (AM:: m) (DoSynth x rs) with pin (rel◆ _) wt1 x
   ... | refl = DoSynth (SAZipApArr mch (rel◆ _) wt1 x wt2)
-                        (ziplem-moves-ap1 (actsense1 (rel◆ _) (rel◆ _) x wt1)
+                        (ziplem-moves-ap1 (actsense-synth (rel◆ _) (rel◆ _) x wt1)
                                                      mch wt2 m rs)

@@ -7,6 +7,16 @@ open import judgemental-erase
 module moveerase where
   -- theorem: movement doesn't change the term other than moving the cursor
   -- around.
+  moveeraset : {t t' : τ̂} {δ : direction} →
+            (t + move δ +> t') →
+            (t ◆t) == (t' ◆t)
+  moveeraset TMArrFirstChild = refl
+  moveeraset TMArrParent1 = refl
+  moveeraset TMArrParent2 = refl
+  moveeraset TMArrNextSib = refl
+  moveeraset (TMArrZip1 {t2 = t2} m) = ap1 (λ x → x ==> t2) (moveeraset m)
+  moveeraset (TMArrZip2 {t1 = t1} m) = ap1 (λ x → t1 ==> x) (moveeraset m)
+
   moveerase : {e e' : ê} {δ : direction} →
             (e + move δ +>e e') →
             (e ◆e) == (e' ◆e)
@@ -26,16 +36,6 @@ module moveerase where
   moveerase EMApNextSib = refl
   moveerase EMNEHoleFirstChild = refl
   moveerase EMNEHoleParent = refl
-
-  moveeraset : {t t' : τ̂} {δ : direction} →
-            (t + move δ +> t') →
-            (t ◆t) == (t' ◆t)
-  moveeraset TMArrFirstChild = refl
-  moveeraset TMArrParent1 = refl
-  moveeraset TMArrParent2 = refl
-  moveeraset TMArrNextSib = refl
-  moveeraset (TMArrZip1 {t2 = t2} m) = ap1 (λ x → x ==> t2) (moveeraset m)
-  moveeraset (TMArrZip2 {t1 = t1} m) = ap1 (λ x → t1 ==> x) (moveeraset m)
 
   -- this form is essentially the same as above, but for judgemental erasure
   moveerase' : {e e' : ê} {e◆ : ė} {δ : direction} →

@@ -44,7 +44,7 @@ module future-work where
   lem-comp-match : ∀{t t1 t2 t'} → tcomplete t →
                                    t ▸arr (t1 ==> t2) →
                                    t ~ t' →
-                                   Σ[ t2' ∈ τ̇ ] t' ▸arr (t1 ==> t2') × t2 ~ t2'
+                                   Σ[ t2' ∈ τ̇ ] (t' ▸arr (t1 ==> t2') × t2 ~ t2')
   lem-comp-match tc MAHole c = abort tc
   lem-comp-match (π1 , π2) MAArr TCRefl = _ , MAArr , TCRefl
   lem-comp-match (π1 , π2) MAArr TCHole1 = _ , {!!} , TCHole1
