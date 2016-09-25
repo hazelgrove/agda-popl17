@@ -17,6 +17,8 @@ module aasubsume-min where
     aasubmin-synth (SAZipHole x x₁ d) = aasubmin-synth d
     aasubmin-synth _ = ⊤
 
+-- aazipinlr aazipcase123
+
     aasubmin-ana : ∀{Γ e α e' t} → (Γ ⊢ e ~ α ~> e' ⇐ t) → Set
     aasubmin-ana (AASubsume x x₁ SAConAsc x₃) = ⊥
     aasubmin-ana (AASubsume x x₁ SAConInl x₃) = ⊥
@@ -24,6 +26,11 @@ module aasubsume-min where
     aasubmin-ana (AASubsume x x₁ (SAConLam x₃) x₄) = ⊥
     aasubmin-ana (AASubsume x x₁ s x₃) = aasubmin-synth s
     aasubmin-ana (AAZipLam x₁ x₂ d) = aasubmin-ana d
+    aasubmin-ana (AAZipInl x y) = aasubmin-ana y
+    aasubmin-ana (AAZipInr x y) = aasubmin-ana y
+    aasubmin-ana (AAZipCase1 a b c d e f g h) = aasubmin-synth e
+    aasubmin-ana (AAZipCase2 a b c d e f) = aasubmin-ana e
+    aasubmin-ana (AAZipCase3 a b c d e f) = aasubmin-ana f
     aasubmin-ana _ = ⊤
 
 
@@ -109,11 +116,16 @@ module aasubsume-min where
     min-ana (AAConInr1 x) = _ , AAConInr1 x , <>
     min-ana (AAConInr2 x) = _ , AAConInr2 x , <>
     min-ana (AAConCase x₁ x₂) = _ , AAConCase x₁ x₂ , <>
-    min-ana (AAZipInl x x₁) = _ , AAZipInl x x₁ , <>
-    min-ana (AAZipInr x x₁) = _ , AAZipInr x x₁ , <>
-    min-ana (AAZipCase1 x₁ x₂ x₃ x₄ x₅ x₆ x₇ x₈) = _ , AAZipCase1 x₁ x₂ x₃ x₄ x₅ x₆ x₇ x₈ , <>
-    min-ana (AAZipCase2 x₁ x₂ x₃ x₄ x₅ x₆) = _ , AAZipCase2 x₁ x₂ x₃ x₄ x₅ x₆ , <>
-    min-ana (AAZipCase3 x₁ x₂ x₃ x₄ x₅ x₆) = _ , AAZipCase3 x₁ x₂ x₃ x₄ x₅ x₆ , <>
+    min-ana (AAZipInl x x₁) with min-ana x₁
+    ... | a , b , c = _ , AAZipInl x b , c
+    min-ana (AAZipInr x x₁) with min-ana x₁
+    ... | a , b , c = _ , AAZipInr x b , c
+    min-ana (AAZipCase1 x₁ x₂ x₃ x₄ x₅ x₆ x₇ x₈) with min-synth x₅
+    ... | a , b , c = _ , AAZipCase1 x₁ x₂ x₃ x₄ b x₆ x₇ x₈ , c
+    min-ana (AAZipCase2 x₁ x₂ x₃ x₄ x₅ x₆) with min-ana x₅
+    ... | a , b , c = _ , AAZipCase2 x₁ x₂ x₃ x₄ b x₆ , c
+    min-ana (AAZipCase3 x₁ x₂ x₃ x₄ x₅ x₆) with min-ana x₆
+    ... | a , b , c = _ , AAZipCase3 x₁ x₂ x₃ x₄ x₅ b , c
 
   min-ana-lem : ∀{e e' e◆ Γ t t' t'' α}
                  {a : erase-e e e◆}

@@ -467,17 +467,17 @@ module determinism where
     actdet-ana (EEInl er) (AInl x wt) (AAZipInl x₁ d1) (AAZipInl x₂ d2) {p1} {p2}
        with matchplusunicity x₂ x₁
     ... | refl with matchplusunicity x x₁
-    ... | refl = ap1 inl (actdet-ana er wt d1 d2  {p1 = {!!}} {p2 = {!!}})
+    ... | refl = ap1 inl (actdet-ana er wt d1 d2  {p1 = p1} {p2 = p2})
 
     actdet-ana (EEInr er) (AInr x wt) (AAZipInr x₁ d1) (AAZipInr x₂ d2) {p1} {p2}
        with matchplusunicity x₂ x₁
     ... | refl with matchplusunicity x x₁
-    ... | refl = ap1 inr (actdet-ana er wt d1 d2  {p1 = {!!}} {p2 = {!!}})
+    ... | refl = ap1 inr (actdet-ana er wt d1 d2  {p1 = p1} {p2 = p2})
 
     actdet-ana (EECase1 er) (ACase x₂ x₃ x₄ x₅ wt wt₁) (AAZipCase1 x₆ x₇ x₈ x₉ x₁₀ x₁₁ x₁₂ x₁₃) (AAZipCase1 x₁₄ x₁₅ x₁₆ x₁₇ x₁₈ x₁₉ x₂₀ x₂₁) {p1} {p2}
        with erasee-det x₈ x₁₆
     ... | refl with synthunicity x₁₇ x₉
-    ... | refl with actdet-synth x₈ x₉ x₁₈ x₁₀ {p1 = {!!}} {p2 = {!!}}
+    ... | refl with actdet-synth x₈ x₉ x₁₈ x₁₀ {p1 = p2} {p2 = p1}
     ... | refl , refl = refl
 
     actdet-ana (EECase2 er) (ACase x₂ x₃ x₄ x₅ wt wt₁) (AAZipCase2 x₆ x₇ x₈ x₉ d1 x₁₀) (AAZipCase2 x₁₁ x₁₂ x₁₃ x₁₄ d2 x₁₅) {p1} {p2}
@@ -485,7 +485,7 @@ module determinism where
     ... | refl with synthunicity x₅ x₁₃
     ... | refl with matchplusunicity x₁₄ x₉
     ... | refl with matchplusunicity x₉ x₄
-    ... | refl with actdet-ana er wt d1 d2 {p1 = {!!}} {p2 = {!!}}
+    ... | refl with actdet-ana er wt d1 d2 {p1 = p1} {p2 = p2}
     ... | refl = refl
 
     actdet-ana (EECase3 er) (ACase x₂ x₃ x₄ x₅ wt wt₁) (AAZipCase3 x₆ x₇ x₈ x₉ x₁₀ d1) (AAZipCase3 x₁₁ x₁₂ x₁₃ x₁₄ x₁₅ d2) {p1} {p2}
@@ -493,7 +493,7 @@ module determinism where
     ... | refl with synthunicity x₈ x₅
     ... | refl with matchplusunicity x₄ x₉
     ... | refl with matchplusunicity x₄ x₁₄
-    ... | refl with actdet-ana er wt₁ d1 d2 {p1 = {!!}} {p2 = {!!}}
+    ... | refl with actdet-ana er wt₁ d1 d2 {p1 = p1} {p2 = p2}
     ... | refl = refl
 
     actdet-ana EETop (ASubsume SEHole x₁) (AASubsume EETop SEHole SAConInl x₅) (AAConInl1 x₆) {p1} = abort p1
