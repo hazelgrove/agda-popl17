@@ -308,7 +308,7 @@ module determinism where
     actdet-ana EETop (ALam x₁ x₂ wt) AAConAsc AAConAsc = refl
 
     -- and for the remaining case, recurr on the smaller derivations
-    actdet-ana (EELam er) (ALam x₁ x₂ wt) (AAZipLam x₃ x₄ d1) (AAZipLam x₅ x₆ d2) {p1 = p1} {p2 = p2}
+    actdet-ana (EELam er) (ALam x₁ x₂ wt) (AAZipLam x₃ x₄ d1) (AAZipLam x₅ x₆ d2) {p1} {p2}
        with matcharrunicity x₄ x₆
     ... | refl with matcharrunicity x₄ x₂
     ... | refl with actdet-ana er wt d1 d2  {p1 = p1} {p2 = p2}
