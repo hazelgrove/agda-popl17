@@ -464,13 +464,20 @@ module determinism where
 
      -- everything else we need to argue a little bit more carefully
 
-     -- matching zipper cases
-    actdet-ana er (AInl x wt) (AAZipInl x₁ d1) (AAZipInl x₂ d2) = {!!}
-    actdet-ana er (AInr x wt) (AAZipInr x₁ d1) (AAZipInr x₂ d2) = {!!}
+     -- matching zipper cases; these cause us to recurr
+    actdet-ana (EEInl er) (AInl x wt) (AAZipInl x₁ d1) (AAZipInl x₂ d2) {p1 = p1} {p2 = p2}
+       with matchplusunicity x₂ x₁
+    ... | refl with matchplusunicity x x₁
+    ... | refl = ap1 inl (actdet-ana er wt d1 d2  {p1 = {!!}} {p2 = {!!}})
+
+    actdet-ana (EEInr er) (AInr x wt) (AAZipInr x₁ d1) (AAZipInr x₂ d2) {p1 = p1} {p2 = p2}
+       with matchplusunicity x₂ x₁
+    ... | refl with matchplusunicity x x₁
+    ... | refl = ap1 inr (actdet-ana er wt d1 d2  {p1 = {!!}} {p2 = {!!}})
+
     actdet-ana er (ACase x₂ x₃ x₄ x₅ wt wt₁) (AAZipCase1 x₆ x₇ x₈ x₉ x₁₀ x₁₁ x₁₂ x₁₃) (AAZipCase1 x₁₄ x₁₅ x₁₆ x₁₇ x₁₈ x₁₉ x₂₀ x₂₁) = {!!}
     actdet-ana er (ACase x₂ x₃ x₄ x₅ wt wt₁) (AAZipCase2 x₆ x₇ x₈ x₉ d1 x₁₀) (AAZipCase2 x₁₁ x₁₂ x₁₃ x₁₄ d2 x₁₅) = {!!}
     actdet-ana er (ACase x₂ x₃ x₄ x₅ wt wt₁) (AAZipCase3 x₆ x₇ x₈ x₉ x₁₀ d1) (AAZipCase3 x₁₁ x₁₂ x₁₃ x₁₄ x₁₅ d2) = {!!}
-
 
     actdet-ana EETop (ASubsume SEHole x₁) (AASubsume EETop SEHole SAConInl x₅) (AAConInl1 x₆) = {!!}
     actdet-ana EETop (ASubsume SEHole x₁) (AASubsume EETop SEHole SAConInl x₅) (AAConInl2 x₆) = abort (x₆ x₅)
