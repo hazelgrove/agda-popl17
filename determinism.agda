@@ -417,7 +417,8 @@ module determinism where
     ---- new cases for sums
 
       -- injections and cases, like lambdas, only check. so they can't be
-      -- part of a subsume.
+      -- part of a subsume or a subsume action. so a lot of these cases
+      -- just fall out immediately.
     actdet-ana (EEInl _) (ASubsume () _) _ _
     actdet-ana (EEInr _) (ASubsume () _) _ _
     actdet-ana (EECase1 _) (ASubsume () _) _ _
@@ -431,52 +432,57 @@ module determinism where
     actdet-ana EETop (ACase _ _ _ _ _ _) _ (AASubsume EETop () _ x₄)
     actdet-ana EETop (ACase _ _ _ _ _ _) (AASubsume EETop () _ x₄) _
 
+    actdet-ana (EEInr er) (AInr x wt) (AASubsume (EEInr x₁) () x₃ x₄) _
+    actdet-ana (EEInr er) (AInr x wt) _ (AASubsume (EEInr x₁) () x₃ x₄)
+    actdet-ana (EEInl er) (AInl x wt) (AASubsume (EEInl x₁) () x₃ x₄) _
+    actdet-ana (EEInl er) (AInl x wt) _ (AASubsume (EEInl x₁) () x₃ x₄)
+
+    actdet-ana (EECase1 er) (ACase x₁ x₂ x₃ x₄ wt wt₁) _ (AASubsume (EECase1 x₉) () x₁₁ x₁₂)
+    actdet-ana (EECase2 er) (ACase x₁ x₂ x₃ x₄ wt wt₁) _ (AASubsume (EECase2 x₉) () x₁₁ x₁₂)
+    actdet-ana (EECase3 er) (ACase x₁ x₂ x₃ x₄ wt wt₁) _ (AASubsume (EECase3 x₉) () x₁₁ x₁₂)
+
+    actdet-ana (EECase1 er) (ACase x₁ x₂ x₃ x₄ wt wt₁) (AASubsume (EECase1 x₉) () x₁₁ x₁₂) _
+    actdet-ana (EECase2 er) (ACase x₁ x₂ x₃ x₄ wt wt₁) (AASubsume (EECase2 x₉) () x₁₁ x₁₂) _
+    actdet-ana (EECase3 er) (ACase x₁ x₂ x₃ x₄ wt wt₁) (AASubsume (EECase3 x₉) () x₁₁ x₁₂) _
+
+    actdet-ana EETop (ASubsume SEHole x₂) (AAConCase x₃ x₄) (AASubsume EETop x₆ () x₈)
+    actdet-ana EETop (ASubsume SEHole x₂) (AASubsume EETop SEHole () x₆) (AAConCase x₇ x₈)
+
+      -- the cases where the derivations match just go through
+    actdet-ana er (ASubsume x x₁) (AAConInl1 x₂) (AAConInl1 x₃) = refl
+    actdet-ana EETop (ASubsume SEHole x₁) (AAConInl2 x₂) (AAConInl2 x₃) = refl
+    actdet-ana er (ASubsume x x₁) (AAConInr1 x₂) (AAConInr1 x₃) = refl
+    actdet-ana er (ASubsume x x₁) (AAConInr2 x₂) (AAConInr2 x₃) = refl
+    actdet-ana EETop (ASubsume SEHole x₂) (AAConCase x₃ x₄) (AAConCase x₅ x₆) = refl
+    actdet-ana er (AInl x wt) AADel AADel = refl
+    actdet-ana er (AInl x wt) AAConAsc AAConAsc = refl
+    actdet-ana er (AInr x wt) AADel AADel = refl
+    actdet-ana er (AInr x wt) AAConAsc AAConAsc = refl
+    actdet-ana er (ACase x₁ x₂ x₃ x₄ wt wt₁) AADel AADel = refl
+    actdet-ana er (ACase x₁ x₂ x₃ x₄ wt wt₁) AAConAsc AAConAsc = refl
+
+
+     -- everything else we need to argue a little bit more carefully
+
+     -- matching zipper cases
+    actdet-ana er (AInl x wt) (AAZipInl x₁ d1) (AAZipInl x₂ d2) = {!!}
+    actdet-ana er (AInr x wt) (AAZipInr x₁ d1) (AAZipInr x₂ d2) = {!!}
+    actdet-ana er (ACase x₂ x₃ x₄ x₅ wt wt₁) (AAZipCase1 x₆ x₇ x₈ x₉ x₁₀ x₁₁ x₁₂ x₁₃) (AAZipCase1 x₁₄ x₁₅ x₁₆ x₁₇ x₁₈ x₁₉ x₂₀ x₂₁) = {!!}
+    actdet-ana er (ACase x₂ x₃ x₄ x₅ wt wt₁) (AAZipCase2 x₆ x₇ x₈ x₉ d1 x₁₀) (AAZipCase2 x₁₁ x₁₂ x₁₃ x₁₄ d2 x₁₅) = {!!}
+    actdet-ana er (ACase x₂ x₃ x₄ x₅ wt wt₁) (AAZipCase3 x₆ x₇ x₈ x₉ x₁₀ d1) (AAZipCase3 x₁₁ x₁₂ x₁₃ x₁₄ x₁₅ d2) = {!!}
+
+
     actdet-ana EETop (ASubsume SEHole x₁) (AASubsume EETop SEHole SAConInl x₅) (AAConInl1 x₆) = {!!}
     actdet-ana EETop (ASubsume SEHole x₁) (AASubsume EETop SEHole SAConInl x₅) (AAConInl2 x₆) = abort (x₆ x₅)
     actdet-ana EETop (ASubsume SEHole x₁) (AASubsume EETop SEHole SAConInr x₅) (AAConInr1 x₆) = {!!}
     actdet-ana EETop (ASubsume SEHole x₁) (AASubsume EETop SEHole SAConInr x₅) (AAConInr2 x₆) = abort (x₆ x₅)
 
-    actdet-ana EETop (ASubsume SEHole x₂) (AASubsume EETop SEHole () x₆) (AAConCase x₇ x₈)
-
     actdet-ana EETop (ASubsume SEHole x₁) (AAConInl1 x₂) (AASubsume EETop SEHole SAConInl x₆) = {!!}
     actdet-ana EETop (ASubsume SEHole x₁) (AAConInr1 x₂) (AASubsume EETop SEHole SAConInr c) = {!!}
 
-    actdet-ana er (ASubsume x x₁) (AAConInl1 x₂) (AAConInl1 x₃) = refl
     actdet-ana EETop (ASubsume SEHole x₁) (AAConInl1 q) (AAConInl2 x₃) = abort (lem-holematch x₃ x₁ q)
     actdet-ana EETop (ASubsume SEHole x₁) (AAConInl2 x₂) (AASubsume EETop SEHole SAConInl x₆) = abort (x₂ x₆)
     actdet-ana EETop (ASubsume SEHole x₁) (AAConInl2 x₂) (AAConInl1 q) = abort (lem-holematch x₂ x₁ q)
-    actdet-ana EETop (ASubsume SEHole x₁) (AAConInl2 x₂) (AAConInl2 x₃) = refl
-    actdet-ana er (ASubsume x x₁) (AAConInr1 x₂) (AAConInr1 x₃) = refl
     actdet-ana EETop (ASubsume SEHole x₁) (AAConInr1 x₂) (AAConInr2 x₃) = abort (lem-holematch x₃ x₁ x₂)
     actdet-ana EETop (ASubsume SEHole x₁) (AAConInr2 x₂) (AASubsume EETop x₄ SAConInr x₆) = abort (x₂ x₆)
     actdet-ana EETop (ASubsume SEHole x₁) (AAConInr2 x₂) (AAConInr1 x₃) = abort (lem-holematch x₂ x₁ x₃)
-    actdet-ana er (ASubsume x x₁) (AAConInr2 x₂) (AAConInr2 x₃) = refl
-    actdet-ana EETop (ASubsume SEHole x₂) (AAConCase x₃ x₄) (AASubsume EETop x₆ () x₈)
-    actdet-ana EETop (ASubsume SEHole x₂) (AAConCase x₃ x₄) (AAConCase x₅ x₆) = refl
-    actdet-ana er (AInl x wt) (AASubsume x₁ x₂ x₃ x₄) (AASubsume x₅ x₆ x₇ x₈) = {!!}
-
-    actdet-ana (EEInl er) (AInl x wt) (AASubsume (EEInl x₁) () x₃ x₄) (AAZipInl x₅ d2)
-    actdet-ana (EEInl er) (AInl x wt) (AAZipInl x₁ d1) (AASubsume (EEInl x₂) () x₄ x₅)
-
-    actdet-ana er (AInl x wt) AADel AADel = refl
-    actdet-ana er (AInl x wt) AAConAsc AAConAsc = refl
-
-    actdet-ana er (AInl x wt) (AAZipInl x₁ d1) (AAZipInl x₂ d2) = {!!}
-    actdet-ana er (AInr x wt) (AASubsume x₁ x₂ x₃ x₄) (AASubsume x₅ x₆ x₇ x₈) = {!!}
-    actdet-ana er (AInr x wt) (AASubsume x₁ x₂ x₃ x₄) (AAZipInr x₅ d2) = {!!}
-    actdet-ana er (AInr x wt) AADel AADel = refl
-    actdet-ana er (AInr x wt) AAConAsc AAConAsc = refl
-    actdet-ana er (AInr x wt) (AAZipInr x₁ d1) (AASubsume x₂ x₃ x₄ x₅) = {!!}
-    actdet-ana er (AInr x wt) (AAZipInr x₁ d1) (AAZipInr x₂ d2) = {!!}
-    actdet-ana er (ACase x₁ x₂ x₃ x₄ wt wt₁) (AASubsume x₅ x₆ x₇ x₈) (AASubsume x₉ x₁₀ x₁₁ x₁₂) = {!!}
-    actdet-ana er (ACase x₂ x₃ x₄ x₅ wt wt₁) (AASubsume x₆ x₇ x₈ x₉) (AAZipCase1 x₁₀ x₁₁ x₁₂ x₁₃ x₁₄ x₁₅ x₁₆ x₁₇) = {!!}
-    actdet-ana er (ACase x₂ x₃ x₄ x₅ wt wt₁) (AASubsume x₆ x₇ x₈ x₉) (AAZipCase2 x₁₀ x₁₁ x₁₂ x₁₃ d2 x₁₄) = {!!}
-    actdet-ana er (ACase x₂ x₃ x₄ x₅ wt wt₁) (AASubsume x₆ x₇ x₈ x₉) (AAZipCase3 x₁₀ x₁₁ x₁₂ x₁₃ x₁₄ d2) = {!!}
-    actdet-ana er (ACase x₁ x₂ x₃ x₄ wt wt₁) AADel AADel = refl
-    actdet-ana er (ACase x₁ x₂ x₃ x₄ wt wt₁) AAConAsc AAConAsc = refl
-    actdet-ana er (ACase x₂ x₃ x₄ x₅ wt wt₁) (AAZipCase1 x₆ x₇ x₈ x₉ x₁₀ x₁₁ x₁₂ x₁₃) (AASubsume x₁₄ x₁₅ x₁₆ x₁₇) = {!!}
-    actdet-ana er (ACase x₂ x₃ x₄ x₅ wt wt₁) (AAZipCase1 x₆ x₇ x₈ x₉ x₁₀ x₁₁ x₁₂ x₁₃) (AAZipCase1 x₁₄ x₁₅ x₁₆ x₁₇ x₁₈ x₁₉ x₂₀ x₂₁) = {!!}
-    actdet-ana er (ACase x₂ x₃ x₄ x₅ wt wt₁) (AAZipCase2 x₆ x₇ x₈ x₉ d1 x₁₀) (AASubsume x₁₁ x₁₂ x₁₃ x₁₄) = {!!}
-    actdet-ana er (ACase x₂ x₃ x₄ x₅ wt wt₁) (AAZipCase2 x₆ x₇ x₈ x₉ d1 x₁₀) (AAZipCase2 x₁₁ x₁₂ x₁₃ x₁₄ d2 x₁₅) = {!!}
-    actdet-ana er (ACase x₂ x₃ x₄ x₅ wt wt₁) (AAZipCase3 x₆ x₇ x₈ x₉ x₁₀ d1) (AASubsume x₁₁ x₁₂ x₁₃ x₁₄) = {!!}
-    actdet-ana er (ACase x₂ x₃ x₄ x₅ wt wt₁) (AAZipCase3 x₆ x₇ x₈ x₉ x₁₀ d1) (AAZipCase3 x₁₁ x₁₂ x₁₃ x₁₄ x₁₅ d2) = {!!}
