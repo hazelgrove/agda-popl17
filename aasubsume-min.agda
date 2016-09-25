@@ -53,6 +53,8 @@ module aasubsume-min where
     ... | _ , a , b = _ , SAZipPlus2 a , b
     min-synth (SAZipHole x x₁ d) with min-synth d
     ... | _ , a , b = _ , SAZipHole x x₁ a , b
+    min-synth SAConInl = {!!}
+    min-synth SAConInr = {!!}
 
     min-ana : ∀{Γ e α e' t} → (d : Γ ⊢ e ~ α ~> e' ⇐ t) → Σ[ e'' ∈ ê ] Σ[ d' ∈  Γ ⊢ e ~ α ~> e'' ⇐ t ] aasubmin-ana d'
     min-ana (AASubsume {Γ = Γ} x x₁ (SAMove x₂) x₃) = _ , AAMove x₂ , <>
@@ -93,3 +95,15 @@ module aasubsume-min where
     min-ana (AAFinish x) = _ , AAFinish x , <>
     min-ana (AAZipLam x₁ x₂ d) with min-ana d
     ... | a , b , c = _ , AAZipLam x₁ x₂ b , c
+    min-ana (AASubsume x x₁ SAConInl x₃) = {!!}
+    min-ana (AASubsume x x₁ SAConInr x₃) = {!!}
+    min-ana (AAConInl1 x) = {!!}
+    min-ana (AAConInl2 x) = {!!}
+    min-ana (AAConInr1 x) = {!!}
+    min-ana (AAConInr2 x) = {!!}
+    min-ana (AAConCase x₁ x₂) = {!!}
+    min-ana (AAZipInl x x₁) = {!!}
+    min-ana (AAZipInr x x₁) = {!!}
+    min-ana (AAZipCase1 x₁ x₂ x₃ x₄ x₅ x₆ x₇ x₈) = {!!}
+    min-ana (AAZipCase2 x₁ x₂ x₃ x₄ x₅ x₆) = {!!}
+    min-ana (AAZipCase3 x₁ x₂ x₃ x₄ x₅ x₆) = {!!}

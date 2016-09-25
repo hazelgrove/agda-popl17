@@ -128,7 +128,7 @@ module sensible where
     ... | wt' = AInr m1 wt'
     actsense-ana (EECase1 er1) (EECase1 er2) (AAZipCase1 x₁ x₂ x₃ x₄ x₅ x₆ x₇ x₈)
                                           (ACase x₉ x₁₀ x₁₁ x₁₂ wt wt₁)
-      with actsense1 x₃ (rel◆ _)  x₅ x₄
+      with actsense-synth x₃ (rel◆ _)  x₅ x₄
     ... | ih = ACase x₉ x₁₀ x₆ (lem-synth-erase ih er2) x₇ x₈
     actsense-ana (EECase2 er1) (EECase2 er2) (AAZipCase2 x₁ x₂ s1 x₄ x₅ x₆)
                                           (ACase x₇ x₈ x₉ s2 wt wt₁)

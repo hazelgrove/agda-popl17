@@ -289,7 +289,7 @@ module checks where
                  runana Γ (case₁ e x e1 y e2) L (case₁ e' x e1 y e2) t
   ziplem-case1a x# y# er wt0 DoRefl m wt1 wt2 mv = DoRefl
   ziplem-case1a x# y# er wt0 (DoSynth α rs) m wt1 wt2 (AM:: mv)
-    with endpoints (actsense1 er (rel◆ _) α wt0) rs mv
+    with endpoints (actsense-synth er (rel◆ _) α wt0) rs mv
   ... | refl with pin er wt0 α
   ... | refl = DoAna (AAZipCase1 x# y# er wt0 α m wt1 wt2)
                      (ziplem-case1a x# y# (synth-move-er er wt0 α) wt0 rs m wt1 wt2 mv)
@@ -306,7 +306,7 @@ module checks where
   ziplem-case1b x# y# er wt (DoSynth x₁ rs) =
                    DoAna (AAZipCase1 x# y# (erase-in-hole er) (SNEHole wt) (SAZipHole er wt x₁)
                           MPHole (ASubsume SEHole TCHole1) (ASubsume SEHole TCHole1))
-                     (ziplem-case1b x# y# (rel◆ _) (actsense1 er (rel◆ _) x₁ wt) rs)
+                     (ziplem-case1b x# y# (rel◆ _) (actsense-synth er (rel◆ _) x₁ wt) rs)
 
 
   ziplem-case2  : ∀ {t t+ t1 t2 Γ x y e e1 e1' e2 l} →
