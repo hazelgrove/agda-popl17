@@ -3,11 +3,17 @@
 This repository contains the formalization of Hazelnut and the associated
 metatheory as submitted to POPL 2017.
 
+The branch `sums` is formalization of the core calculus extended with sum
+types. Currently, all theorems that are true for one are true for the
+other. The best way to look at this and see what's required to extend the
+Hazelnut core and metatheory for new language features is to run the
+command `git diff master sums`.
+
 File Descriptions
 =================
 
-[core.agda](core.agda) is the best file to start reading in, as it gives
-the basic definitions and syntax for the rest. Each file is documented
+[core.agda](core.agda) is the best file to start with. It gives
+the basic definitions and syntax. Each file is documented
 internally, but we give a brief description here in alphabetical order.
 
 - [LICENSE](LICENSE) is the license for this work
@@ -17,6 +23,10 @@ internally, but we give a brief description here in alphabetical order.
   lemmas not specific to Hazelnut.
 
 - [README.md](README.md) is this file you're reading right now.
+
+- [aasubsume-min.agda](aasubsume-min.agda) describes a mapping from action
+  derivations to a subset of the same type that is deterministic. This is
+  work in progress that will probably change the statement of determinism.
 
 - [all.agda](all.agda) acts as an ad-hoc make file for the project. If you
   run `agda all.agda` at the commandline in a clone with no `.agdai` files,
@@ -44,6 +54,10 @@ internally, but we give a brief description here in alphabetical order.
 - [deterministic.agda](deterministic.agda) is incomplete, but very nearly
   proves that the action semantics are deterministic. There are two cases
   that fail. Fixing this is on the short todo list.
+
+- [examples.agda](examples.agda) is a handful of small examples of the
+  judgements and definitions from the other files in actions, showing small
+  typing and action semantics derivations to help intuition.
 
 - [future-work.agda](future-work.agda) is full of half-baked crack pot
   ideas about possible things we might want to prove soon.

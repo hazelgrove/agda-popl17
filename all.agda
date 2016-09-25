@@ -13,10 +13,12 @@ open import checks
 open import judgemental-erase
 open import judgemental-inconsistency
 open import moveerase
+open import examples
 --open import structural
 
 -- first wave theorems
 open import sensible
+open import aasubsume-min
 -- open import deterministic
 
 -- second wave theorems (checksums)
