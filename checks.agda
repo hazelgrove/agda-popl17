@@ -3,7 +3,7 @@ open import Prelude
 open import List
 open import core
 open import judgemental-erase
-open import sensible
+open import sensibility
 open import moveerase
 
 module checks where

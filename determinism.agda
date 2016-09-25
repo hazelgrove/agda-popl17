@@ -2,8 +2,9 @@ open import Nat
 open import Prelude
 open import core
 open import judgemental-erase
+open import aasubsume-min
 
-module deterministic where
+module determinism where
   -- the same action applied to the same type makes the same type
   actdet-type : {t t' t'' : τ̂} {α : action} →
             (t + α +> t') →
@@ -139,8 +140,10 @@ module deterministic where
     actdet-synth : {Γ : ·ctx} {e e' e'' : ê} {e◆ : ė} {t t' t'' : τ̇} {α : action} →
               (E : erase-e e e◆) →
               (Γ ⊢ e◆ => t) →
-              (Γ ⊢ e => t ~ α ~> e'  => t') →
-              (Γ ⊢ e => t ~ α ~> e'' => t'') →
+              (d1 : Γ ⊢ e => t ~ α ~> e'  => t') →
+              (d2 : Γ ⊢ e => t ~ α ~> e'' => t'') →
+              {p1 : aasubmin-synth d1} →
+              {p2 : aasubmin-synth d2} →
               (e' == e'' × t' == t'')
     actdet-synth EETop (SAsc x) (SAMove x₁) (SAMove x₂) = movedet x₁ x₂ , refl
     actdet-synth EETop (SAsc x) SADel SADel = refl , refl
@@ -162,8 +165,8 @@ module deterministic where
     actdet-synth (EEAscL E) (SAsc x) (SAMove EMAscNextSib) (SAZipAsc1 x₂) = abort (lem-nomove-nsa x₂)
     actdet-synth (EEAscL E) (SAsc x) (SAZipAsc1 x₁) (SAMove EMAscParent1) = abort (lem-nomove-para x₁)
     actdet-synth (EEAscL E) (SAsc x) (SAZipAsc1 x₁) (SAMove EMAscNextSib) = abort (lem-nomove-nsa x₁)
-    actdet-synth (EEAscL E) (SAsc x) (SAZipAsc1 x₁) (SAZipAsc1 x₂)
-     with actdet-ana E x x₁ x₂
+    actdet-synth (EEAscL E) (SAsc x) (SAZipAsc1 x₁) (SAZipAsc1 x₂) {p1 = p1} {p2 = p2}
+     with actdet-ana E x x₁ x₂ {p1 = p1} {p2 = p2}
     ... | refl = refl , refl
 
     actdet-synth (EEAscR x) (SAsc x₁) (SAMove x₂) (SAMove x₃) = movedet x₂ x₃ , refl
@@ -208,23 +211,23 @@ module deterministic where
     actdet-synth (EEApL E) (SAp m wt x) (SAMove EMApNextSib) (SAZipApArr _ x₂ x₃ d2 x₄) = abort (lem-nomove-nss d2)
     actdet-synth (EEApL E) (SAp m wt x) (SAZipApArr _ x₁ x₂ d1 x₃) (SAMove EMApParent1) = abort (lem-nomove-pars d1)
     actdet-synth (EEApL E) (SAp m wt x) (SAZipApArr _ x₁ x₂ d1 x₃) (SAMove EMApNextSib) = abort (lem-nomove-nss d1)
-    actdet-synth (EEApL E) (SAp m wt x) (SAZipApArr a x₁ x₂ d1 x₃) (SAZipApArr b x₄ x₅ d2 x₆)
+    actdet-synth (EEApL E) (SAp m wt x) (SAZipApArr a x₁ x₂ d1 x₃) (SAZipApArr b x₄ x₅ d2 x₆) {p1 = p1} {p2 = p2}
       with erasee-det x₁ x₄
     ... | refl with synthunicity x₂ x₅
     ... | refl with erasee-det E x₁
-    ... | refl with actdet-synth E x₅ d1 d2
+    ... | refl with actdet-synth E x₅ d1 d2 {p1 = p1} {p2 = p2}
     ... | refl , refl with matcharrunicity a b
     ... | refl = refl , refl
 
     actdet-synth (EEApR E) (SAp m wt x) (SAMove x₁) (SAMove x₂) = movedet x₁ x₂ , refl
     actdet-synth (EEApR E) (SAp m wt x) (SAMove EMApParent2) (SAZipApAna x₂ x₃ x₄) = abort (lem-nomove-para x₄)
     actdet-synth (EEApR E) (SAp m wt x) (SAZipApAna x₁ x₂ x₃) (SAMove EMApParent2) = abort (lem-nomove-para x₃)
-    actdet-synth (EEApR E) (SAp m wt x) (SAZipApAna x₁ x₂ d1) (SAZipApAna x₄ x₅ d2)
+    actdet-synth (EEApR E) (SAp m wt x) (SAZipApAna x₁ x₂ d1) (SAZipApAna x₄ x₅ d2)  {p1 = p1} {p2 = p2}
      with synthunicity m x₂
     ... | refl with matcharrunicity x₁ wt
     ... | refl with synthunicity m x₅
     ... | refl with matcharrunicity x₄ wt
-    ... | refl with actdet-ana E x d1 d2
+    ... | refl with actdet-ana E x d1 d2  {p1 = p1} {p2 = p2}
     ... | refl = refl , refl
 
     actdet-synth EETop SNum (SAMove x) (SAMove x₁) = movedet x x₁ , refl
@@ -262,14 +265,14 @@ module deterministic where
     actdet-synth (EEPlusL E) (SPlus x x₁) (SAMove EMPlusNextSib) (SAZipPlus1 d2) = abort (lem-nomove-nsa d2)
     actdet-synth (EEPlusL E) (SPlus x x₁) (SAZipPlus1 x₂) (SAMove EMPlusParent1) = abort (lem-nomove-para x₂)
     actdet-synth (EEPlusL E) (SPlus x x₁) (SAZipPlus1 x₂) (SAMove EMPlusNextSib) = abort (lem-nomove-nsa x₂)
-    actdet-synth (EEPlusL E) (SPlus x x₁) (SAZipPlus1 x₂) (SAZipPlus1 x₃)
-      = ap1 (λ x₄ → x₄ ·+₁ _) (actdet-ana E x x₂ x₃) , refl
+    actdet-synth (EEPlusL E) (SPlus x x₁) (SAZipPlus1 x₂) (SAZipPlus1 x₃) {p1 = p1} {p2 = p2}
+      = ap1 (λ x₄ → x₄ ·+₁ _) (actdet-ana E x x₂ x₃  {p1 = p1} {p2 = p2}) , refl
 
     actdet-synth (EEPlusR E) (SPlus x x₁) (SAMove x₂) (SAMove x₃) = movedet x₂ x₃ , refl
     actdet-synth (EEPlusR E) (SPlus x x₁) (SAMove EMPlusParent2) (SAZipPlus2 x₃) = abort (lem-nomove-para x₃)
     actdet-synth (EEPlusR E) (SPlus x x₁) (SAZipPlus2 x₂) (SAMove EMPlusParent2) = abort (lem-nomove-para x₂)
-    actdet-synth (EEPlusR E) (SPlus x x₁) (SAZipPlus2 x₂) (SAZipPlus2 x₃)
-      = ap1 (_·+₂_ _) (actdet-ana E x₁ x₂ x₃) , refl
+    actdet-synth (EEPlusR E) (SPlus x x₁) (SAZipPlus2 x₂) (SAZipPlus2 x₃) {p1 = p1} {p2 = p2}
+      = ap1 (_·+₂_ _) (actdet-ana E x₁ x₂ x₃ {p1 = p1} {p2 = p2}) , refl
 
     actdet-synth EETop SEHole (SAMove x) (SAMove x₁) = movedet x x₁ , refl
     actdet-synth EETop SEHole SADel SADel = refl , refl
@@ -308,10 +311,10 @@ module deterministic where
     actdet-synth (EENEHole E) (SNEHole wt) (SAMove x) (SAMove x₁) = movedet x x₁ , refl
     actdet-synth (EENEHole E) (SNEHole wt) (SAMove EMNEHoleParent) (SAZipHole _ x₁ d2) = abort (lem-nomove-pars d2)
     actdet-synth (EENEHole E) (SNEHole wt) (SAZipHole _ x d1) (SAMove EMNEHoleParent) = abort (lem-nomove-pars d1)
-    actdet-synth (EENEHole E) (SNEHole wt) (SAZipHole a x d1) (SAZipHole b x₁ d2)
+    actdet-synth (EENEHole E) (SNEHole wt) (SAZipHole a x d1) (SAZipHole b x₁ d2) {p1 = p1} {p2 = p2}
       with erasee-det a b
     ... | refl with synthunicity x x₁
-    ... | refl with actdet-synth a x d1 d2
+    ... | refl with actdet-synth a x d1 d2  {p1 = p1} {p2 = p2}
     ... | refl , refl = refl , refl
 
       -- new cases for sums
@@ -325,9 +328,11 @@ module deterministic where
     actdet-ana : {Γ : ·ctx} {e e' e'' : ê} {e◆ : ė} {t : τ̇} {α : action} →
               (erase-e e e◆) →
               (Γ ⊢ e◆ <= t) →
-              (Γ ⊢ e ~ α ~> e' ⇐ t) →
-              (Γ ⊢ e ~ α ~> e'' ⇐ t) →
-              (e' == e'')
+              (d1 : Γ ⊢ e ~ α ~> e' ⇐ t) →
+              (d2 : Γ ⊢ e ~ α ~> e'' ⇐ t) →
+              {p1 : aasubmin-ana d1} →
+              {p2 : aasubmin-ana d2} →
+              e' == e''
     ---- lambda cases first
     -- an erased lambda can't be typechecked with subsume
     actdet-ana (EELam _) (ASubsume () _) _ _
@@ -347,29 +352,27 @@ module deterministic where
     actdet-ana EETop (ALam x₁ x₂ wt) AAConAsc AAConAsc = refl
 
     -- and for the remaining case, recurr on the smaller derivations
-    actdet-ana (EELam er) (ALam x₁ x₂ wt) (AAZipLam x₃ x₄ d1) (AAZipLam x₅ x₆ d2)
+    actdet-ana (EELam er) (ALam x₁ x₂ wt) (AAZipLam x₃ x₄ d1) (AAZipLam x₅ x₆ d2) {p1 = p1} {p2 = p2}
        with matcharrunicity x₄ x₆
     ... | refl with matcharrunicity x₄ x₂
-    ... | refl with actdet-ana er wt d1 d2
+    ... | refl with actdet-ana er wt d1 d2  {p1 = p1} {p2 = p2}
     ... | refl = refl
 
     ---- now the subsumption cases
       -- subsume / subsume, so pin things down then recurr
-    actdet-ana er (ASubsume a b) (AASubsume x x₁ x₂ x₃) (AASubsume x₄ x₅ x₆ x₇)
+    actdet-ana er (ASubsume a b) (AASubsume x x₁ x₂ x₃) (AASubsume x₄ x₅ x₆ x₇)  {p1 = p1} {p2 = p2}
       with erasee-det x₄ x
     ... | refl with erasee-det er x₄
     ... | refl with synthunicity x₅ x₁
-    ... | refl = π1 (actdet-synth x x₅ x₂ x₆)
+    ... | refl = π1 (actdet-synth x x₅ x₂ x₆ {p1 = min-ana-lem {c = x₂} p1 } {p2 = min-ana-lem {c = x₆} p2})
 
     -- (these are all repeated below, irritatingly.)
     actdet-ana EETop (ASubsume a b) (AASubsume EETop x SADel x₁) AADel = refl
-    actdet-ana EETop (ASubsume a b) (AASubsume EETop x SAConAsc x₁) AAConAsc
-      with synthunicity a x
-    ... | refl = {!!} -- unprovable
+    actdet-ana EETop (ASubsume a b) (AASubsume EETop x SAConAsc x₁) AAConAsc {p1 = p1} = abort p1
     actdet-ana EETop (ASubsume SEHole b) (AASubsume EETop SEHole (SAConVar {Γ = Γ} p) x₂) (AAConVar x₅ p₁)
       with ctxunicity {Γ = Γ} p p₁
     ... | refl = abort (x₅ x₂)
-    actdet-ana EETop (ASubsume SEHole b) (AASubsume EETop SEHole (SAConLam x₄) x₂) (AAConLam1 x₅ m) = {!!} -- unprovable
+    actdet-ana EETop (ASubsume SEHole b) (AASubsume EETop SEHole (SAConLam x₄) x₂) (AAConLam1 x₅ m) {p1 = p1} = abort p1
     actdet-ana EETop (ASubsume a b) (AASubsume EETop x₁ (SAConLam x₃) x₂) (AAConLam2 x₅ x₆) = abort (x₆ x₂)
     actdet-ana EETop (ASubsume a b) (AASubsume EETop x₁ SAConNumlit x₂) (AAConNumlit x₄) = abort (x₄ x₂)
     actdet-ana EETop (ASubsume a b) (AASubsume EETop x (SAFinish x₂) x₁) (AAFinish x₄) = refl
@@ -379,9 +382,7 @@ module deterministic where
     actdet-ana er (ASubsume a b) AADel AADel = refl
 
       -- subsume / conasc
-    actdet-ana EETop (ASubsume a b) AAConAsc (AASubsume EETop x₁ SAConAsc x₃)
-      with synthunicity a x₁
-    ... | refl = {!!} -- unprovable
+    actdet-ana EETop (ASubsume a b) AAConAsc (AASubsume EETop x₁ SAConAsc x₃) {p2 = p2} = abort p2
     actdet-ana er (ASubsume a b) AAConAsc AAConAsc = refl
 
       -- subsume / convar
@@ -391,7 +392,7 @@ module deterministic where
     actdet-ana er (ASubsume a b) (AAConVar x₁ p) (AAConVar x₂ p₁) = refl
 
       -- subsume / conlam1
-    actdet-ana EETop (ASubsume SEHole b) (AAConLam1 x₁ x₂) (AASubsume EETop SEHole (SAConLam x₃) x₆) = {!!} -- unprovable
+    actdet-ana EETop (ASubsume SEHole b) (AAConLam1 x₁ x₂) (AASubsume EETop SEHole (SAConLam x₃) x₆) {p2 = p2} = abort p2
     actdet-ana er (ASubsume a b) (AAConLam1 x₁ MAHole) (AAConLam2 x₃ x₄) = abort (x₄ TCHole2)
     actdet-ana er (ASubsume a b) (AAConLam1 x₁ MAArr) (AAConLam2 x₃ x₄) = abort (x₄ (TCArr TCHole1 TCHole1))
     actdet-ana er (ASubsume a b) (AAConLam1 x₁ x₂) (AAConLam1 x₃ x₄) = refl
