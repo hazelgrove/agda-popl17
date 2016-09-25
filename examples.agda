@@ -79,3 +79,16 @@ module examples where
                                                             (ASubsume SEHole TCHole1))
                                                             (SAZipPlus2 (AASubsume EETop SEHole SAConNumlit TCRefl)) TCRefl)))
         DoRefl))))))))))
+
+  -- these smaller derivations motivate the need for the zipper rules: you
+  -- have to unzip down to the point of the structure where you want to
+  -- apply an edit, do the local edit rule, and then put it back together
+  -- around you
+  talk0 :  ∅ ⊢ (▹ <||> ◃ ·+₁ <||>) => num ~ construct (numlit 7) ~>
+               (▹ N 7 ◃  ·+₁ <||>) => num
+  talk0 = SAZipPlus1 (AASubsume EETop SEHole SAConNumlit TCRefl)
+
+  talk1 : ∅ ⊢ (·λ 0 <||> ·:₂ (▹ <||> ◃ ==>₁ <||>)) => (<||> ==> <||>) ~ construct num ~>
+              (·λ 0 <||> ·:₂ (▹ num ◃ ==>₁ <||>)) => (num ==> <||>)
+  talk1 = SAZipAsc2 (TMArrZip1 TMConNum) (ETArrL ETTop) (ETArrL ETTop)
+                    (ALam refl MAArr (ASubsume SEHole TCRefl))
