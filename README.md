@@ -26,7 +26,7 @@ internally, but we give a brief description here in alphabetical order.
 
 - [aasubsume-min.agda](aasubsume-min.agda) describes a mapping from action
   derivations to a subset of the same type that is deterministic. This is
-  work in progress that will probably change the statement of determinism.
+  part of the restricted form of determinism that we've proven.
 
 - [all.agda](all.agda) acts as an ad-hoc make file for the project. If you
   run `agda all.agda` at the commandline in a clone with no `.agdai` files,
@@ -51,9 +51,9 @@ internally, but we give a brief description here in alphabetical order.
   declarative rather than bidirectional typing system and relates it to the
   main system.
 
-- [deterministic.agda](deterministic.agda) is incomplete, but very nearly
-  proves that the action semantics are deterministic. There are two cases
-  that fail. Fixing this is on the short todo list.
+- [deterministic.agda](deterministic.agda) proves that the action
+  semantics, modulo the predicate defined in
+  [aasubsume-min.agda](aasubsume-min.agda) are deterministic.
 
 - [examples.agda](examples.agda) is a handful of small examples of the
   judgements and definitions from the other files in actions, showing small
