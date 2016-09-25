@@ -115,7 +115,8 @@ module restricted-det where
               (d1 : Γ ⊢ e => t ~ α ~> e'  => t') →
               (d2 : Γ ⊢ e => t ~ α ~> e'' => t'') →
               same-synth (π1 (π2 (min-synth d1))) (π1 (π2 (min-synth d2)))
-    resdet-synth E wt d1 d2 = {!!}
+    resdet-synth E wt d1 d2 with min-synth d1 | min-synth d2
+    ... | (e' , d1' , p) | (e'' , d2' , q) = {!!}
 
     -- an action on an expression in an analytic position produces one
     -- resultant expression and type.
@@ -124,5 +125,7 @@ module restricted-det where
               (Γ ⊢ e◆ <= t) →
               (d1 : Γ ⊢ e ~ α ~> e' ⇐ t) →
               (d2 : Γ ⊢ e ~ α ~> e'' ⇐ t) →
-              same-ana (π1 (π2 (min-ana d1))) ( π1 (π2 (min-ana d2)))
-    resdet-ana E wt d1 d2 = {!!}
+              (p1 : aasubmin-ana d1) →
+              (p2 : aasubmin-ana d2) →
+              e' == e''
+    resdet-ana = {!!}
