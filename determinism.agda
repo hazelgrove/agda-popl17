@@ -496,13 +496,13 @@ module determinism where
     ... | refl with actdet-ana er wt₁ d1 d2 {p1 = {!!}} {p2 = {!!}}
     ... | refl = refl
 
-    actdet-ana EETop (ASubsume SEHole x₁) (AASubsume EETop SEHole SAConInl x₅) (AAConInl1 x₆) = {!!}
+    actdet-ana EETop (ASubsume SEHole x₁) (AASubsume EETop SEHole SAConInl x₅) (AAConInl1 x₆) {p1} = abort p1
     actdet-ana EETop (ASubsume SEHole x₁) (AASubsume EETop SEHole SAConInl x₅) (AAConInl2 x₆) = abort (x₆ x₅)
-    actdet-ana EETop (ASubsume SEHole x₁) (AASubsume EETop SEHole SAConInr x₅) (AAConInr1 x₆) = {!!}
+    actdet-ana EETop (ASubsume SEHole x₁) (AASubsume EETop SEHole SAConInr x₅) (AAConInr1 x₆) {p1} = abort p1
     actdet-ana EETop (ASubsume SEHole x₁) (AASubsume EETop SEHole SAConInr x₅) (AAConInr2 x₆) = abort (x₆ x₅)
 
-    actdet-ana EETop (ASubsume SEHole x₁) (AAConInl1 x₂) (AASubsume EETop SEHole SAConInl x₆) = {!!}
-    actdet-ana EETop (ASubsume SEHole x₁) (AAConInr1 x₂) (AASubsume EETop SEHole SAConInr c) = {!!}
+    actdet-ana EETop (ASubsume SEHole x₁) (AAConInl1 x₂) (AASubsume EETop SEHole SAConInl x₆) {p2 = p2} = abort p2
+    actdet-ana EETop (ASubsume SEHole x₁) (AAConInr1 x₂) (AASubsume EETop SEHole SAConInr c) {p2 = p2} = abort p2
 
     actdet-ana EETop (ASubsume SEHole x₁) (AAConInl1 q) (AAConInl2 x₃) = abort (lem-holematch x₃ x₁ q)
     actdet-ana EETop (ASubsume SEHole x₁) (AAConInl2 x₂) (AASubsume EETop SEHole SAConInl x₆) = abort (x₂ x₆)

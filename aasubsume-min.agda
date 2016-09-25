@@ -19,6 +19,8 @@ module aasubsume-min where
 
     aasubmin-ana : ∀{Γ e α e' t} → (Γ ⊢ e ~ α ~> e' ⇐ t) → Set
     aasubmin-ana (AASubsume x x₁ SAConAsc x₃) = ⊥
+    aasubmin-ana (AASubsume x x₁ SAConInl x₃) = ⊥
+    aasubmin-ana (AASubsume x x₁ SAConInr x₃) = ⊥
     aasubmin-ana (AASubsume x x₁ (SAConLam x₃) x₄) = ⊥
     aasubmin-ana (AASubsume x x₁ s x₃) = aasubmin-synth s
     aasubmin-ana (AAZipLam x₁ x₂ d) = aasubmin-ana d
@@ -96,8 +98,12 @@ module aasubsume-min where
     min-ana (AAFinish x) = _ , AAFinish x , <>
     min-ana (AAZipLam x₁ x₂ d) with min-ana d
     ... | a , b , c = _ , AAZipLam x₁ x₂ b , c
-    min-ana (AASubsume x x₁ SAConInl x₃) = _ , AASubsume x x₁ SAConInl x₃ , <>
-    min-ana (AASubsume x x₁ SAConInr x₃) = _ , AASubsume x x₁ SAConInr x₃ , <>
+    min-ana (AASubsume x x₁ SAConInl TCRefl) = inl ▹ <||> ◃ , AAConInl1 MPPlus , <>
+    min-ana (AASubsume x x₁ SAConInl TCHole2) = inl ▹ <||> ◃ , AAConInl1 MPHole , <>
+    min-ana (AASubsume x x₁ SAConInl (TCPlus x₃ x₄)) = inl ▹ <||> ◃ , AAConInl1 MPPlus , <>
+    min-ana (AASubsume x x₁ SAConInr TCRefl) = inr ▹ <||> ◃ , AAConInr1 MPPlus , <>
+    min-ana (AASubsume x x₁ SAConInr TCHole2) = inr ▹ <||> ◃ , AAConInr1 MPHole , <>
+    min-ana (AASubsume x x₁ SAConInr (TCPlus x₃ x₄)) = inr ▹ <||> ◃ , AAConInr1 MPPlus , <>
     min-ana (AAConInl1 x) = _ , AAConInl1 x , <>
     min-ana (AAConInl2 x) = _ , AAConInl2 x , <>
     min-ana (AAConInr1 x) = _ , AAConInr1 x , <>
