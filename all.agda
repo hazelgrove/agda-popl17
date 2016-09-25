@@ -17,9 +17,9 @@ open import examples
 --open import structural
 
 -- first wave theorems
-open import sensible
+open import sensibility
 open import aasubsume-min
-open import deterministic
+open import determinism
 
 -- second wave theorems (checksums)
 open import reachability

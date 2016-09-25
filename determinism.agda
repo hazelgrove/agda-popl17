@@ -4,7 +4,7 @@ open import core
 open import judgemental-erase
 open import aasubsume-min
 
-module deterministic where
+module determinism where
   -- the same action applied to the same type makes the same type
   actdet-type : {t t' t'' : τ̂} {α : action} →
             (t + α +> t') →

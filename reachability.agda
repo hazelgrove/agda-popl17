@@ -5,7 +5,7 @@ open import core
 open import judgemental-erase
 open import checks
 open import moveerase
-open import sensible
+open import sensibility
 
 module reachability where
   -- algorithmically, we break reachability into two halves: first you

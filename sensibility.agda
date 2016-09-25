@@ -4,7 +4,7 @@ open import core
 open import judgemental-erase
 open import moveerase
 
-module sensible where
+module sensibility where
   mutual
     -- if an action transforms a ê in a synthetic posistion to another ê,
     -- they have the same type up erasure of the cursor

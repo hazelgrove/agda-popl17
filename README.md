@@ -51,7 +51,7 @@ internally, but we give a brief description here in alphabetical order.
   declarative rather than bidirectional typing system and relates it to the
   main system.
 
-- [deterministic.agda](deterministic.agda) proves that the action
+- [determinism.agda](determinism.agda) proves that the action
   semantics, modulo the predicate defined in
   [aasubsume-min.agda](aasubsume-min.agda) are deterministic.
 
@@ -78,7 +78,7 @@ internally, but we give a brief description here in alphabetical order.
 
 - [reachability.agda](reachability.agda) gives the proof of reachability.
 
-- [sensible.agda](sensible.agda) gives the proof of action sensibility.
+- [sensibility.agda](sensibility.agda) gives the proof of action sensibility.
 
 - [structural.agda](structural.agda) is incomplete, but has proofs of
   standard structural properties like weakening, exchange, and contraction
