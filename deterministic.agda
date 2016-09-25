@@ -94,15 +94,26 @@ module deterministic where
   anamovedet (AAMove x) m = movedet x m
   anamovedet (AAZipLam x₁ x₂ d) EMLamParent = abort (lem-nomove-para d)
 
+  same-synth : {e' e'' : ê} {t' t'' : τ̇} {Γ : ·ctx} {e : ê} {t : τ̇} {α : action}  →
+       (d1 : Γ ⊢ e => t ~ α ~> e'  => t')
+       (d2 : Γ ⊢ e => t ~ α ~> e'' => t'') → Set
+  same-synth {e'} {e''} {t'} {t''} d1 d2 = (e' == e'') × (t' == t'')
+
+  same-ana : {e' e'' : ê} {Γ : ·ctx} {e : ê} {t : τ̇} {α : action}
+              (d1 : Γ ⊢ e ~ α ~> e' ⇐ t) →
+              (d2 : Γ ⊢ e ~ α ~> e'' ⇐ t) → Set
+  same-ana {e'} {e''} d1 d2 = e' == e''
+
   mutual
     -- an action on an expression in a synthetic position produces one
     -- resultant expression and type.
     actdet-synth : {Γ : ·ctx} {e e' e'' : ê} {e◆ : ė} {t t' t'' : τ̇} {α : action} →
               (E : erase-e e e◆) →
               (Γ ⊢ e◆ => t) →
-              (Γ ⊢ e => t ~ α ~> e'  => t') →
-              (Γ ⊢ e => t ~ α ~> e'' => t'') →
-              (e' == e'' × t' == t'')
+              (d1 : Γ ⊢ e => t ~ α ~> e'  => t') →
+              (d2 : Γ ⊢ e => t ~ α ~> e'' => t'') →
+              same-synth d1 d2
+              -- (e' == e'' × t' == t'')
     actdet-synth EETop (SAsc x) (SAMove x₁) (SAMove x₂) = movedet x₁ x₂ , refl
     actdet-synth EETop (SAsc x) SADel SADel = refl , refl
     actdet-synth EETop (SAsc x) SAConAsc SAConAsc = refl , refl
@@ -281,9 +292,9 @@ module deterministic where
     actdet-ana : {Γ : ·ctx} {e e' e'' : ê} {e◆ : ė} {t : τ̇} {α : action} →
               (erase-e e e◆) →
               (Γ ⊢ e◆ <= t) →
-              (Γ ⊢ e ~ α ~> e' ⇐ t) →
-              (Γ ⊢ e ~ α ~> e'' ⇐ t) →
-              (e' == e'')
+              (d1 : Γ ⊢ e ~ α ~> e' ⇐ t) →
+              (d2 : Γ ⊢ e ~ α ~> e'' ⇐ t) →
+              same-ana d1 d2
     ---- lambda cases first
     -- an erased lambda can't be typechecked with subsume
     actdet-ana (EELam _) (ASubsume () _) _ _

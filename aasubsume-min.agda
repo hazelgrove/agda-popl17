@@ -26,7 +26,8 @@ module aasubsume-min where
 
 
   mutual
-    min-synth : ∀{Γ e t α e' t'} → (d : Γ ⊢ e => t ~ α ~> e' => t') → Σ[ e'' ∈ ê ] Σ[ d' ∈ Γ ⊢ e => t ~ α ~> e'' => t' ] aasubmin-synth d'
+    min-synth : ∀{Γ e t α e' t'} → (d : Γ ⊢ e => t ~ α ~> e' => t') →
+                        Σ[ e'' ∈ ê ] Σ[ d' ∈ Γ ⊢ e => t ~ α ~> e'' => t' ] aasubmin-synth d'
     min-synth (SAMove x) = _ , SAMove x , <>
     min-synth SADel = _ , SADel , <>
     min-synth SAConAsc = _ , SAConAsc , <>
