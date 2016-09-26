@@ -299,10 +299,10 @@ module core where
 
   -- type actions
   data _+_+>_ : (t : τ̂) → (α : action) → (t' : τ̂) → Set where
-    TMArrChild0 : {t1 t2 : τ̇} →
-               ▹ t1 ==> t2 ◃ + move (child 0) +> (▹ t1 ◃ ==>₁ t2)
     TMArrChild1 : {t1 t2 : τ̇} →
-               ▹ t1 ==> t2 ◃ + move (child 1) +> (t1 ==>₂ ▹ t2 ◃)
+               ▹ t1 ==> t2 ◃ + move (child 1) +> (▹ t1 ◃ ==>₁ t2)
+    TMArrChild2 : {t1 t2 : τ̇} →
+               ▹ t1 ==> t2 ◃ + move (child 2) +> (t1 ==>₂ ▹ t2 ◃)
     TMArrParent1 : {t1 t2 : τ̇} →
                (▹ t1 ◃ ==>₁ t2) + move parent +> ▹ t1 ==> t2 ◃
     TMArrParent2 : {t1 t2 : τ̇} →
@@ -322,41 +322,41 @@ module core where
   -- expression movement
   data _+_+>e_ : (e : ê) → (α : action) → (e' : ê) → Set where
     -- rules for ascriptions
-    EMAscChild0 : {e : ė} {t : τ̇} →
-              (▹ e ·: t ◃) + move (child 0) +>e (▹ e ◃ ·:₁ t)
     EMAscChild1 : {e : ė} {t : τ̇} →
-              (▹ e ·: t ◃) + move (child 1) +>e (e  ·:₂ ▹ t ◃)
+              (▹ e ·: t ◃) + move (child 1) +>e (▹ e ◃ ·:₁ t)
+    EMAscChild2 : {e : ė} {t : τ̇} →
+              (▹ e ·: t ◃) + move (child 2) +>e (e  ·:₂ ▹ t ◃)
     EMAscParent1 : {e : ė} {t : τ̇} →
               (▹ e ◃ ·:₁ t) + move parent +>e (▹ e ·: t ◃)
     EMAscParent2 : {e : ė} {t : τ̇} →
               (e ·:₂ ▹ t ◃) + move parent +>e (▹ e ·: t ◃)
     -- rules for lambdas
-    EMLamChild0 : {e : ė} {x : Nat} →
-              ▹ (·λ x e) ◃ + move (child 0) +>e ·λ x (▹ e ◃)
+    EMLamChild1 : {e : ė} {x : Nat} →
+              ▹ (·λ x e) ◃ + move (child 1) +>e ·λ x (▹ e ◃)
     EMLamParent : {e : ė} {x : Nat} →
                ·λ x (▹ e ◃) + move parent +>e ▹ (·λ x e) ◃
     -- rules for 2-ary constructors
-    EMPlusChild0 : {e1 e2 : ė} →
-               (▹ e1 ·+ e2 ◃) + move (child 0) +>e (▹ e1 ◃ ·+₁ e2)
     EMPlusChild1 : {e1 e2 : ė} →
-               (▹ e1 ·+ e2 ◃) + move (child 1) +>e (e1 ·+₂ ▹ e2 ◃)
+               (▹ e1 ·+ e2 ◃) + move (child 1) +>e (▹ e1 ◃ ·+₁ e2)
+    EMPlusChild2 : {e1 e2 : ė} →
+               (▹ e1 ·+ e2 ◃) + move (child 2) +>e (e1 ·+₂ ▹ e2 ◃)
     EMPlusParent1 : {e1 e2 : ė} →
                (▹ e1 ◃ ·+₁ e2) + move parent +>e (▹ e1 ·+ e2 ◃)
     EMPlusParent2 : {e1 e2 : ė} →
                (e1 ·+₂ ▹ e2 ◃) + move parent +>e (▹ e1 ·+ e2 ◃)
 
-    EMApChild0 : {e1 e2 : ė} →
-               (▹ e1 ∘ e2 ◃) + move (child 0)+>e (▹ e1 ◃ ∘₁ e2)
     EMApChild1 : {e1 e2 : ė} →
-               (▹ e1 ∘ e2 ◃) + move (child 1) +>e (e1 ∘₂ ▹ e2 ◃)
+               (▹ e1 ∘ e2 ◃) + move (child 1)+>e (▹ e1 ◃ ∘₁ e2)
+    EMApChild2 : {e1 e2 : ė} →
+               (▹ e1 ∘ e2 ◃) + move (child 2) +>e (e1 ∘₂ ▹ e2 ◃)
     EMApParent1 : {e1 e2 : ė} →
                (▹ e1 ◃ ∘₁ e2) + move parent +>e (▹ e1 ∘ e2 ◃)
     EMApParent2 : {e1 e2 : ė} →
                (e1 ∘₂ ▹ e2 ◃) + move parent +>e (▹ e1 ∘ e2 ◃)
 
     -- rules for non-empty holes
-    EMNEHoleChild0 : {e : ė} →
-               (▹ <| e |> ◃) + move (child 0) +>e <| ▹ e ◃ |>
+    EMNEHoleChild1 : {e : ė} →
+               (▹ <| e |> ◃) + move (child 1) +>e <| ▹ e ◃ |>
     EMNEHoleParent : {e : ė} →
                 <| ▹ e ◃ |> + move parent +>e (▹ <| e |> ◃)
 

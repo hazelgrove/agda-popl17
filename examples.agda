@@ -52,12 +52,12 @@ module examples where
   l = construct (lam 0)
     :: construct num
     :: move parent
-    :: move (child 1)
+    :: move (child 2)
     :: construct num
     :: move parent
     :: move parent
-    :: move (child 0)
-    :: move (child 0)
+    :: move (child 1)
+    :: move (child 1)
     :: construct (var 0)
     :: construct plus
     :: construct (numlit 1)
@@ -70,13 +70,13 @@ module examples where
         (DoSynth (SAZipAsc2 (TMArrZip1 TMConNum) (ETArrL ETTop) (ETArrL ETTop) (ALam refl MAArr (ASubsume SEHole TCRefl)))
         (DoSynth (SAZipAsc2 TMArrParent1 ETTop (ETArrL ETTop)
                     (ALam refl MAArr (ASubsume SEHole TCRefl)))
-        (DoSynth (SAZipAsc2 TMArrChild1 (ETArrR ETTop) ETTop
+        (DoSynth (SAZipAsc2 TMArrChild2 (ETArrR ETTop) ETTop
                     (ALam refl MAArr (ASubsume SEHole TCRefl)))
         (DoSynth (SAZipAsc2 (TMArrZip2 TMConNum) (ETArrR ETTop) (ETArrR ETTop) (ALam refl MAArr (ASubsume SEHole TCHole1)))
         (DoSynth (SAZipAsc2 TMArrParent2 ETTop (ETArrR ETTop) (ALam refl MAArr (ASubsume SEHole TCHole1)))
         (DoSynth (SAMove EMAscParent2)
-        (DoSynth (SAMove EMAscChild0)
-        (DoSynth (SAZipAsc1 (AAMove EMLamChild0))
+        (DoSynth (SAMove EMAscChild1)
+        (DoSynth (SAZipAsc1 (AAMove EMLamChild1))
         (DoSynth (SAZipAsc1 (AAZipLam refl MAArr (AASubsume EETop SEHole (SAConVar refl) TCRefl)))
         (DoSynth (SAZipAsc1 (AAZipLam refl MAArr (AASubsume EETop (SVar refl) (SAConPlus1 TCRefl) TCRefl)))
         (DoSynth (SAZipAsc1 (AAZipLam refl MAArr (AASubsume (EEPlusR EETop) (SPlus (ASubsume (SVar refl) TCRefl)

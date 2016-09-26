@@ -10,8 +10,8 @@ module determinism where
             (t + α +> t') →
             (t + α +> t'') →
             (t' == t'')
-  actdet-type TMArrChild0 TMArrChild0 = refl
   actdet-type TMArrChild1 TMArrChild1 = refl
+  actdet-type TMArrChild2 TMArrChild2 = refl
   actdet-type TMArrParent1 TMArrParent1 = refl
   actdet-type TMArrParent1 (TMArrZip1 ())
   actdet-type TMArrParent2 TMArrParent2 = refl
@@ -31,21 +31,21 @@ module determinism where
             (e + move δ +>e e') →
             (e + move δ +>e e'') →
             e' == e''
-  movedet EMAscChild0 EMAscChild0 = refl
   movedet EMAscChild1 EMAscChild1 = refl
+  movedet EMAscChild2 EMAscChild2 = refl
   movedet EMAscParent1 EMAscParent1 = refl
   movedet EMAscParent2 EMAscParent2 = refl
-  movedet EMLamChild0 EMLamChild0 = refl
+  movedet EMLamChild1 EMLamChild1 = refl
   movedet EMLamParent EMLamParent = refl
-  movedet EMPlusChild0 EMPlusChild0 = refl
   movedet EMPlusChild1 EMPlusChild1 = refl
+  movedet EMPlusChild2 EMPlusChild2 = refl
   movedet EMPlusParent1 EMPlusParent1 = refl
   movedet EMPlusParent2 EMPlusParent2 = refl
-  movedet EMApChild0 EMApChild0 = refl
   movedet EMApChild1 EMApChild1 = refl
+  movedet EMApChild2 EMApChild2 = refl
   movedet EMApParent1 EMApParent1 = refl
   movedet EMApParent2 EMApParent2 = refl
-  movedet EMNEHoleChild0 EMNEHoleChild0 = refl
+  movedet EMNEHoleChild1 EMNEHoleChild1 = refl
   movedet EMNEHoleParent EMNEHoleParent = refl
 
   -- non-movement lemmas; theses show up pervasively throughout and save a

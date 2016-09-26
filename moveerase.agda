@@ -10,8 +10,8 @@ module moveerase where
   moveeraset : {t t' : τ̂} {δ : direction} →
             (t + move δ +> t') →
             (t ◆t) == (t' ◆t)
-  moveeraset TMArrChild0 = refl
   moveeraset TMArrChild1 = refl
+  moveeraset TMArrChild2 = refl
   moveeraset TMArrParent1 = refl
   moveeraset TMArrParent2 = refl
   moveeraset (TMArrZip1 {t2 = t2} m) = ap1 (λ x → x ==> t2) (moveeraset m)
@@ -20,21 +20,21 @@ module moveerase where
   moveerase : {e e' : ê} {δ : direction} →
             (e + move δ +>e e') →
             (e ◆e) == (e' ◆e)
-  moveerase EMAscChild0 = refl
   moveerase EMAscChild1 = refl
+  moveerase EMAscChild2 = refl
   moveerase EMAscParent1 = refl
   moveerase EMAscParent2 = refl
-  moveerase EMLamChild0 = refl
+  moveerase EMLamChild1 = refl
   moveerase EMLamParent = refl
-  moveerase EMPlusChild0 = refl
   moveerase EMPlusChild1 = refl
+  moveerase EMPlusChild2 = refl
   moveerase EMPlusParent1 = refl
   moveerase EMPlusParent2 = refl
-  moveerase EMApChild0 = refl
   moveerase EMApChild1 = refl
+  moveerase EMApChild2 = refl
   moveerase EMApParent1 = refl
   moveerase EMApParent2 = refl
-  moveerase EMNEHoleChild0 = refl
+  moveerase EMNEHoleChild1 = refl
   moveerase EMNEHoleParent = refl
 
   -- this form is essentially the same as above, but for judgemental erasure
