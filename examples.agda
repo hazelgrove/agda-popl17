@@ -51,12 +51,13 @@ module examples where
   l : List action
   l = construct (lam 0)
     :: construct num
-    :: move nextSib
+    :: move parent
+    :: move (child 1)
     :: construct num
     :: move parent
     :: move parent
-    :: move firstChild
-    :: move firstChild
+    :: move (child 0)
+    :: move (child 0)
     :: construct (var 0)
     :: construct plus
     :: construct (numlit 1)
@@ -67,18 +68,21 @@ module examples where
   figure1 =
         DoSynth (SAConLam refl)
         (DoSynth (SAZipAsc2 (TMArrZip1 TMConNum) (ETArrL ETTop) (ETArrL ETTop) (ALam refl MAArr (ASubsume SEHole TCRefl)))
-        (DoSynth (SAZipAsc2 TMArrNextSib (ETArrR ETTop) (ETArrL ETTop) (ALam refl MAArr (ASubsume SEHole TCRefl)))
+        (DoSynth (SAZipAsc2 TMArrParent1 ETTop (ETArrL ETTop)
+                    (ALam refl MAArr (ASubsume SEHole TCRefl)))
+        (DoSynth (SAZipAsc2 TMArrChild1 (ETArrR ETTop) ETTop
+                    (ALam refl MAArr (ASubsume SEHole TCRefl)))
         (DoSynth (SAZipAsc2 (TMArrZip2 TMConNum) (ETArrR ETTop) (ETArrR ETTop) (ALam refl MAArr (ASubsume SEHole TCHole1)))
         (DoSynth (SAZipAsc2 TMArrParent2 ETTop (ETArrR ETTop) (ALam refl MAArr (ASubsume SEHole TCHole1)))
         (DoSynth (SAMove EMAscParent2)
-        (DoSynth (SAMove EMAscFirstChild)
-        (DoSynth (SAZipAsc1 (AAMove EMLamFirstChild))
+        (DoSynth (SAMove EMAscChild0)
+        (DoSynth (SAZipAsc1 (AAMove EMLamChild0))
         (DoSynth (SAZipAsc1 (AAZipLam refl MAArr (AASubsume EETop SEHole (SAConVar refl) TCRefl)))
         (DoSynth (SAZipAsc1 (AAZipLam refl MAArr (AASubsume EETop (SVar refl) (SAConPlus1 TCRefl) TCRefl)))
         (DoSynth (SAZipAsc1 (AAZipLam refl MAArr (AASubsume (EEPlusR EETop) (SPlus (ASubsume (SVar refl) TCRefl)
                                                             (ASubsume SEHole TCHole1))
                                                             (SAZipPlus2 (AASubsume EETop SEHole SAConNumlit TCRefl)) TCRefl)))
-        DoRefl))))))))))
+        DoRefl)))))))))))
 
   -- these smaller derivations motivate the need for the zipper rules: you
   -- have to unzip down to the point of the structure where you want to
