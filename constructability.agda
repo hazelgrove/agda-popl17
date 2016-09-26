@@ -39,11 +39,11 @@ module constructability where
 
       -- the inductive cases
     construct-synth {t = t} (SAsc x) with construct-type t | construct-ana x
-    ... | (l1 , ih1) | (l2 , ih2) = construct asc :: (l1 ++ move parent :: move firstChild :: (l2 ++ [ move parent ])) ,
+    ... | (l1 , ih1) | (l2 , ih2) = construct asc :: (l1 ++ move parent :: move (child 0) :: (l2 ++ [ move parent ])) ,
                                     DoSynth SAConAsc
                                         (runsynth++ (ziplem-asc2 ETTop ETTop ih1)
                                          (DoSynth (SAMove EMAscParent2)
-                                          (DoSynth (SAMove EMAscFirstChild)
+                                          (DoSynth (SAMove EMAscChild0)
                                            (runsynth++ (ziplem-asc1 ih2)
                                             (DoSynth (SAMove EMAscParent1) DoRefl)))))
 
@@ -55,11 +55,11 @@ module constructability where
                                           (DoSynth (SAMove EMApParent2) DoRefl)))
 
     construct-synth (SPlus e1 e2 ) with construct-ana e1 | construct-ana e2
-    ... | (l1 , ih1) | (l2 , ih2) = construct plus :: (l2 ++ move parent :: move firstChild :: (l1 ++ [ move parent ])) ,
+    ... | (l1 , ih1) | (l2 , ih2) = construct plus :: (l2 ++ move parent :: move (child 0) :: (l1 ++ [ move parent ])) ,
                                     DoSynth (SAConPlus1 TCHole2)
                                         (runsynth++ (ziplem-plus2 ih2)
                                          (DoSynth (SAMove EMPlusParent2)
-                                          (DoSynth (SAMove EMPlusFirstChild)
+                                          (DoSynth (SAMove EMPlusChild0)
                                            (runsynth++ (ziplem-plus1 ih1)
                                             (DoSynth (SAMove EMPlusParent1) DoRefl)))))
 
