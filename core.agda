@@ -276,9 +276,8 @@ module core where
 
   -- the three grammars that define actions
   data direction : Set where
-    firstChild : direction
+    child : Nat → direction
     parent : direction
-    nextSib : direction
 
   data shape : Set where
     arrow : shape
@@ -300,14 +299,14 @@ module core where
 
   -- type actions
   data _+_+>_ : (t : τ̂) → (α : action) → (t' : τ̂) → Set where
-    TMArrFirstChild : {t1 t2 : τ̇} →
-               ▹ t1 ==> t2 ◃ + move firstChild +> (▹ t1 ◃ ==>₁ t2)
+    TMArrChild0 : {t1 t2 : τ̇} →
+               ▹ t1 ==> t2 ◃ + move (child 0) +> (▹ t1 ◃ ==>₁ t2)
+    TMArrChild1 : {t1 t2 : τ̇} →
+               ▹ t1 ==> t2 ◃ + move (child 1) +> (t1 ==>₂ ▹ t2 ◃)
     TMArrParent1 : {t1 t2 : τ̇} →
                (▹ t1 ◃ ==>₁ t2) + move parent +> ▹ t1 ==> t2 ◃
     TMArrParent2 : {t1 t2 : τ̇} →
                (t1 ==>₂ ▹ t2 ◃) + move parent +> ▹ t1 ==> t2 ◃
-    TMArrNextSib : {t1 t2 : τ̇} →
-               (▹ t1 ◃ ==>₁ t2) + move nextSib +> (t1 ==>₂ ▹ t2 ◃)
     TMDel     : {t : τ̇} →
                 (▹ t ◃) + del +> (▹ <||> ◃)
     TMConArrow  : {t : τ̇} →
@@ -323,41 +322,41 @@ module core where
   -- expression movement
   data _+_+>e_ : (e : ê) → (α : action) → (e' : ê) → Set where
     -- rules for ascriptions
-    EMAscFirstChild : {e : ė} {t : τ̇} →
-              (▹ e ·: t ◃) + move firstChild +>e (▹ e ◃ ·:₁ t)
+    EMAscChild0 : {e : ė} {t : τ̇} →
+              (▹ e ·: t ◃) + move (child 0) +>e (▹ e ◃ ·:₁ t)
+    EMAscChild1 : {e : ė} {t : τ̇} →
+              (▹ e ·: t ◃) + move (child 1) +>e (e  ·:₂ ▹ t ◃)
     EMAscParent1 : {e : ė} {t : τ̇} →
               (▹ e ◃ ·:₁ t) + move parent +>e (▹ e ·: t ◃)
     EMAscParent2 : {e : ė} {t : τ̇} →
               (e ·:₂ ▹ t ◃) + move parent +>e (▹ e ·: t ◃)
-    EMAscNextSib : {e : ė} {t : τ̇} →
-              (▹ e ◃ ·:₁ t) + move nextSib +>e (e ·:₂ ▹ t ◃)
     -- rules for lambdas
-    EMLamFirstChild : {e : ė} {x : Nat} →
-              ▹ (·λ x e) ◃ + move firstChild +>e ·λ x (▹ e ◃)
+    EMLamChild : {e : ė} {x : Nat} →
+              ▹ (·λ x e) ◃ + move (child 0) +>e ·λ x (▹ e ◃)
     EMLamParent : {e : ė} {x : Nat} →
                ·λ x (▹ e ◃) + move parent +>e ▹ (·λ x e) ◃
     -- rules for 2-ary constructors
-    EMPlusFirstChild : {e1 e2 : ė} →
-               (▹ e1 ·+ e2 ◃) + move firstChild +>e (▹ e1 ◃ ·+₁ e2)
+    EMPlusChild0 : {e1 e2 : ė} →
+               (▹ e1 ·+ e2 ◃) + move (child 0) +>e (▹ e1 ◃ ·+₁ e2)
+    EMPlusChild1 : {e1 e2 : ė} →
+               (▹ e1 ·+ e2 ◃) + move (child 1) +>e (e1 ·+₂ ▹ e2 ◃)
     EMPlusParent1 : {e1 e2 : ė} →
                (▹ e1 ◃ ·+₁ e2) + move parent +>e (▹ e1 ·+ e2 ◃)
     EMPlusParent2 : {e1 e2 : ė} →
                (e1 ·+₂ ▹ e2 ◃) + move parent +>e (▹ e1 ·+ e2 ◃)
-    EMPlusNextSib : {e1 e2 : ė} →
-               (▹ e1 ◃ ·+₁ e2) + move nextSib +>e (e1 ·+₂ ▹ e2 ◃)
 
-    EMApFirstChild : {e1 e2 : ė} →
-               (▹ e1 ∘ e2 ◃) + move firstChild +>e (▹ e1 ◃ ∘₁ e2)
+    EMApChild0 : {e1 e2 : ė} →
+               (▹ e1 ∘ e2 ◃) + move (child 0)+>e (▹ e1 ◃ ∘₁ e2)
+    EMApChild1 : {e1 e2 : ė} →
+               (▹ e1 ∘ e2 ◃) + move (child 1) +>e (e1 ∘₂ ▹ e2 ◃)
     EMApParent1 : {e1 e2 : ė} →
                (▹ e1 ◃ ∘₁ e2) + move parent +>e (▹ e1 ∘ e2 ◃)
     EMApParent2 : {e1 e2 : ė} →
                (e1 ∘₂ ▹ e2 ◃) + move parent +>e (▹ e1 ∘ e2 ◃)
-    EMApNextSib : {e1 e2 : ė} →
-               (▹ e1 ◃ ∘₁ e2) + move nextSib +>e (e1 ∘₂ ▹ e2 ◃)
 
     -- rules for non-empty holes
-    EMNEHoleFirstChild : {e : ė} →
-               (▹ <| e |> ◃) + move firstChild +>e <| ▹ e ◃ |>
+    EMNEHoleChild0 : {e : ė} →
+               (▹ <| e |> ◃) + move (child 0) +>e <| ▹ e ◃ |>
     EMNEHoleParent : {e : ė} →
                 <| ▹ e ◃ |> + move parent +>e (▹ <| e |> ◃)
 
