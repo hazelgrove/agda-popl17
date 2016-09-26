@@ -331,7 +331,7 @@ module core where
     EMAscParent2 : {e : ė} {t : τ̇} →
               (e ·:₂ ▹ t ◃) + move parent +>e (▹ e ·: t ◃)
     -- rules for lambdas
-    EMLamChild : {e : ė} {x : Nat} →
+    EMLamChild0 : {e : ė} {x : Nat} →
               ▹ (·λ x e) ◃ + move (child 0) +>e ·λ x (▹ e ◃)
     EMLamParent : {e : ė} {x : Nat} →
                ·λ x (▹ e ◃) + move parent +>e ▹ (·λ x e) ◃
