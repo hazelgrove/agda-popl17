@@ -7,24 +7,42 @@ open import judgemental-erase
 module moveerase where
   -- theorem: movement doesn't change the term other than moving the cursor
   -- around.
+moveeraset : {t t' : τ̂} {δ : direction} →
+            (t + move δ +> t') →
+            (t ◆t) == (t' ◆t)
+  moveeraset TMArrChild1 = refl
+  moveeraset TMArrChild2 = refl
+  moveeraset TMArrParent1 = refl
+  moveeraset TMArrParent2 = refl
+  moveeraset (TMArrZip1 {t2 = t2} m) = ap1 (λ x → x ==> t2) (moveeraset m)
+  moveeraset (TMArrZip2 {t1 = t1} m) = ap1 (λ x → t1 ==> x) (moveeraset m)
+  moveeraset TMPlusFirstChild = refl
+  moveeraset TMPlusParent1 = refl
+  moveeraset TMPlusParent2 = refl
+  moveeraset TMPlusNextSib = refl
+  moveeraset (TMArrZip1 {t2 = t2} m) = ap1 (λ x → x ==> t2) (moveeraset m)
+  moveeraset (TMArrZip2 {t1 = t1} m) = ap1 (λ x → t1 ==> x) (moveeraset m)
+  moveeraset (TMPlusZip1 {t2 = t2} m) = ap1 (λ x → x ⊕ t2) (moveeraset m)
+  moveeraset (TMPlusZip2 {t1 = t1} m) = ap1 (λ x → t1 ⊕ x) (moveeraset m)
+
   moveerase : {e e' : ê} {δ : direction} →
             (e + move δ +>e e') →
             (e ◆e) == (e' ◆e)
-  moveerase EMAscFirstChild = refl
+  moveerase EMAscChild1 = refl
+  moveerase EMAscChild2 = refl
   moveerase EMAscParent1 = refl
   moveerase EMAscParent2 = refl
-  moveerase EMAscNextSib = refl
-  moveerase EMLamFirstChild = refl
+  moveerase EMLamChild1 = refl
   moveerase EMLamParent = refl
-  moveerase EMPlusFirstChild = refl
+  moveerase EMPlusChild1 = refl
+  moveerase EMPlusChild2 = refl
   moveerase EMPlusParent1 = refl
   moveerase EMPlusParent2 = refl
-  moveerase EMPlusNextSib = refl
-  moveerase EMApFirstChild = refl
+  moveerase EMApChild1 = refl
+  moveerase EMApChild2 = refl
   moveerase EMApParent1 = refl
   moveerase EMApParent2 = refl
-  moveerase EMApNextSib = refl
-  moveerase EMNEHoleFirstChild = refl
+  moveerase EMNEHoleChild1 = refl
   moveerase EMNEHoleParent = refl
   moveerase EMInlFirstChild = refl
   moveerase EMInlParent = refl
@@ -36,22 +54,6 @@ module moveerase where
   moveerase EMCaseNextSib1 = refl
   moveerase EMCaseNextSib2 = refl
   moveerase EMCaseFirstChild = refl
-
-  moveeraset : {t t' : τ̂} {δ : direction} →
-            (t + move δ +> t') →
-            (t ◆t) == (t' ◆t)
-  moveeraset TMArrFirstChild = refl
-  moveeraset TMArrParent1 = refl
-  moveeraset TMArrParent2 = refl
-  moveeraset TMArrNextSib = refl
-  moveeraset TMPlusFirstChild = refl
-  moveeraset TMPlusParent1 = refl
-  moveeraset TMPlusParent2 = refl
-  moveeraset TMPlusNextSib = refl
-  moveeraset (TMArrZip1 {t2 = t2} m) = ap1 (λ x → x ==> t2) (moveeraset m)
-  moveeraset (TMArrZip2 {t1 = t1} m) = ap1 (λ x → t1 ==> x) (moveeraset m)
-  moveeraset (TMPlusZip1 {t2 = t2} m) = ap1 (λ x → x ⊕ t2) (moveeraset m)
-  moveeraset (TMPlusZip2 {t1 = t1} m) = ap1 (λ x → t1 ⊕ x) (moveeraset m)
 
   -- this form is essentially the same as above, but for judgemental erasure
   moveerase' : {e e' : ê} {e◆ : ė} {δ : direction} →
