@@ -91,13 +91,13 @@ module reachability where
                      Σ[ L ∈ List action ] (runtype (▹ t ◃) L t' × movements L)
   reachdown-type ETTop = [] , DoRefl , AM[]
   reachdown-type (ETArrL er) with reachdown-type er
-  ... | (l , ih , m ) = move firstChild :: l ,
-                        DoType TMArrFirstChild (ziplem-tmarr1 ih) ,
+  ... | (l , ih , m ) = move (child 0) :: l ,
+                        DoType TMArrChild0 (ziplem-tmarr1 ih) ,
                         AM:: m
   reachdown-type (ETArrR er) with reachdown-type er
-  ... | (l , ih , m ) = move firstChild :: move nextSib :: l ,
-                        DoType TMArrFirstChild (DoType TMArrNextSib (ziplem-tmarr2 ih)) ,
-                        AM:: (AM:: m)
+  ... | (l , ih , m ) = move (child 1) :: l ,
+                        DoType TMArrChild1 (ziplem-tmarr2 ih) ,
+                        AM:: m
 
   mutual
     reachdown-synth : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
@@ -107,32 +107,32 @@ module reachability where
     reachdown-synth (EELam _) ()
     reachdown-synth EETop _ = [] , DoRefl , AM[]
     reachdown-synth (EEAscL er) (SAsc x) with reachdown-ana er x
-    ... | l , ih , m = move firstChild :: l ,
-                       DoSynth (SAMove EMAscFirstChild) (ziplem-asc1 ih) ,
+    ... | l , ih , m = move (child 0) :: l ,
+                       DoSynth (SAMove EMAscChild0) (ziplem-asc1 ih) ,
                        AM:: m
     reachdown-synth (EEAscR er) (SAsc x₁) with reachdown-type er
-    ... | l , ih , m = move firstChild :: move nextSib :: l ,
-                       DoSynth (SAMove EMAscFirstChild) (DoSynth (SAMove EMAscNextSib) (ziplem-moves-asc2 m ETTop x₁ ih)) ,
-                       AM:: (AM:: m)
+    ... | l , ih , m = move (child 1) :: l ,
+                       DoSynth (SAMove EMAscChild1) (ziplem-moves-asc2 m ETTop x₁ ih) ,
+                       AM:: m
     reachdown-synth (EEApL er) (SAp wt x x₁) with reachdown-synth er wt
-    ... | l , ih , m = move firstChild :: l ,
-                       DoSynth (SAMove EMApFirstChild) (ziplem-moves-ap1 wt x x₁ m ih) ,
+    ... | l , ih , m = move (child 0) :: l ,
+                       DoSynth (SAMove EMApChild0) (ziplem-moves-ap1 wt x x₁ m ih) ,
                        AM:: m
     reachdown-synth (EEApR er) (SAp wt x x₁) with reachdown-ana er x₁
-    ... | l , ih , m = move firstChild :: move nextSib :: l ,
-                       DoSynth (SAMove EMApFirstChild) (DoSynth (SAMove EMApNextSib) (ziplem-ap2 wt x ih)) ,
-                       AM:: (AM:: m)
+    ... | l , ih , m = move (child 1) :: l ,
+                       DoSynth (SAMove EMApChild1) (ziplem-ap2 wt x ih) ,
+                       AM:: m
     reachdown-synth (EEPlusL er) (SPlus x x₁) with reachdown-ana er x
-    ... | l , ih , m = move firstChild :: l ,
-                       DoSynth (SAMove EMPlusFirstChild) (ziplem-plus1 ih) ,
+    ... | l , ih , m = move (child 0) :: l ,
+                       DoSynth (SAMove EMPlusChild0) (ziplem-plus1 ih) ,
                        AM:: m
     reachdown-synth (EEPlusR er) (SPlus x x₁) with reachdown-ana er x₁
-    ... | l , ih , m = move firstChild :: move nextSib :: l ,
-                       DoSynth (SAMove EMPlusFirstChild) (DoSynth (SAMove EMPlusNextSib) (ziplem-plus2 ih)) ,
-                       AM:: (AM:: m)
+    ... | l , ih , m = move (child 1) :: l ,
+                       DoSynth (SAMove EMPlusChild1) (ziplem-plus2 ih) ,
+                       AM:: m
     reachdown-synth (EENEHole er) (SNEHole wt) with reachdown-synth er wt
-    ... | l , ih , m = move firstChild :: l ,
-                       DoSynth (SAMove EMNEHoleFirstChild) (ziplem-nehole-a wt ih) ,
+    ... | l , ih , m = move (child 0) :: l ,
+                       DoSynth (SAMove EMNEHoleChild0) (ziplem-nehole-a wt ih) ,
                        AM:: m
 
     reachdown-ana : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
@@ -145,8 +145,8 @@ module reachability where
                        synthana-moves x m x₁ ih ,
                        m
     reachdown-ana (EELam er) (ALam x₁ x₂ wt) with reachdown-ana er wt
-    ... | l , ih , m = move firstChild :: l ,
-                       DoAna (AAMove EMLamFirstChild) (ziplem-lam x₁ x₂ ih) ,
+    ... | l , ih , m = move (child 0) :: l ,
+                       DoAna (AAMove EMLamChild0) (ziplem-lam x₁ x₂ ih) ,
                        AM:: m
 
 
