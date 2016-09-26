@@ -10,18 +10,16 @@ module determinism where
             (t + α +> t') →
             (t + α +> t'') →
             (t' == t'')
-  actdet-type TMArrFirstChild TMArrFirstChild = refl
+  actdet-type TMArrChild0 TMArrChild0 = refl
+  actdet-type TMArrChild1 TMArrChild1 = refl
   actdet-type TMArrParent1 TMArrParent1 = refl
   actdet-type TMArrParent1 (TMArrZip1 ())
   actdet-type TMArrParent2 TMArrParent2 = refl
   actdet-type TMArrParent2 (TMArrZip2 ())
-  actdet-type TMArrNextSib TMArrNextSib = refl
-  actdet-type TMArrNextSib (TMArrZip1 ())
   actdet-type TMDel TMDel = refl
   actdet-type TMConArrow TMConArrow = refl
   actdet-type TMConNum TMConNum = refl
   actdet-type (TMArrZip1 ()) TMArrParent1
-  actdet-type (TMArrZip1 ()) TMArrNextSib
   actdet-type (TMArrZip1 p1) (TMArrZip1 p2) with actdet-type p1 p2
   ... | refl = refl
   actdet-type (TMArrZip2 ()) TMArrParent2
@@ -33,21 +31,21 @@ module determinism where
             (e + move δ +>e e') →
             (e + move δ +>e e'') →
             e' == e''
-  movedet EMAscFirstChild EMAscFirstChild = refl
+  movedet EMAscChild0 EMAscChild0 = refl
+  movedet EMAscChild1 EMAscChild1 = refl
   movedet EMAscParent1 EMAscParent1 = refl
   movedet EMAscParent2 EMAscParent2 = refl
-  movedet EMAscNextSib EMAscNextSib = refl
-  movedet EMLamFirstChild EMLamFirstChild = refl
+  movedet EMLamChild0 EMLamChild0 = refl
   movedet EMLamParent EMLamParent = refl
-  movedet EMPlusFirstChild EMPlusFirstChild = refl
+  movedet EMPlusChild0 EMPlusChild0 = refl
+  movedet EMPlusChild1 EMPlusChild1 = refl
   movedet EMPlusParent1 EMPlusParent1 = refl
   movedet EMPlusParent2 EMPlusParent2 = refl
-  movedet EMPlusNextSib EMPlusNextSib = refl
-  movedet EMApFirstChild EMApFirstChild = refl
+  movedet EMApChild0 EMApChild0 = refl
+  movedet EMApChild1 EMApChild1 = refl
   movedet EMApParent1 EMApParent1 = refl
   movedet EMApParent2 EMApParent2 = refl
-  movedet EMApNextSib EMApNextSib = refl
-  movedet EMNEHoleFirstChild EMNEHoleFirstChild = refl
+  movedet EMNEHoleChild0 EMNEHoleChild0 = refl
   movedet EMNEHoleParent EMNEHoleParent = refl
 
   -- non-movement lemmas; theses show up pervasively throughout and save a
@@ -58,16 +56,9 @@ module determinism where
   lem-nomove-pars : ∀{Γ e t e' t'} → Γ ⊢ ▹ e ◃ => t ~ move parent ~> e' => t' → ⊥
   lem-nomove-pars (SAMove ())
 
-  lem-nomove-nss : ∀{Γ e t e' t'} → Γ ⊢ ▹ e ◃ => t ~ move nextSib ~> e' => t' → ⊥
-  lem-nomove-nss (SAMove ())
-
   lem-nomove-para : ∀{Γ e t e'} → Γ ⊢ ▹ e ◃ ~ move parent ~> e' ⇐ t → ⊥
   lem-nomove-para (AASubsume e x x₁ x₂) = lem-nomove-pars x₁
   lem-nomove-para (AAMove ())
-
-  lem-nomove-nsa : ∀{Γ e t e'} → Γ ⊢ ▹ e ◃ ~ move nextSib ~> e' ⇐ t → ⊥
-  lem-nomove-nsa (AASubsume e  x x₁ x₂) = lem-nomove-nss x₁
-  lem-nomove-nsa (AAMove ())
 
   -- if a move action on a synthetic action makes a new form, it's unique
   synthmovedet : {Γ : ·ctx} {e e' e'' : ê} {t' t'' : τ̇} {δ : direction} →
@@ -77,13 +68,10 @@ module determinism where
   synthmovedet (SAMove m1) m2 = movedet m1 m2
   -- all these cases lead to absurdities based on movement
   synthmovedet (SAZipAsc1 x) EMAscParent1         = abort (lem-nomove-para x)
-  synthmovedet (SAZipAsc1 x) EMAscNextSib         = abort (lem-nomove-nsa x)
   synthmovedet (SAZipAsc2 x _ _ _) EMAscParent2   = abort (lem-nomove-part x)
   synthmovedet (SAZipApArr _ _ _ x _) EMApParent1 = abort (lem-nomove-pars x)
-  synthmovedet (SAZipApArr _ _ _ x _) EMApNextSib = abort (lem-nomove-nss x)
   synthmovedet (SAZipApAna _ _ x) EMApParent2     = abort (lem-nomove-para x)
   synthmovedet (SAZipPlus1 x) EMPlusParent1       = abort (lem-nomove-para x)
-  synthmovedet (SAZipPlus1 x) EMPlusNextSib       = abort (lem-nomove-nsa x)
   synthmovedet (SAZipPlus2 x) EMPlusParent2       = abort (lem-nomove-para x)
   synthmovedet (SAZipHole _ _ x) EMNEHoleParent   = abort (lem-nomove-pars x)
 
@@ -123,9 +111,7 @@ module determinism where
 
     actdet-synth (EEAscL E) (SAsc x) (SAMove x₁) (SAMove x₂) = movedet x₁ x₂ , refl
     actdet-synth (EEAscL E) (SAsc x) (SAMove EMAscParent1) (SAZipAsc1 x₂) = abort (lem-nomove-para x₂)
-    actdet-synth (EEAscL E) (SAsc x) (SAMove EMAscNextSib) (SAZipAsc1 x₂) = abort (lem-nomove-nsa x₂)
     actdet-synth (EEAscL E) (SAsc x) (SAZipAsc1 x₁) (SAMove EMAscParent1) = abort (lem-nomove-para x₁)
-    actdet-synth (EEAscL E) (SAsc x) (SAZipAsc1 x₁) (SAMove EMAscNextSib) = abort (lem-nomove-nsa x₁)
     actdet-synth (EEAscL E) (SAsc x) (SAZipAsc1 x₁) (SAZipAsc1 x₂) {p1 = p1} {p2 = p2}
      with actdet-ana E x x₁ x₂ {p1 = p1} {p2 = p2}
     ... | refl = refl , refl
@@ -169,9 +155,7 @@ module determinism where
 
     actdet-synth (EEApL E) (SAp m wt x) (SAMove x₁) (SAMove x₂) = movedet x₁ x₂ , refl
     actdet-synth (EEApL E) (SAp m wt x) (SAMove EMApParent1) (SAZipApArr _ x₂ x₃ d2 x₄) = abort (lem-nomove-pars d2)
-    actdet-synth (EEApL E) (SAp m wt x) (SAMove EMApNextSib) (SAZipApArr _ x₂ x₃ d2 x₄) = abort (lem-nomove-nss d2)
     actdet-synth (EEApL E) (SAp m wt x) (SAZipApArr _ x₁ x₂ d1 x₃) (SAMove EMApParent1) = abort (lem-nomove-pars d1)
-    actdet-synth (EEApL E) (SAp m wt x) (SAZipApArr _ x₁ x₂ d1 x₃) (SAMove EMApNextSib) = abort (lem-nomove-nss d1)
     actdet-synth (EEApL E) (SAp m wt x) (SAZipApArr a x₁ x₂ d1 x₃) (SAZipApArr b x₄ x₅ d2 x₆) {p1 = p1} {p2 = p2}
       with erasee-det x₁ x₄
     ... | refl with synthunicity x₂ x₅
@@ -223,9 +207,7 @@ module determinism where
 
     actdet-synth (EEPlusL E) (SPlus x x₁) (SAMove x₂) (SAMove x₃) = movedet x₂ x₃ , refl
     actdet-synth (EEPlusL E) (SPlus x x₁) (SAMove EMPlusParent1) (SAZipPlus1 d2) = abort (lem-nomove-para d2)
-    actdet-synth (EEPlusL E) (SPlus x x₁) (SAMove EMPlusNextSib) (SAZipPlus1 d2) = abort (lem-nomove-nsa d2)
     actdet-synth (EEPlusL E) (SPlus x x₁) (SAZipPlus1 x₂) (SAMove EMPlusParent1) = abort (lem-nomove-para x₂)
-    actdet-synth (EEPlusL E) (SPlus x x₁) (SAZipPlus1 x₂) (SAMove EMPlusNextSib) = abort (lem-nomove-nsa x₂)
     actdet-synth (EEPlusL E) (SPlus x x₁) (SAZipPlus1 x₂) (SAZipPlus1 x₃) {p1 = p1} {p2 = p2}
       = ap1 (λ x₄ → x₄ ·+₁ _) (actdet-ana E x x₂ x₃  {p1 = p1} {p2 = p2}) , refl
 
