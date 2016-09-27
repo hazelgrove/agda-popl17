@@ -25,16 +25,14 @@ module determinism where
   actdet-type (TMArrZip2 ()) TMArrParent2
   actdet-type (TMArrZip2 p1) (TMArrZip2 p2) with actdet-type p1 p2
   ... | refl = refl
-  actdet-type TMPlusFirstChild TMPlusFirstChild = refl
+  actdet-type TMPlusChild1 TMPlusChild1 = refl
+  actdet-type TMPlusChild2 TMPlusChild2 = refl
   actdet-type TMPlusParent1 TMPlusParent1 = refl
   actdet-type (TMPlusZip1 ()) TMPlusParent1
   actdet-type TMPlusParent2 TMPlusParent2 = refl
   actdet-type (TMPlusZip2 ()) TMPlusParent2
-  actdet-type TMPlusNextSib TMPlusNextSib = refl
-  actdet-type (TMPlusZip1 ()) TMPlusNextSib
   actdet-type TMConPlus TMConPlus = refl
   actdet-type TMPlusParent1 (TMPlusZip1 ())
-  actdet-type TMPlusNextSib (TMPlusZip1 ())
   actdet-type (TMPlusZip1 x) (TMPlusZip1 y) with actdet-type x y
   ... | refl = refl
   actdet-type TMPlusParent2 (TMPlusZip2 ())
@@ -62,17 +60,16 @@ module determinism where
   movedet EMApParent2 EMApParent2 = refl
   movedet EMNEHoleChild1 EMNEHoleChild1 = refl
   movedet EMNEHoleParent EMNEHoleParent = refl
-  movedet EMInlFirstChild EMInlFirstChild = refl
+  movedet EMInlChild1 EMInlChild1 = refl
   movedet EMInlParent EMInlParent = refl
-  movedet EMInrFirstChild EMInrFirstChild = refl
+  movedet EMInrChild1 EMInrChild1 = refl
   movedet EMInrParent EMInrParent = refl
   movedet EMCaseParent1 EMCaseParent1 = refl
   movedet EMCaseParent2 EMCaseParent2 = refl
   movedet EMCaseParent3 EMCaseParent3 = refl
-  movedet EMCaseNextSib1 EMCaseNextSib1 = refl
-  movedet EMCaseNextSib2 EMCaseNextSib2 = refl
-  movedet EMCaseFirstChild EMCaseFirstChild = refl
-
+  movedet EMCaseChild1 EMCaseChild1 = refl
+  movedet EMCaseChild2 EMCaseChild2 = refl
+  movedet EMCaseChild3 EMCaseChild3 = refl
 
   -- non-movement lemmas; theses show up pervasively throughout and save a
   -- lot of pattern matching.
@@ -111,9 +108,7 @@ module determinism where
   anamovedet (AAZipInl x d) EMInlParent = abort (lem-nomove-para d)
   anamovedet (AAZipInr x d) EMInrParent = abort (lem-nomove-para d)
   anamovedet (AAZipCase1 x₁ x₂ x₇ x₃ x₈ x₄ x₅ x₆) EMCaseParent1 = abort (lem-nomove-pars x₈)
-  anamovedet (AAZipCase1 x₁ x₂ x₇ x₃ x₈ x₄ x₅ x₆) EMCaseNextSib1 = abort (lem-nomove-nss x₈)
   anamovedet (AAZipCase2 x₁ x₂ x₃ x₄ d x₅) EMCaseParent2 = abort (lem-nomove-para d)
-  anamovedet (AAZipCase2 x₁ x₂ x₃ x₄ d x₅) EMCaseNextSib2 = abort (lem-nomove-nsa d)
   anamovedet (AAZipCase3 x₁ x₂ x₃ x₄ x₅ d) EMCaseParent3 = abort (lem-nomove-para d)
 
   lem-holematch : ∀ {t t1 t2} → t ~̸ (<||> ⊕ <||>) → t ~ <||> → t ▸plus (t1 ⊕ t2) → ⊥
