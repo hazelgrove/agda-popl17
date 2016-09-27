@@ -103,20 +103,32 @@ module constructability where
                        (runana++ (ziplem-inr m ih)
                          (DoAna (AAMove EMInrParent) DoRefl))
 
-    construct-ana (ACase x# y# m wt0 wt1 wt2) with construct-synth wt0 | construct-ana wt1 | construct-ana wt2
+    construct-ana (ACase {x = x} {y = y} x# y# m wt0 wt1 wt2)
+      with construct-synth wt0
+         | construct-ana wt1
+         | construct-ana wt2
     ... | (l0 , ih0) | (l1 , ih1) | (l2 , ih2) =
-                         construct (case _ _) :: construct nehole :: l0 ++ (move parent :: finish :: move nextSib :: l1 ++ (move nextSib :: l2 ++  [ move parent ])) ,
-                         DoAna (AAConCase x# y#)
-                           (DoAna (AAZipCase1 x# y# EETop SEHole SAConNEHole MPHole
-                                   (ASubsume SEHole TCHole1) (ASubsume SEHole TCHole1))
-                                (runana++ (ziplem-case1b x# y# EETop SEHole ih0)
-                                  (DoAna (AAZipCase1 x# y# (EENEHole EETop) (SNEHole wt0)
-                                            (SAMove EMNEHoleParent) MPHole (ASubsume SEHole TCHole1)
-                                            (ASubsume SEHole TCHole1))
-                                        (DoAna (AAZipCase1 x# y# EETop (SNEHole wt0) (SAFinish wt0) m
-                                                  (ASubsume SEHole TCHole1) (ASubsume SEHole TCHole1))
-                                            (DoAna (AAMove EMCaseNextSib1)
-                                              (runana++ (ziplem-case2 x# y# wt0 (ASubsume SEHole TCHole1) m ih1)
-                                                (DoAna (AAMove EMCaseNextSib2)
-                                                  (runana++ (ziplem-case3 x# y# wt0 wt1 m ih2)
-                                                    (DoAna (AAMove EMCaseParent3) DoRefl)))))))))
+                         construct (case x y) ::
+                         construct nehole ::
+                         l0 ++
+                         (move parent ::
+                           finish ::
+                           move parent ::
+                           move (child 2) ::
+                           l1 ++
+                             (move parent ::
+                              move (child 3) ::
+                              l2 ++ [ move parent ])) ,
+                          DoAna (AAConCase x# y#)
+                         (DoAna (AAZipCase1 x# y# EETop SEHole SAConNEHole MPHole (ASubsume SEHole TCHole1) (ASubsume SEHole TCHole1))
+                         (runana++ (ziplem-case1b x# y# EETop SEHole ih0)
+                         (DoAna (AAZipCase1 x# y# (EENEHole EETop) (SNEHole wt0) (SAMove EMNEHoleParent) MPHole (ASubsume SEHole TCHole1) (ASubsume SEHole TCHole1))
+                         (DoAna (AAZipCase1 x# y# EETop (SNEHole wt0) (SAFinish wt0) m (ASubsume SEHole TCHole1) (ASubsume SEHole TCHole1))
+                         (DoAna (AAMove EMCaseParent1)
+                         (DoAna (AAMove EMCaseChild2)
+                         (runana++ (ziplem-case2 x# y# wt0 (ASubsume SEHole TCHole1) m ih1)
+                         (DoAna (AAMove EMCaseParent2)
+                         (DoAna (AAMove EMCaseChild3)
+                         (runana++ (ziplem-case3 x# y# wt0 wt1 m ih2)
+                         (DoAna (AAMove EMCaseParent3)
+                          DoRefl)))))))))))
