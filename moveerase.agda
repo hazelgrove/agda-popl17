@@ -7,7 +7,7 @@ open import judgemental-erase
 module moveerase where
   -- theorem: movement doesn't change the term other than moving the cursor
   -- around.
-moveeraset : {t t' : τ̂} {δ : direction} →
+  moveeraset : {t t' : τ̂} {δ : direction} →
             (t + move δ +> t') →
             (t ◆t) == (t' ◆t)
   moveeraset TMArrChild1 = refl
@@ -16,12 +16,10 @@ moveeraset : {t t' : τ̂} {δ : direction} →
   moveeraset TMArrParent2 = refl
   moveeraset (TMArrZip1 {t2 = t2} m) = ap1 (λ x → x ==> t2) (moveeraset m)
   moveeraset (TMArrZip2 {t1 = t1} m) = ap1 (λ x → t1 ==> x) (moveeraset m)
-  moveeraset TMPlusFirstChild = refl
+  moveeraset TMPlusChild1 = refl
+  moveeraset TMPlusChild2 = refl
   moveeraset TMPlusParent1 = refl
   moveeraset TMPlusParent2 = refl
-  moveeraset TMPlusNextSib = refl
-  moveeraset (TMArrZip1 {t2 = t2} m) = ap1 (λ x → x ==> t2) (moveeraset m)
-  moveeraset (TMArrZip2 {t1 = t1} m) = ap1 (λ x → t1 ==> x) (moveeraset m)
   moveeraset (TMPlusZip1 {t2 = t2} m) = ap1 (λ x → x ⊕ t2) (moveeraset m)
   moveeraset (TMPlusZip2 {t1 = t1} m) = ap1 (λ x → t1 ⊕ x) (moveeraset m)
 
@@ -44,16 +42,16 @@ moveeraset : {t t' : τ̂} {δ : direction} →
   moveerase EMApParent2 = refl
   moveerase EMNEHoleChild1 = refl
   moveerase EMNEHoleParent = refl
-  moveerase EMInlFirstChild = refl
+  moveerase EMInlChild1 = refl
   moveerase EMInlParent = refl
-  moveerase EMInrFirstChild = refl
+  moveerase EMInrChild1 = refl
   moveerase EMInrParent = refl
   moveerase EMCaseParent1 = refl
   moveerase EMCaseParent2 = refl
   moveerase EMCaseParent3 = refl
-  moveerase EMCaseNextSib1 = refl
-  moveerase EMCaseNextSib2 = refl
-  moveerase EMCaseFirstChild = refl
+  moveerase EMCaseChild1 = refl
+  moveerase EMCaseChild2 = refl
+  moveerase EMCaseChild3 = refl
 
   -- this form is essentially the same as above, but for judgemental erasure
   moveerase' : {e e' : ê} {e◆ : ė} {δ : direction} →

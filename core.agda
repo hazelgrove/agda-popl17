@@ -384,6 +384,14 @@ module core where
                (▹ t1 ◃ ==>₁ t2) + move parent +> ▹ t1 ==> t2 ◃
     TMArrParent2 : {t1 t2 : τ̇} →
                (t1 ==>₂ ▹ t2 ◃) + move parent +> ▹ t1 ==> t2 ◃
+    TMPlusChild1 : {t1 t2 : τ̇} →
+               ▹ t1 ⊕ t2 ◃ + move (child 1) +> (▹ t1 ◃ ⊕₁ t2)
+    TMPlusChild2 : {t1 t2 : τ̇} →
+               ▹ t1 ⊕ t2 ◃ + move (child 2) +> (t1 ⊕₂ ▹ t2 ◃)
+    TMPlusParent1 : {t1 t2 : τ̇} →
+               (▹ t1 ◃ ⊕₁ t2) + move parent +> ▹ t1 ⊕ t2 ◃
+    TMPlusParent2 : {t1 t2 : τ̇} →
+               (t1 ⊕₂ ▹ t2 ◃) + move parent +> ▹ t1 ⊕ t2 ◃
     TMDel     : {t : τ̇} →
                 (▹ t ◃) + del +> (▹ <||> ◃)
     TMConArrow  : {t : τ̇} →
@@ -446,12 +454,12 @@ module core where
                 <| ▹ e ◃ |> + move parent +>e (▹ <| e |> ◃)
 
     -- rules for injections
-    EMInlFirstChild : {e : ė} →
-               ▹ inl e ◃ + move firstChild +>e inl ▹ e ◃
+    EMInlChild1 : {e : ė} →
+               ▹ inl e ◃ + move (child 1) +>e inl ▹ e ◃
     EMInlParent : {e : ė} →
                 inl ▹ e ◃ + move parent +>e ▹ inl e  ◃
-    EMInrFirstChild : {e : ė} →
-               ▹ inr e ◃ + move firstChild +>e inr ▹ e ◃
+    EMInrChild1 : {e : ė} →
+               ▹ inr e ◃ + move (child 1) +>e inr ▹ e ◃
     EMInrParent : {e : ė} →
                 inr ▹ e ◃ + move parent +>e ▹ inr e  ◃
 
@@ -462,12 +470,13 @@ module core where
                 case₂ e x ▹ e1 ◃ y e2 + move parent +>e ▹ case e x e1 y e2 ◃
     EMCaseParent3 : {e e1 e2 : ė} {x y : Nat} →
                 case₃ e x e1 y ▹ e2 ◃ + move parent +>e ▹ case e x e1 y e2 ◃
-    EMCaseNextSib1 : {e e1 e2 : ė} {x y : Nat} →
-                 case₁ ▹ e ◃ x e1 y e2 + move nextSib +>e case₂ e x ▹ e1 ◃ y e2
-    EMCaseNextSib2 : {e e1 e2 : ė} {x y : Nat} →
-                 case₂ e x ▹ e1 ◃ y e2 + move nextSib +>e case₃ e x e1 y ▹ e2 ◃
-    EMCaseFirstChild : {e e1 e2 : ė} {x y : Nat} →
-                ▹ case e x e1 y e2 ◃ + move firstChild +>e case₁ ▹ e ◃ x e1 y e2
+    EMCaseChild1 : {e e1 e2 : ė} {x y : Nat} →
+                ▹ case e x e1 y e2 ◃ + move (child 1) +>e case₁ ▹ e ◃ x e1 y e2
+    EMCaseChild2 : {e e1 e2 : ė} {x y : Nat} →
+                ▹ case e x e1 y e2 ◃ + move (child 2) +>e case₂ e x ▹ e1 ◃ y e2
+    EMCaseChild3 : {e e1 e2 : ė} {x y : Nat} →
+                ▹ case e x e1 y e2 ◃ + move (child 3) +>e case₃ e x e1 y ▹ e2 ◃
+
   mutual
   -- synthetic action expressions
     data _⊢_=>_~_~>_=>_ : (Γ : ·ctx) → (e1 : ê) → (t1 : τ̇)
