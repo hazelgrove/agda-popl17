@@ -17,8 +17,6 @@ module aasubsume-min where
     aasubmin-synth (SAZipHole x x₁ d) = aasubmin-synth d
     aasubmin-synth _ = ⊤
 
--- aazipinlr aazipcase123
-
     aasubmin-ana : ∀{Γ e α e' t} → (Γ ⊢ e ~ α ~> e' ⇐ t) → Set
     aasubmin-ana (AASubsume x x₁ SAConAsc x₃) = ⊥
     aasubmin-ana (AASubsume x x₁ SAConInl x₃) = ⊥
