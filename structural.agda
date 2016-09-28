@@ -7,19 +7,18 @@ module structural where
   -- this module contains proofs that the judgements that mention contexts
   -- defined throughout the work have the right structural properties with
   -- respect to those contexts: exchange, weakening, and contraction.
-
-  -- we only argue weakening and contraction here. because of the choice of
-  -- representation of contexts, it's not possible for anything that we've
-  -- defined to not admit exchange, because functions are inherently not
-  -- internally ordered.
-
+  --
+  -- we only argue weakening and contraction. because of the choice of
+  -- representation of contexts as functions, it's not possible for
+  -- anything that we've defined to not admit exchange, because functions
+  -- are inherently not internally ordered.
+  --
   -- contraction
   --
   -- Γ, (x : t), (x : t) ⊢ A
   -- -----------------------
   --     Γ , (x : t) ⊢ A
-
-
+  --
   -- weakening
   --
   --   Γ ⊢ A      x # Γ
@@ -62,7 +61,6 @@ module structural where
                     fresh x e →
                     Γ ⊢ e => t →
                     (Γ ,, (x , t')) ⊢ e => t
-
     wt-weak-synth A F (SAsc x₁) = SAsc (wt-weak-ana A F x₁)
     wt-weak-synth {x = x} A F (SVar {n = n} x₁) with natEQ n x
     wt-weak-synth A F (SVar x₁) | Inl refl = abort (somenotnone (! x₁ · A))
@@ -81,7 +79,8 @@ module structural where
     wt-weak-ana A F (ASubsume x₁ x₂) = ASubsume (wt-weak-synth A F x₁) x₂
     wt-weak-ana {x = x} A F (ALam {x = x₁} x₂ x₃ wt) with natEQ x x₁
     wt-weak-ana A F (ALam x₂ x₃ wt) | Inl refl = abort F
-    wt-weak-ana A F (ALam x₂ x₃ wt) | Inr neq  = {!!} -- ALam (lem-extend {!!} {!!}) x₃ (wt-weak-ana {!!} {!!} wt)
+    wt-weak-ana A F (ALam x₂ x₃ wt) | Inr neq  = {!!} -- ALam (lem-extend {!!} x₂) x₃ (wt-weak-ana {!!} {!!} wt)
+
 
   -- the contraction cases are much easier and don't require induction over
   -- the typing jugement, because the contexts in question are indeed
@@ -112,7 +111,15 @@ module structural where
   -- act-weak-synth
   -- act-weak-ana
 
-  -- act-contract-synth
-  -- act-contract-ana
-
   -- what about transitivity / cut elimination?
+
+  mutual
+    act-contract-synth : ∀{ Γ x t t' t'' e e' α } →
+                         ((Γ ,, (x , t'')) ,, (x , t'')) ⊢ e => t ~ α ~> e' => t' →
+                         (Γ ,, (x , t'')) ⊢ e => t ~ α ~> e' => t'
+    act-contract-synth {Γ} {x} {t} {t'} {t''} {e} {e'} {α} d = tr (λ q → q ⊢ e => t ~ α ~> e' => t') (funext (lem-contract-eq Γ x t'')) d
+
+    act-contract-ana : ∀{ Γ x t t' e e' α } →
+                         ((Γ ,, (x , t')) ,, (x , t')) ⊢ e ~ α ~> e' ⇐ t →
+                         (Γ ,, (x , t')) ⊢ e ~ α ~> e' ⇐ t
+    act-contract-ana {Γ} {x} {t} {t'} {e} {e'} {α} d = tr (λ q → q ⊢ e ~ α ~> e' ⇐ t) (funext (lem-contract-eq Γ x t')) d
