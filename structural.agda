@@ -56,11 +56,26 @@ module structural where
   ... | Inl pp = abort (qq pp)
   ... | Inr pp = refl
 
+  lem-same : {Γ : ·ctx} {n m : Nat} →
+             (n == m) →
+             (Γ n) == (Γ m)
+  lem-same refl = refl
+
   lem-swap : (Γ : ·ctx) (x y : Nat) (t1 t2 : τ̇) (z : Nat) →
          ((Γ ,, (x , t1)) ,, (y , t2)) z == ((Γ ,, (y , t2)) ,, (x , t1)) z
-  lem-swap Γ x y t1 t2 z with natEQ z x
-  lem-swap Γ x y t1 t2 .x | Inl refl = {!!}
-  ... | Inr qq = {!!}
+  lem-swap Γ x y t1 t2 z with natEQ x z | natEQ y z
+  lem-swap Γ x y t1 t2 z | Inl p | Inl q = {!q p!}
+  lem-swap Γ x y t1 t2 .x | Inl refl | Inr x₂ with natEQ x x
+  lem-swap Γ x y t1 t2 .x | Inl refl | Inr x₂ | Inl refl = refl
+  lem-swap Γ x y t1 t2 .x | Inl refl | Inr x₂ | Inr x₁ = abort (x₁ refl)
+  lem-swap Γ x y t1 t2 .y | Inr x₁ | Inl refl with natEQ y y
+  lem-swap Γ x₁ y t1 t2 .y | Inr x₂ | Inl refl | Inl refl = refl
+  lem-swap Γ x₁ y t1 t2 .y | Inr x₂ | Inl refl | Inr x = abort (x refl)
+  lem-swap Γ x y t1 t2 z | Inr x₁ | Inr x₂ with natEQ x z | natEQ y z
+  lem-swap Γ x .x t1 t2 .x | Inr x₂ | Inr x₃ | Inl refl | Inl refl = abort (x₃ refl)
+  lem-swap Γ x y t1 t2 .x | Inr x₂ | Inr x₃ | Inl refl | Inr x₁ = abort (x₂ refl)
+  lem-swap Γ x y t1 t2 z | Inr x₃ | Inr x₄ | Inr x₁ | Inl x₂ = abort (x₄ x₂)
+  lem-swap Γ x y t1 t2 z | Inr x₃ | Inr x₄ | Inr x₁ | Inr x₂ = refl
 
   lem-pass : (Γ : ·ctx) (x : Nat) (apt : x # Γ) (t : τ̇) →
                              ((s : Σ[ z ∈ Nat ] (x == z → ⊥)) →
@@ -125,12 +140,10 @@ module structural where
                     fresh x e →
                     Γ ⊢ e <= t →
                     (Γ ,, (x , t')) ⊢ e <= t
-    wt-weak-ana {Γ} {x} {t} {t'} {e} A f wt = {!funext (lem-pass Γ x A t') !}
-
-    -- wt-weak-ana A F (ASubsume x₁ x₂) = ASubsume (wt-weak-synth A F x₁) x₂
-    -- wt-weak-ana {x = x} A F (ALam {x = x₁} x₂ x₃ wt) with natEQ x x₁
-    -- wt-weak-ana A F (ALam x₂ x₃ wt) | Inl refl = abort F
-    -- wt-weak-ana A F (ALam x₂ x₃ wt) | Inr neq = {!!} -- ALam (lem-extend {!!} x₂) x₃ (wt-weak-ana {!!} {!!} wt)
+    wt-weak-ana A F (ASubsume x₁ x₂) = ASubsume (wt-weak-synth A F x₁) x₂
+    wt-weak-ana {x = x} A F (ALam {x = x₁} x₂ x₃ wt) with natEQ x x₁
+    wt-weak-ana A F (ALam x₂ x₃ wt) | Inl refl = abort F
+    wt-weak-ana A F (ALam x₂ x₃ wt) | Inr neq = {!!} -- ALam (lem-extend {!!} x₂) x₃ (wt-weak-ana {!!} {!!} wt)
 
   ---- action semantics judgements
   mutual
@@ -156,12 +169,17 @@ module structural where
     act-contract-ana {Γ} {x} {t} {t'} {e} {e'} {α} d = tr (λ q → q ⊢ e ~ α ~> e' ⇐ t) (funext (lem-contract Γ x t')) d
 
   mutual
-    act-weak-synth : {!!}
+    act-weak-synth : ∀{ Γ x t t' t'' e e' α } →
+                         x # Γ →
+                         Γ ⊢ e => t ~ α ~> e' => t' →
+                         (Γ ,, (x , t'')) ⊢ e => t ~ α ~> e' => t'
     act-weak-synth = {!!}
 
-    act-weak-ana : {!!}
+    act-weak-ana : ∀{ Γ x t t' e e' α } →
+                         x # Γ →
+                         Γ ⊢ e ~ α ~> e' ⇐ t →
+                         (Γ ,, (x , t')) ⊢ e ~ α ~> e' ⇐ t
     act-weak-ana = {!!}
-
 
 
   -- what about transitivity / cut elimination?
