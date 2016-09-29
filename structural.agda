@@ -61,10 +61,10 @@ module structural where
              (Γ n) == (Γ m)
   lem-same refl = refl
 
-  lem-swap : (Γ : ·ctx) (x y : Nat) (t1 t2 : τ̇) (z : Nat) →
+  lem-swap : (Γ : ·ctx) (x y : Nat) (t1 t2 : τ̇) {x≠y : x == y → ⊥}  (z : Nat) →
          ((Γ ,, (x , t1)) ,, (y , t2)) z == ((Γ ,, (y , t2)) ,, (x , t1)) z
   lem-swap Γ x y t1 t2 z with natEQ x z | natEQ y z
-  lem-swap Γ x y t1 t2 z | Inl p | Inl q = {!q p!}
+  lem-swap Γ x y t1 t2 {x≠y} z | Inl p | Inl q = abort (x≠y (p · ! q))
   lem-swap Γ x y t1 t2 .x | Inl refl | Inr x₂ with natEQ x x
   lem-swap Γ x y t1 t2 .x | Inl refl | Inr x₂ | Inl refl = refl
   lem-swap Γ x y t1 t2 .x | Inl refl | Inr x₂ | Inr x₁ = abort (x₁ refl)
@@ -95,16 +95,18 @@ module structural where
   ---- well-typedness jugements
   mutual
     wt-exchange-synth : {Γ : ·ctx} {x y : Nat} {t1 t2 t : τ̇} {e : ė} →
+                        {x≠y : x == y → ⊥} →
                         ((Γ ,, (x , t1)) ,, (y , t2)) ⊢ e => t →
                         ((Γ ,, (y , t2)) ,, (x , t1)) ⊢ e => t
-    wt-exchange-synth {Γ} {x} {y} {t1} {t2} {t} {e} d =
-      tr (λ q → q ⊢ e => t) (funext (lem-swap Γ x y t1 t2)) d
+    wt-exchange-synth {Γ} {x} {y} {t1} {t2} {t} {e} {x≠y} d =
+      tr (λ q → q ⊢ e => t) (funext (lem-swap Γ x y t1 t2 {x≠y = x≠y})) d
 
     wt-exchange-ana : {Γ : ·ctx} {x y : Nat} {t1 t2 t : τ̇} {e : ė} →
+                        {x≠y : x == y → ⊥} →
                         ((Γ ,, (x , t1)) ,, (y , t2)) ⊢ e <= t →
                         ((Γ ,, (y , t2)) ,, (x , t1)) ⊢ e <= t
-    wt-exchange-ana {Γ} {x} {y} {t1} {t2} {t} {e} d =
-      tr (λ q → q ⊢ e <= t) (funext (lem-swap Γ x y t1 t2)) d
+    wt-exchange-ana {Γ} {x} {y} {t1} {t2} {t} {e} {x≠y} d =
+      tr (λ q → q ⊢ e <= t) (funext (lem-swap Γ x y t1 t2 {x≠y = x≠y})) d
 
   mutual
     wt-contract-synth : {Γ : ·ctx} {x : Nat} {t t' : τ̇} {e : ė} →
@@ -178,7 +180,7 @@ module structural where
     act-weak-synth apt SAConAsc = SAConAsc
     act-weak-synth {x = x} apt (SAConVar {x = x'} p) with natEQ x x'
     act-weak-synth apt (SAConVar p) | Inl refl = SAConVar (abort (somenotnone (! p · apt)))
-    ... | Inr neq = SAConVar {!!}
+    ... | Inr neq = {!!}
     act-weak-synth apt  (SAConLam x₂) = SAConLam {!!}
     act-weak-synth apt (SAConApArr x₁) = SAConApArr x₁
     act-weak-synth apt (SAConApOtw x₁) = SAConApOtw x₁
