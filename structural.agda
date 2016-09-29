@@ -34,7 +34,7 @@ module structural where
   -- to drop this requirement with alpha-renaming to recover the standard
   -- description of these things, so we allow it here for convenience.
   fresh : Nat → ė → Set
-  fresh x (e ·: x₁) = fresh x e
+  fresh x (e ·: t) = fresh x e
   fresh x (X y) with natEQ x y
   ... | Inl eq = ⊥
   ... | Inr neq = ⊤
@@ -48,6 +48,9 @@ module structural where
   fresh x (e1 ∘ e2) = fresh x e1 × fresh x e2
 
   ---- lemmas
+
+  --- a contracted context gives all the same responses as the
+  --- non-contracted context
   lem-contract : (Γ : ·ctx) (x : Nat) (t : τ̇) (y : Nat) →
          ((Γ ,, (x , t)) ,, (x , t)) y == (Γ ,, (x , t)) y
   lem-contract Γ x t y with natEQ x y
@@ -56,11 +59,8 @@ module structural where
   ... | Inl pp = abort (qq pp)
   ... | Inr pp = refl
 
-  lem-same : {Γ : ·ctx} {n m : Nat} →
-             (n == m) →
-             (Γ n) == (Γ m)
-  lem-same refl = refl
-
+  --- an exchanged context gives all the same responses as the
+  --- non-exchanged context
   lem-swap : (Γ : ·ctx) (x y : Nat) (t1 t2 : τ̇) {x≠y : x == y → ⊥}  (z : Nat) →
          ((Γ ,, (x , t1)) ,, (y , t2)) z == ((Γ ,, (y , t2)) ,, (x , t1)) z
   lem-swap Γ x y t1 t2 z with natEQ x z | natEQ y z
@@ -90,7 +90,6 @@ module structural where
   lem-extend {n} {x} neq w with natEQ x n
   lem-extend neq w₁ | Inl refl = abort (neq refl)
   lem-extend neq w₁ | Inr x₁ = w₁
-
 
   ---- well-typedness jugements
   mutual
