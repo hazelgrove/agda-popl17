@@ -557,10 +557,10 @@ module core where
                    y # Γ →
                    t ▸plus (t1 ⊕ t2) →
                    Γ ⊢ ▹ e ◃ => t ~ construct (case x y) ~> (case₂ e x (▹ <||> ◃) y <||>) ·:₁ <||> => <||>
-      SAConCase2 : {Γ : ·ctx} {x y : Nat} {t t1 t2 : τ̇} {e : ė} →
+      SAConCase2 : {Γ : ·ctx} {x y : Nat} {t : τ̇} {e : ė} →
                    x # Γ →
                    y # Γ →
-                   t ~̸ (t1 ⊕ t2) →
+                   t ~̸ (<||> ⊕ <||>) →
                    Γ ⊢ ▹ e ◃ => t ~ construct (case x y) ~> (case₁ (<| ▹ e ◃ |> ) x <||> y <||>) ·:₁ <||> => <||>
 
 

@@ -63,6 +63,8 @@ module aasubsume-min where
     ... | _ , a , b = _ , SAZipHole x x₁ a , b
     min-synth SAConInl = _ , SAConInl , <>
     min-synth SAConInr = _ , SAConInr , <>
+    min-synth (SAConCase1 a b c) = _ , (SAConCase1 a b c) , <>
+    min-synth (SAConCase2 a b c) = _ , SAConCase2 a b c , <>
 
     min-ana : ∀{Γ e α e' t} → (d : Γ ⊢ e ~ α ~> e' ⇐ t) → Σ[ e'' ∈ ê ] Σ[ d' ∈  Γ ⊢ e ~ α ~> e'' ⇐ t ] aasubmin-ana d'
     min-ana (AASubsume {Γ = Γ} x x₁ (SAMove x₂) x₃) = _ , AAMove x₂ , <>
@@ -93,6 +95,8 @@ module aasubsume-min where
     ... | a , b , c = _ , AASubsume x x₁ (SAZipPlus2 b) x₃ , c
     min-ana (AASubsume x x₁ (SAZipHole x₂ x₃ x₄) x₅) with min-synth x₄
     ... | a , b , c = _ , AASubsume x x₁ (SAZipHole x₂ x₃ b) x₅ , c
+    min-ana (AASubsume x y (SAConCase1 a b c) z) = _ , AASubsume x y (SAConCase1 a b c) z , <>
+    min-ana (AASubsume x y (SAConCase2 a b c) z) = _ , AASubsume x y (SAConCase2 a b c) z , <>
     min-ana (AAMove x) = _ , AAMove x , <>
     min-ana AADel = _ , AADel , <>
     min-ana AAConAsc = _ , AAConAsc , <>
@@ -153,3 +157,5 @@ module aasubsume-min where
   min-ana-lem {c = SAZipHole x x₁ c} min = min
   min-ana-lem {c = SAConInl} min = <>
   min-ana-lem {c = SAConInr} min = <>
+  min-ana-lem {c = SAConCase1 a b c} min = <>
+  min-ana-lem {c = SAConCase2 a b c} min = <>

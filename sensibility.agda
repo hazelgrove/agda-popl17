@@ -35,6 +35,8 @@ module sensibility where
     actsense-synth _ EETop (SAFinish x) _ = x
     actsense-synth EETop (EEAscR (ETPlusL ETTop)) SAConInl SEHole = SAsc (AInl MPPlus (ASubsume SEHole TCRefl))
     actsense-synth EETop (EEAscR (ETPlusR ETTop)) SAConInr SEHole = SAsc (AInr MPPlus (ASubsume SEHole TCRefl))
+    actsense-synth EETop (EEAscL (EECase2 EETop)) (SAConCase1 c d e₁) f = SAsc (ACase c d e₁ f (ASubsume SEHole TCRefl) (ASubsume SEHole TCRefl))
+    actsense-synth EETop (EEAscL (EECase1 (EENEHole EETop))) (SAConCase2 c d e₁) f = SAsc (ACase c d MPHole (SNEHole f) (ASubsume SEHole TCRefl) (ASubsume SEHole TCRefl))
 
     --- zipper cases. in each, we recur on the smaller action derivation
     --- following the zipper structure, then reassemble the result

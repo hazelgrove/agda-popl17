@@ -297,8 +297,18 @@ module determinism where
       -- new cases for sums
     actdet-synth EETop SEHole SAConInl SAConInl = refl , refl
     actdet-synth EETop SEHole SAConInr SAConInr = refl , refl
-
-
+    actdet-synth (EELam er) () (SAMove x₁) (SAMove x₂)
+    actdet-synth (EEInl er) () (SAMove x) (SAMove x₁)
+    actdet-synth (EEInr er) () (SAMove x) (SAMove x₁)
+    actdet-synth (EECase1 er) () (SAMove x₁) (SAMove x₂)
+    actdet-synth (EECase2 er) () (SAMove x₁) (SAMove x₂)
+    actdet-synth (EECase3 er) () (SAMove x₁) (SAMove x₂)
+    actdet-synth er wt (SAConCase1 x₁ x₂ x₃) (SAConCase1 x₄ x₅ x₆) = refl , refl
+    actdet-synth er wt (SAConCase1 x₁ x₂ MPHole) (SAConCase2 x₄ x₅ x₆) = abort (x₆ TCHole2)
+    actdet-synth EETop wt (SAConCase1 x₁ x₂ MPPlus) (SAConCase2 x₄ x₅ x₆) = abort (x₆ (TCPlus TCHole1 TCHole1))
+    actdet-synth EETop wt (SAConCase2 x₁ x₂ x₃) (SAConCase1 x₄ x₅ MPHole) = abort (x₃ TCHole2)
+    actdet-synth EETop wt (SAConCase2 x₁ x₂ x₃) (SAConCase1 x₄ x₅ MPPlus) = abort (x₃ (TCPlus TCHole1 TCHole1))
+    actdet-synth er wt (SAConCase2 x₁ x₂ x₃) (SAConCase2 x₄ x₅ x₆) = refl , refl
 
     -- an action on an expression in an analytic position produces one
     -- resultant expression and type.
@@ -421,8 +431,8 @@ module determinism where
     actdet-ana (EECase2 er) (ACase x₁ x₂ x₃ x₄ wt wt₁) (AASubsume (EECase2 x₉) () x₁₁ x₁₂) _
     actdet-ana (EECase3 er) (ACase x₁ x₂ x₃ x₄ wt wt₁) (AASubsume (EECase3 x₉) () x₁₁ x₁₂) _
 
-    actdet-ana EETop (ASubsume SEHole x₂) (AAConCase x₃ x₄) (AASubsume EETop x₆ () x₈)
-    actdet-ana EETop (ASubsume SEHole x₂) (AASubsume EETop SEHole () x₆) (AAConCase x₇ x₈)
+    actdet-ana EETop (ASubsume SEHole x₂) (AAConCase x₃ x₄) (AASubsume EETop SEHole a x₈) = {!!}
+    actdet-ana EETop (ASubsume SEHole x₂) (AASubsume EETop SEHole a x₆) (AAConCase x₇ x₈) = {!!}
 
       -- the cases where the derivations match just go through
     actdet-ana er (ASubsume x x₁) (AAConInl1 x₂) (AAConInl1 x₃) = refl
