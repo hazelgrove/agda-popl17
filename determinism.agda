@@ -108,8 +108,8 @@ module determinism where
   anamovedet (AAZipInl x d) EMInlParent = abort (lem-nomove-para d)
   anamovedet (AAZipInr x d) EMInrParent = abort (lem-nomove-para d)
   anamovedet (AAZipCase1 x₁ x₂ x₇ x₃ x₈ x₄ x₅ x₆) EMCaseParent1 = abort (lem-nomove-pars x₈)
-  anamovedet (AAZipCase2 x₁ x₂ x₃ x₄ d x₅) EMCaseParent2 = abort (lem-nomove-para d)
-  anamovedet (AAZipCase3 x₁ x₂ x₃ x₄ x₅ d) EMCaseParent3 = abort (lem-nomove-para d)
+  anamovedet (AAZipCase2 x₁ x₂ x₃ x₄ d) EMCaseParent2 = abort (lem-nomove-para d)
+  anamovedet (AAZipCase3 x₁ x₂ x₃ x₄ d) EMCaseParent3 = abort (lem-nomove-para d)
 
   lem-holematch : ∀ {t t1 t2} → t ~̸ (<||> ⊕ <||>) → t ~ <||> → t ▸plus (t1 ⊕ t2) → ⊥
   lem-holematch a TCRefl MPHole = a TCHole2
@@ -457,7 +457,7 @@ module determinism where
     ... | refl with actdet-synth x₈ x₉ x₁₈ x₁₀ {p1 = p2} {p2 = p1}
     ... | refl , refl = refl
 
-    actdet-ana (EECase2 er) (ACase x₂ x₃ x₄ x₅ wt wt₁) (AAZipCase2 x₆ x₇ x₈ x₉ d1 x₁₀) (AAZipCase2 x₁₁ x₁₂ x₁₃ x₁₄ d2 x₁₅) {p1} {p2}
+    actdet-ana (EECase2 er) (ACase x₂ x₃ x₄ x₅ wt wt₁) (AAZipCase2 x₆ x₇ x₈ x₉ d1) (AAZipCase2 x₁₁ x₁₂ x₁₃ x₁₄ d2) {p1} {p2}
        with synthunicity x₅ x₈
     ... | refl with synthunicity x₅ x₁₃
     ... | refl with matchplusunicity x₁₄ x₉
@@ -465,7 +465,7 @@ module determinism where
     ... | refl with actdet-ana er wt d1 d2 {p1 = p1} {p2 = p2}
     ... | refl = refl
 
-    actdet-ana (EECase3 er) (ACase x₂ x₃ x₄ x₅ wt wt₁) (AAZipCase3 x₆ x₇ x₈ x₉ x₁₀ d1) (AAZipCase3 x₁₁ x₁₂ x₁₃ x₁₄ x₁₅ d2) {p1} {p2}
+    actdet-ana (EECase3 er) (ACase x₂ x₃ x₄ x₅ wt wt₁) (AAZipCase3 x₆ x₇ x₈ x₉ d1) (AAZipCase3 x₁₁ x₁₂ x₁₃ x₁₄ d2) {p1} {p2}
       with synthunicity x₈ x₁₃
     ... | refl with synthunicity x₈ x₅
     ... | refl with matchplusunicity x₄ x₉

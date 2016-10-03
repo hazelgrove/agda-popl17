@@ -319,7 +319,7 @@ module checks where
                   runana Γ (case₂ e x e1 y e2) l (case₂ e x e1' y e2) t
   ziplem-case2 x# y# wt1 wt2 m DoRefl = DoRefl
   ziplem-case2 x# y# wt1 wt2 m (DoAna x₁ ra) =
-                     DoAna (AAZipCase2 x# y# wt1 m x₁ wt2)
+                     DoAna (AAZipCase2 x# y# wt1 m x₁)
                            (ziplem-case2 x# y# wt1 wt2 m ra)
 
   ziplem-case3  : ∀ {t t+ t1 t2 Γ x y e e1 e2 e2' l} →
@@ -332,5 +332,5 @@ module checks where
                   runana Γ (case₃ e x e1 y e2) l (case₃ e x e1 y e2') t
   ziplem-case3 x# y# wt1 wt2 m DoRefl = DoRefl
   ziplem-case3 x# y# wt1 wt2 m (DoAna x₁ ra) =
-                     DoAna  (AAZipCase3 x# y# wt1 m wt2 x₁)
+                     DoAna  (AAZipCase3 x# y# wt1 m x₁)
                             (ziplem-case3 x# y# wt1 wt2 m ra)

@@ -170,12 +170,12 @@ module moveerase where
     ... | refl with matchplusunicity x₁₀ x₃
     ... | refl = EECase1 (synth-move-er x₇ x₄ x₉)
     ana-move-er (EECase2 er) (ACase x₁ x₂ x₃ x₄ wt wt₁)
-                             (AAZipCase2 x₅ x₆ x₇ x₈ α x₉)
+                             (AAZipCase2 x₅ x₆ x₇ x₈ α)
       with synthunicity x₇ x₄
     ... | refl with matchplusunicity x₃ x₈
     ... | refl = EECase2 (ana-move-er er wt α)
     ana-move-er (EECase3 er) (ACase x₁ x₂ x₃ x₄ wt wt₁)
-                             (AAZipCase3 x₅ x₆ x₇ x₈ x₉ α)
+                             (AAZipCase3 x₅ x₆ x₇ x₈ α)
       with synthunicity x₇ x₄
     ... | refl with matchplusunicity x₃ x₈
     ... | refl = EECase3 (ana-move-er er wt₁ α)

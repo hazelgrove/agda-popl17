@@ -27,8 +27,8 @@ module aasubsume-min where
     aasubmin-ana (AAZipInl x y) = aasubmin-ana y
     aasubmin-ana (AAZipInr x y) = aasubmin-ana y
     aasubmin-ana (AAZipCase1 a b c d e f g h) = aasubmin-synth e
-    aasubmin-ana (AAZipCase2 a b c d e f) = aasubmin-ana e
-    aasubmin-ana (AAZipCase3 a b c d e f) = aasubmin-ana f
+    aasubmin-ana (AAZipCase2 a b c d e) = aasubmin-ana e
+    aasubmin-ana (AAZipCase3 a b c d f) = aasubmin-ana f
     aasubmin-ana _ = ⊤
 
 
@@ -120,10 +120,10 @@ module aasubsume-min where
     ... | a , b , c = _ , AAZipInr x b , c
     min-ana (AAZipCase1 x₁ x₂ x₃ x₄ x₅ x₆ x₇ x₈) with min-synth x₅
     ... | a , b , c = _ , AAZipCase1 x₁ x₂ x₃ x₄ b x₆ x₇ x₈ , c
-    min-ana (AAZipCase2 x₁ x₂ x₃ x₄ x₅ x₆) with min-ana x₅
-    ... | a , b , c = _ , AAZipCase2 x₁ x₂ x₃ x₄ b x₆ , c
-    min-ana (AAZipCase3 x₁ x₂ x₃ x₄ x₅ x₆) with min-ana x₆
-    ... | a , b , c = _ , AAZipCase3 x₁ x₂ x₃ x₄ x₅ b , c
+    min-ana (AAZipCase2 x₁ x₂ x₃ x₄ x₅) with min-ana x₅
+    ... | a , b , c = _ , AAZipCase2 x₁ x₂ x₃ x₄ b , c
+    min-ana (AAZipCase3 x₁ x₂ x₃ x₄ x₆) with min-ana x₆
+    ... | a , b , c = _ , AAZipCase3 x₁ x₂ x₃ x₄ b , c
 
   min-ana-lem : ∀{e e' e◆ Γ t t' t'' α}
                  {a : erase-e e e◆}

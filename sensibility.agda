@@ -114,8 +114,8 @@ module sensibility where
     actsense-ana (EEInl _) (EEInl _) (AAZipInl _ _ ) (ASubsume () _)
     actsense-ana (EEInr _) (EEInr _) (AAZipInr _ _) (ASubsume () _)
     actsense-ana (EECase1 _) (EECase1 _) (AAZipCase1 _ _ _ _ _ _ _ _) (ASubsume () _)
-    actsense-ana (EECase2 _) (EECase2 _) (AAZipCase2 _ _ _ _ _ _) (ASubsume () _)
-    actsense-ana (EECase3 _) (EECase3 _) (AAZipCase3 _ _ _ _ _ _) (ASubsume () _)
+    actsense-ana (EECase2 _) (EECase2 _) (AAZipCase2 _ _ _ _ _) (ASubsume () _)
+    actsense-ana (EECase3 _) (EECase3 _) (AAZipCase3 _ _ _ _ _) (ASubsume () _)
 
       -- zipper cases for sum types
     actsense-ana (EEInl er1) (EEInl er2) (AAZipInl m1 b) (AInl m2 wt)
@@ -130,13 +130,13 @@ module sensibility where
                                           (ACase x₉ x₁₀ x₁₁ x₁₂ wt wt₁)
       with actsense-synth x₃ (rel◆ _)  x₅ x₄
     ... | ih = ACase x₉ x₁₀ x₆ (lem-synth-erase ih er2) x₇ x₈
-    actsense-ana (EECase2 er1) (EECase2 er2) (AAZipCase2 x₁ x₂ s1 x₄ x₅ x₆)
+    actsense-ana (EECase2 er1) (EECase2 er2) (AAZipCase2 x₁ x₂ s1 x₄ x₅)
                                           (ACase x₇ x₈ x₉ s2 wt wt₁)
       with synthunicity s1 s2
     ... | refl with matchplusunicity x₉ x₄
     ... | refl with actsense-ana er1 er2 x₅ wt
     ... | ih = ACase x₇ x₈ x₉ s2 ih wt₁
-    actsense-ana (EECase3 er1) (EECase3 er2) (AAZipCase3 x₁ x₃ s1  x₄ x₅ x₆)
+    actsense-ana (EECase3 er1) (EECase3 er2) (AAZipCase3 x₁ x₃ s1  x₄ x₆)
                                           (ACase x₇ x₈ x₉ s2 wt wt₁)
      with synthunicity s2 s1
     ... | refl with matchplusunicity x₉ x₄
