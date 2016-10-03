@@ -635,13 +635,11 @@ module core where
                  Γ ⊢ e => t+ →
                  t+ ▸plus (t1 ⊕ t2) →
                  (Γ ,, (x , t1)) ⊢ e1 ~ α ~> e1' ⇐ t →
-                 (Γ ,, (y , t2)) ⊢ e2 <= t →
                  Γ ⊢ case₂ e x e1 y e2 ~ α ~> case₂ e x e1' y e2 ⇐ t
       AAZipCase3 : {Γ : ·ctx} {e2 e2' : ê} {e e1 : ė} {x y : Nat} {t t+ t1 t2 : τ̇} {α : action} →
                  x # Γ →
                  y # Γ →
                  Γ ⊢ e => t+ →
                  t+ ▸plus (t1 ⊕ t2) →
-                 (Γ ,, (x , t1)) ⊢ e1 <= t →
                  (Γ ,, (y , t2)) ⊢ e2 ~ α ~> e2' ⇐ t →
                  Γ ⊢ case₃ e x e1 y e2 ~ α ~> case₃ e x e1 y e2' ⇐ t
