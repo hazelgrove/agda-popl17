@@ -561,7 +561,7 @@ module core where
                    x # Γ →
                    y # Γ →
                    t ~̸ (t1 ⊕ t2) →
-                   Γ ⊢ ▹ e ◃ => t ~ construct (case x y) ~> (case₁ (▹ <| e |> ◃) x <||> y <||>) ·:₁ <||> => <||>
+                   Γ ⊢ ▹ e ◃ => t ~ construct (case x y) ~> (case₁ (<| ▹ e ◃ |> ) x <||> y <||>) ·:₁ <||> => <||>
 
 
     -- analytic action expressions
