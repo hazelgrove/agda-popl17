@@ -552,6 +552,16 @@ module core where
                   Γ ⊢ ▹ <||> ◃ => t ~ construct inl ~> inl <||> ·:₂ (▹ <||> ◃ ⊕₁ <||>) => (<||> ⊕ <||>)
       SAConInr : {Γ : ·ctx} {t : τ̇} →
                   Γ ⊢ ▹ <||> ◃ => t ~ construct inr ~> inr <||> ·:₂ (<||> ⊕₂ ▹ <||> ◃) => (<||> ⊕ <||>)
+      SAConCase1 : {Γ : ·ctx} {x y : Nat} {t t1 t2 : τ̇} {e : ė} →
+                   x # Γ →
+                   y # Γ →
+                   t ▸plus (t1 ⊕ t2) →
+                   Γ ⊢ ▹ e ◃ => t ~ construct (case x y) ~> (case₂ e x (▹ <||> ◃) y <||>) ·:₁ <||> => <||>
+      SAConCase2 : {Γ : ·ctx} {x y : Nat} {t t1 t2 : τ̇} {e : ė} →
+                   x # Γ →
+                   y # Γ →
+                   t ~̸ (t1 ⊕ t2) →
+                   Γ ⊢ ▹ e ◃ => t ~ construct (case x y) ~> (case₁ (▹ <| e |> ◃) x <||> y <||>) ·:₁ <||> => <||>
 
 
     -- analytic action expressions
