@@ -15,7 +15,8 @@ module sensibility where
                 Γ ⊢ e◆ => t →
                 Γ ⊢ e'◆ => t'
     -- in the movement case, we defer to the movement erasure theorem
-    actsense-synth er er' (SAMove x) wt = synthmove-er er er' x wt
+    actsense-synth er er' (SAMove x) wt with erasee-det (moveerasee' er x) er'
+    ... | refl = wt
 
     -- in all the nonzipper cases, the cursor must be at the top for the
     -- action rule to apply, so we just build the new derivation
@@ -79,7 +80,8 @@ module sensibility where
     actsense-ana er1 er2 (AASubsume x x₁ x₂ x₃) _ = ASubsume (actsense-synth x er2 x₂ x₁) x₃
 
     -- for movement, appeal to the movement-erasure theorem
-    actsense-ana er1 er2 (AAMove x) wt = anamove-er er1 er2 x wt
+    actsense-ana er1 er2 (AAMove x) wt with erasee-det (moveerasee' er1 x) er2
+    ... | refl = wt
 
     -- in the nonzipper cases, we again know where the hole must be, so we
     -- force it and then build the relevant derivation directly.

@@ -5,8 +5,8 @@ open import core
 open import judgemental-erase
 
 module moveerase where
-  -- theorem: movement doesn't change the term other than moving the cursor
-  -- around.
+  -- type actions don't change the term other than moving the cursor
+  -- around
   moveeraset : {t t' : τ̂} {δ : direction} →
             (t + move δ +> t') →
             (t ◆t) == (t' ◆t)
@@ -23,6 +23,7 @@ module moveerase where
   moveeraset (TMPlusZip1 {t2 = t2} m) = ap1 (λ x → x ⊕ t2) (moveeraset m)
   moveeraset (TMPlusZip2 {t1 = t1} m) = ap1 (λ x → t1 ⊕ x) (moveeraset m)
 
+  -- the actual movements don't change the erasure
   moveerase : {e e' : ê} {δ : direction} →
             (e + move δ +>e e') →
             (e ◆e) == (e' ◆e)
@@ -53,42 +54,24 @@ module moveerase where
   moveerase EMCaseChild2 = refl
   moveerase EMCaseChild3 = refl
 
-  -- this form is essentially the same as above, but for judgemental erasure
-  moveerase' : {e e' : ê} {e◆ : ė} {δ : direction} →
+  -- this form is essentially the same as above, but for judgemental
+  -- erasure, which is sometimes more convenient.
+  moveerasee' : {e e' : ê} {e◆ : ė} {δ : direction} →
             erase-e e e◆ →
             (e + move δ +>e e') →
             erase-e e' e◆
-  moveerase' er1 m with erase-e◆ er1
+  moveerasee' er1 m with erase-e◆ er1
   ... | refl = ◆erase-e _ _ (! (moveerase m))
 
-  -- as a consequence, movements preserve types upto erase
-  synthmove-er : {Γ : ·ctx} {e e' : ê} {e◆ e'◆ : ė} {t : τ̇} {δ : direction} →
-                 erase-e e e◆  →
-                 erase-e e' e'◆ →
-                 (e + move δ +>e e') →
-                 (Γ ⊢ e◆ => t) →
-                 (Γ ⊢ e'◆ => t)
-  synthmove-er er1 er2 m wt with erasee-det (moveerase' er1 m) er2
-  ... | refl = wt
-
-  anamove-er : {Γ : ·ctx} {δ : direction} {e e' : ê} {e◆ e'◆ : ė} {t : τ̇} →
-            erase-e e e◆ →
-            erase-e e' e'◆ →
-            (p : e + move δ +>e e') →
-            (Γ ⊢ e◆ <= t) →
-            (Γ ⊢ e'◆ <= t)
-  anamove-er er1 er2 m wt with erasee-det (moveerase' er1 m) er2
-  ... | refl = wt
-
-  lem-erase-step : ∀{ t t◆ t'' δ} →
+  moveeraset' : ∀{ t t◆ t'' δ} →
                  erase-t t t◆ →
                  t + move δ +> t'' →
                  erase-t t'' t◆
-  lem-erase-step er m with erase-t◆ er
-  lem-erase-step er m | refl = ◆erase-t _ _ (! (moveeraset m))
+  moveeraset' er m with erase-t◆ er
+  moveeraset' er m | refl = ◆erase-t _ _ (! (moveeraset m))
 
-  --- this is a restricted form of determinism that's just enough to let
-  --- the lemma below go through, which is needed for reachability
+  -- the type of an expression resulting from a synthetic movement action
+  -- is the same is when it started.
   pin : ∀ {Γ e t e' e◆ t' δ} →
           erase-e e e◆ →
           Γ ⊢ e◆ => t →
@@ -96,7 +79,7 @@ module moveerase where
           t == t'
   pin _ _ (SAMove x) = refl
   pin _ _ (SAZipAsc1 x) = refl
-  pin _ _ (SAZipAsc2 x x₁ x₂ x₃) = eraset-det (lem-erase-step x₂ x) x₁
+  pin _ _ (SAZipAsc2 x x₁ x₂ x₃) = eraset-det (moveeraset' x₂ x) x₁
   pin _ _ (SAZipApAna x x₁ x₂) = refl
   pin _ _ (SAZipPlus1 x) = refl
   pin _ _ (SAZipPlus2 x) = refl
@@ -108,74 +91,27 @@ module moveerase where
   ... | refl with matcharrunicity x x₂
   ... | refl = refl
 
-  -- more generally, movement actions don't change the erasure, even if
-  -- they occur within a zipper
+  -- more generally, both of the full action judgments don't do anything to
+  -- corrupt what happens with the movements.
   mutual
-    synth-move-er : ∀{Γ e e◆ e' t δ } →
-                   erase-e e e◆ →
-                   Γ ⊢ e◆ => t →
-                   Γ ⊢ e => t ~ move δ ~> e' => t →
-                   erase-e e' e◆
-    synth-move-er er wt (SAMove x) = moveerase' er x
-    synth-move-er (EEAscL er) (SAsc x) (SAZipAsc1 x₁) = EEAscL (ana-move-er er x x₁)
-    synth-move-er (EEAscR x) (SAsc x₁) (SAZipAsc2 x₂ x₃ x₄ x₅) = EEAscR (lem-erase-step x₄ x₂)
-    synth-move-er (EEApL er) (SAp wt x x₁) (SAZipApArr x₂ x₃ x₄ α x₅)
-      with pin x₃ x₄ α
-    ... | refl with erasee-det x₃ er
-    ... | refl with synthunicity wt x₄
-    ... | refl = EEApL (synth-move-er er wt α)
-    synth-move-er (EEApR er) (SAp wt x x₁) (SAZipApAna x₂ x₃ x₄)
-      with synthunicity x₃ wt
-    ... | refl with matcharrunicity x₂ x
-    ... | refl = EEApR (ana-move-er er x₁ x₄)
-    synth-move-er (EEPlusL er) (SPlus x x₁) (SAZipPlus1 x₂) = EEPlusL (ana-move-er er x x₂)
-    synth-move-er (EEPlusR er) (SPlus x x₁) (SAZipPlus2 x₂) = EEPlusR (ana-move-er er x₁ x₂)
-    synth-move-er (EENEHole er) (SNEHole wt) (SAZipHole x x₁ α)
-      with erasee-det x er
-    ... | refl with synthunicity x₁ wt
-    ... | refl with pin x x₁ α
-    ... | refl = EENEHole (synth-move-er er wt α)
+    moveerase-synth : ∀{Γ e e' t δ } →
+                          Γ ⊢ e => t ~ move δ ~> e' => t →
+                          (e ◆e) == (e' ◆e)
+    moveerase-synth (SAMove x) = moveerase x
+    moveerase-synth (SAZipAsc1 x) = ap1 (λ q → q ·: _) (moveerase-ana x)
+    moveerase-synth (SAZipAsc2 x x₁ x₂ x₃) = ap1 (λ q → _ ·: q) (moveeraset x)
+    moveerase-synth (SAZipApArr x x₁ x₂ d x₃) with pin x₁ x₂ d
+    ... | refl = ap1 (λ q → q ∘ _) (moveerase-synth d)
+    moveerase-synth (SAZipApAna x x₁ x₂) = ap1 (λ q → _ ∘ q) (moveerase-ana x₂)
+    moveerase-synth (SAZipPlus1 x) = ap1 (λ q → q ·+ _) (moveerase-ana x)
+    moveerase-synth (SAZipPlus2 x) = ap1 (λ q → _ ·+ q) (moveerase-ana x)
+    moveerase-synth (SAZipHole x x₁ d) with pin x x₁ d
+    ... | refl = ap1 <|_|> (moveerase-synth d)
 
-    ana-move-er : ∀{Γ e e◆ e' t δ } →
-                        erase-e e e◆ →
-                        Γ ⊢ e◆ <= t →
+    moveerase-ana : ∀{Γ e e' t δ } →
                         Γ ⊢ e ~ move δ ~> e' ⇐ t →
-                        erase-e e' e◆
-    ana-move-er (EELam _) (ASubsume () _) _
-    ana-move-er (EEInl _) (ASubsume () _) _
-    ana-move-er (EEInr _) (ASubsume () _) _
-    ana-move-er (EECase1 _) (ASubsume () _) _
-    ana-move-er (EECase2 _) (ASubsume () _) _
-    ana-move-er (EECase3 _) (ASubsume () _) _
-    ana-move-er er wt (AASubsume x x₁ x₂ x₃)
-      with pin x x₁ x₂
-    ... | refl with erasee-det er x
-    ... | refl = synth-move-er x x₁ x₂
-    ana-move-er er wt (AAMove x) = moveerase' er x
-
-    ana-move-er (EELam er) (ALam x₁ x₂ wt) (AAZipLam x₃ x₄ α)
-      with matcharrunicity x₄ x₂
-    ... | refl = EELam (ana-move-er er wt α)
-    ana-move-er (EEInl er) (AInl x wt) (AAZipInl x₁ α)
-      with matchplusunicity x₁ x
-    ... | refl = EEInl (ana-move-er er wt α)
-    ana-move-er (EEInr er) (AInr x wt) (AAZipInr x₁ α)
-      with matchplusunicity x₁ x
-    ... | refl = EEInr (ana-move-er er wt α)
-    ana-move-er (EECase1 er) (ACase x₁ x₂ x₃ x₄ wt wt₁)
-                             (AAZipCase1 x₅ x₆ x₇ x₈ x₉ x₁₀ x₁₁ x₁₂)
-      with erasee-det x₇ er
-    ... | refl with synthunicity x₈ x₄
-    ... | refl with pin er x₈ x₉
-    ... | refl with matchplusunicity x₁₀ x₃
-    ... | refl = EECase1 (synth-move-er x₇ x₄ x₉)
-    ana-move-er (EECase2 er) (ACase x₁ x₂ x₃ x₄ wt wt₁)
-                             (AAZipCase2 x₅ x₆ x₇ x₈ α)
-      with synthunicity x₇ x₄
-    ... | refl with matchplusunicity x₃ x₈
-    ... | refl = EECase2 (ana-move-er er wt α)
-    ana-move-er (EECase3 er) (ACase x₁ x₂ x₃ x₄ wt wt₁)
-                             (AAZipCase3 x₅ x₆ x₇ x₈ α)
-      with synthunicity x₇ x₄
-    ... | refl with matchplusunicity x₃ x₈
-    ... | refl = EECase3 (ana-move-er er wt₁ α)
+                        (e ◆e) == (e' ◆e)
+    moveerase-ana (AASubsume x x₁ x₂ x₃) with pin x x₁ x₂
+    ... | refl = moveerase-synth x₂
+    moveerase-ana (AAMove x) = moveerase x
+    moveerase-ana (AAZipLam x₁ x₂ d) = ap1 (λ q → ·λ _ q) (moveerase-ana d)

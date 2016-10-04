@@ -16,12 +16,3 @@ module List where
   _++_ : {A : Set} → List A → List A → List A
   [] ++ l2 = l2
   x :: l1 ++ l2 = x :: (l1 ++ l2)
-
-
-  ++assoc : {A : Set} (l1 l2 l3 : List A) → (l1 ++ (l2 ++ l3)) == ((l1 ++ l2) ++ l3)
-  ++assoc [] l2 l3 = refl
-  ++assoc (x :: l1) l2 l3 = ap1 (_::_ x) (++assoc l1 l2 l3)
-
-  rev : {A : Set} → List A → List A
-  rev [] = []
-  rev (x :: xs) = rev xs ++ [ x ]
