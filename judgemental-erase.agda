@@ -137,3 +137,9 @@ module judgemental-erase where
   erase-in-hole : ∀ {e e'} → erase-e e e' → erase-e <| e |> <| e' |>
   erase-in-hole (EENEHole er) = EENEHole (erase-in-hole er)
   erase-in-hole x = EENEHole x
+
+  eq-er-trans : ∀{e e◆ e'} →
+                    (e ◆e) == (e' ◆e) →
+                    erase-e e e◆ →
+                    erase-e e' e◆
+  eq-er-trans {e} {e◆} {e'} eq er = tr (λ f → erase-e e' f) (erasee-det (◆erase-e e (e' ◆e) eq) er) (rel◆ e')
