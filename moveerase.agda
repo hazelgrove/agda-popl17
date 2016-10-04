@@ -38,32 +38,14 @@ module moveerase where
   moveerase EMNEHoleChild1 = refl
   moveerase EMNEHoleParent = refl
 
-  -- this form is essentially the same as above, but for judgemental erasure
+  -- this form is essentially the same as above, but for judgemental
+  -- erasure, which is sometimes more convenient.
   moveerase' : {e e' : ê} {e◆ : ė} {δ : direction} →
             erase-e e e◆ →
             (e + move δ +>e e') →
             erase-e e' e◆
   moveerase' er1 m with erase-e◆ er1
   ... | refl = ◆erase-e _ _ (! (moveerase m))
-
-  -- as a consequence, movements preserve types upto erase
-  synthmove-er : {Γ : ·ctx} {e e' : ê} {e◆ e'◆ : ė} {t : τ̇} {δ : direction} →
-                 erase-e e e◆  →
-                 erase-e e' e'◆ →
-                 (e + move δ +>e e') →
-                 (Γ ⊢ e◆ => t) →
-                 (Γ ⊢ e'◆ => t)
-  synthmove-er er1 er2 m wt with erasee-det (moveerase' er1 m) er2
-  ... | refl = wt
-
-  anamove-er : {Γ : ·ctx} {δ : direction} {e e' : ê} {e◆ e'◆ : ė} {t : τ̇} →
-            erase-e e e◆ →
-            erase-e e' e'◆ →
-            (p : e + move δ +>e e') →
-            (Γ ⊢ e◆ <= t) →
-            (Γ ⊢ e'◆ <= t)
-  anamove-er er1 er2 m wt with erasee-det (moveerase' er1 m) er2
-  ... | refl = wt
 
   lem-erase-step : ∀{ t t◆ t'' δ} →
                  erase-t t t◆ →
