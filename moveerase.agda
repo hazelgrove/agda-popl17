@@ -115,3 +115,9 @@ module moveerase where
     ... | refl = moveerase-synth x₂
     moveerase-ana (AAMove x) = moveerase x
     moveerase-ana (AAZipLam x₁ x₂ d) = ap1 (λ q → ·λ _ q) (moveerase-ana d)
+    moveerase-ana (AAZipInl x x₁) = ap1 inl (moveerase-ana x₁)
+    moveerase-ana (AAZipInr x x₁) = ap1 inr (moveerase-ana x₁)
+    moveerase-ana (AAZipCase1 x₁ x₂ x₃ x₄ x₅ x₆ x₇ x₈) with pin x₃ x₄ x₅
+    ... | refl = ap1 (λ q → case q _ _ _ _) (moveerase-synth x₅)
+    moveerase-ana (AAZipCase2 x₁ x₂ x₃ x₄ x₅) = ap1 (λ q → case _ _ q _ _) (moveerase-ana x₅)
+    moveerase-ana (AAZipCase3 x₁ x₂ x₃ x₄ x₅) = ap1 (λ q → case _ _ _ _ q) (moveerase-ana x₅)
