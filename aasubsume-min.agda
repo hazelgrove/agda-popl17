@@ -22,6 +22,7 @@ module aasubsume-min where
     aasubmin-ana (AASubsume x x₁ SAConInl x₃) = ⊥
     aasubmin-ana (AASubsume x x₁ SAConInr x₃) = ⊥
     aasubmin-ana (AASubsume x x₁ (SAConLam x₃) x₄) = ⊥
+    aasubmin-ana (AASubsume EETop SEHole (SAConCase1 a b c) x₄) = ⊥
     aasubmin-ana (AASubsume x x₁ s x₃) = aasubmin-synth s
     aasubmin-ana (AAZipLam x₁ x₂ d) = aasubmin-ana d
     aasubmin-ana (AAZipInl x y) = aasubmin-ana y
@@ -95,7 +96,19 @@ module aasubsume-min where
     ... | a , b , c = _ , AASubsume x x₁ (SAZipPlus2 b) x₃ , c
     min-ana (AASubsume x x₁ (SAZipHole x₂ x₃ x₄) x₅) with min-synth x₄
     ... | a , b , c = _ , AASubsume x x₁ (SAZipHole x₂ x₃ b) x₅ , c
-    min-ana (AASubsume x y (SAConCase1 a b c) z) = _ , AASubsume x y (SAConCase1 a b c) z , <>
+    min-ana (AASubsume EETop (SAsc x₁) (SAConCase1 a b c) z) = _ ,
+                                                                 AASubsume EETop (SAsc x₁) (SAConCase1 a b c) z , <>
+    min-ana (AASubsume EETop (SVar x₁) (SAConCase1 a b c) z) = _ ,
+                                                                 AASubsume EETop (SVar x₁) (SAConCase1 a b c) z , <>
+    min-ana (AASubsume EETop (SAp y₁ x₁ x₂) (SAConCase1 a b c) z) = _ ,
+                                                                      AASubsume EETop (SAp y₁ x₁ x₂) (SAConCase1 a b c) z , <>
+    min-ana (AASubsume EETop SNum (SAConCase1 a b c) z) = _ ,
+                                                            AASubsume EETop SNum (SAConCase1 a b c) z , <>
+    min-ana (AASubsume EETop (SPlus x₁ x₂) (SAConCase1 a b c) z) = _ ,
+                                                                     AASubsume EETop (SPlus x₁ x₂) (SAConCase1 a b c) z , <>
+    min-ana (AASubsume EETop SEHole (SAConCase1 a b c) z) = _ , AAConCase a b , <>
+    min-ana (AASubsume EETop (SNEHole y₁) (SAConCase1 a b c) z) = _ ,
+                                                                    AASubsume EETop (SNEHole y₁) (SAConCase1 a b c) z , <>
     min-ana (AASubsume x y (SAConCase2 a b c) z) = _ , AASubsume x y (SAConCase2 a b c) z , <>
     min-ana (AAMove x) = _ , AAMove x , <>
     min-ana AADel = _ , AADel , <>

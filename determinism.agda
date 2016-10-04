@@ -431,8 +431,10 @@ module determinism where
     actdet-ana (EECase2 er) (ACase x₁ x₂ x₃ x₄ wt wt₁) (AASubsume (EECase2 x₉) () x₁₁ x₁₂) _
     actdet-ana (EECase3 er) (ACase x₁ x₂ x₃ x₄ wt wt₁) (AASubsume (EECase3 x₉) () x₁₁ x₁₂) _
 
-    actdet-ana EETop (ASubsume SEHole x₂) (AAConCase x₃ x₄) (AASubsume EETop SEHole a x₈) = {!!}
-    actdet-ana EETop (ASubsume SEHole x₂) (AASubsume EETop SEHole a x₆) (AAConCase x₇ x₈) = {!!}
+    actdet-ana EETop (ASubsume SEHole x₂) (AAConCase x₃ x₄) (AASubsume EETop SEHole (SAConCase1 x₁ x₅ MPHole) x₈) {p1} {p2} = abort p2
+    actdet-ana EETop (ASubsume SEHole x₂) (AAConCase x₃ x₄) (AASubsume EETop SEHole (SAConCase2 x₁ x₅ x₆) x₈) = abort (x₆ TCHole2)
+    actdet-ana EETop (ASubsume SEHole x₂) (AASubsume EETop SEHole (SAConCase1 x₁ x₃ MPHole) x₆) (AAConCase x₇ x₈) {p1} {p2} = abort p1
+    actdet-ana EETop (ASubsume SEHole x₂) (AASubsume EETop SEHole (SAConCase2 x₁ x₃ x₄) x₆) (AAConCase x₇ x₈) = abort (x₄ TCHole2)
 
       -- the cases where the derivations match just go through
     actdet-ana er (ASubsume x x₁) (AAConInl1 x₂) (AAConInl1 x₃) = refl
