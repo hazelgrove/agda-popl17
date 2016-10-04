@@ -55,8 +55,7 @@ module moveerase where
   moveeraset' er m | refl = ◆erase-t _ _ (! (moveeraset m))
 
   -- the type of an expression resulting from a synthetic movement action
-  -- is the same is when it started. this is a restricted form of the full
-  -- determinism theorem.
+  -- is the same is when it started.
   pin : ∀ {Γ e t e' e◆ t' δ} →
           erase-e e e◆ →
           Γ ⊢ e◆ => t →
