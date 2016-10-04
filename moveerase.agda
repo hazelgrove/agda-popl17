@@ -40,22 +40,23 @@ module moveerase where
 
   -- this form is essentially the same as above, but for judgemental
   -- erasure, which is sometimes more convenient.
-  moveerase' : {e e' : ê} {e◆ : ė} {δ : direction} →
+  moveerasee' : {e e' : ê} {e◆ : ė} {δ : direction} →
             erase-e e e◆ →
             (e + move δ +>e e') →
             erase-e e' e◆
-  moveerase' er1 m with erase-e◆ er1
+  moveerasee' er1 m with erase-e◆ er1
   ... | refl = ◆erase-e _ _ (! (moveerase m))
 
-  lem-erase-step : ∀{ t t◆ t'' δ} →
+  moveeraset' : ∀{ t t◆ t'' δ} →
                  erase-t t t◆ →
                  t + move δ +> t'' →
                  erase-t t'' t◆
-  lem-erase-step er m with erase-t◆ er
-  lem-erase-step er m | refl = ◆erase-t _ _ (! (moveeraset m))
+  moveeraset' er m with erase-t◆ er
+  moveeraset' er m | refl = ◆erase-t _ _ (! (moveeraset m))
 
   -- the type of an expression resulting from a synthetic movement action
-  -- is the same is when it started.
+  -- is the same is when it started. this is a restricted form of the full
+  -- determinism theorem.
   pin : ∀ {Γ e t e' e◆ t' δ} →
           erase-e e e◆ →
           Γ ⊢ e◆ => t →
@@ -63,7 +64,7 @@ module moveerase where
           t == t'
   pin _ _ (SAMove x) = refl
   pin _ _ (SAZipAsc1 x) = refl
-  pin _ _ (SAZipAsc2 x x₁ x₂ x₃) = eraset-det (lem-erase-step x₂ x) x₁
+  pin _ _ (SAZipAsc2 x x₁ x₂ x₃) = eraset-det (moveeraset' x₂ x) x₁
   pin _ _ (SAZipApAna x x₁ x₂) = refl
   pin _ _ (SAZipPlus1 x) = refl
   pin _ _ (SAZipPlus2 x) = refl

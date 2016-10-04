@@ -223,7 +223,7 @@ module checks where
                       runtype t l t' →
                       runsynth Γ (e ·:₂ t) t◆ l (e ·:₂ t') t◆
   ziplem-moves-asc2 _ _ _ DoRefl = DoRefl
-  ziplem-moves-asc2 (AM:: m) er wt (DoType x rt) with lem-erase-step er x
+  ziplem-moves-asc2 (AM:: m) er wt (DoType x rt) with moveeraset' er x
   ... | er' =  DoSynth (SAZipAsc2 x er' er wt) (ziplem-moves-asc2 m er' wt rt)
 
   synthana-moves : ∀{t t' l e e' Γ} →
