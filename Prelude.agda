@@ -99,3 +99,6 @@ module Prelude where
   postulate
      funext : {A : Set} {B : A → Set} {f g : (x : A) → (B x)} →
               ((x : A) → f x == g x) → f == g
+
+  flip : {A : Set} {x y : A} → (x == y → ⊥) → (y == x → ⊥)
+  flip neq eq = neq (! eq)

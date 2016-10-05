@@ -25,6 +25,12 @@ module structural where
   --   Γ ⊢ A      x # Γ
   -- ----------------------
   --    Γ , (x : t) ⊢ A
+  --
+  -- proofs of the first two are generally easier: viewed as finite
+  -- functions, the contexts on the top and bottom of both exchange answer
+  -- every question the same, so an appeal to function extensionality is
+  -- enough to treat them the same. weakening does not have this property,
+  -- and there requires some induction to demonstrate.
 
   -- because of our choice to use barendrecht's convention, we need a quite
   -- strong form of apartness for weakening. specifically, we need to know
@@ -76,13 +82,6 @@ module structural where
   lem-swap Γ x y t1 t2 .x | Inr x₂ | Inr x₃ | Inl refl | Inr x₁ = abort (x₂ refl)
   lem-swap Γ x y t1 t2 z | Inr x₃ | Inr x₄ | Inr x₁ | Inl x₂ = abort (x₄ x₂)
   lem-swap Γ x y t1 t2 z | Inr x₃ | Inr x₄ | Inr x₁ | Inr x₂ = refl
-
-  lem-pass : (Γ : ·ctx) (x : Nat) (apt : x # Γ) (t : τ̇) →
-                             ((s : Σ[ z ∈ Nat ] (x == z → ⊥)) →
-                             (Γ (π1 s)) == (Γ ,, (x , t)) (π1 s))
-  lem-pass Γ x  apt t (z , neq) with natEQ x z
-  lem-pass Γ x apt t (.x , neq) | Inl refl = abort (neq refl)
-  lem-pass Γ x apt t (z , neq)  | Inr x₁ = refl
 
   -- extending a context with a new variable doesn't change anything under
   lem-extend : ∀{n x Γ t w} →
@@ -144,19 +143,21 @@ module structural where
     wt-weak-ana A F (ASubsume x₁ x₂) = ASubsume (wt-weak-synth A F x₁) x₂
     wt-weak-ana {x = x} A F (ALam {x = x₁} x₂ x₃ wt) with natEQ x x₁
     wt-weak-ana A F (ALam x₂ x₃ wt) | Inl refl = abort F
-    wt-weak-ana A F (ALam x₂ x₃ wt) | Inr neq = {!!} -- ALam (lem-extend {!!} x₂) x₃ (wt-weak-ana {!!} {!!} wt)
+    wt-weak-ana {x = x} A F (ALam {x = z} x₂ x₃ wt) | Inr neq = ALam (lem-extend (flip neq) x₂) x₃ {!wt-weak-ana ? ? wt!}
 
   ---- action semantics judgements
   mutual
     act-exchange-synth : ∀{ Γ x y t1 t2 t t' e e' α } →
+                         (x == y → ⊥) →
                          ((Γ ,, (x , t1)) ,, (y , t2)) ⊢ e => t ~ α ~> e' => t' →
                          ((Γ ,, (y , t2)) ,, (x , t1)) ⊢ e => t ~ α ~> e' => t'
-    act-exchange-synth {Γ} {x} {y} {t1} {t2} {t} {t'} {e} {e'} {α} d = tr (λ q → q ⊢ e => t ~ α ~> e' => t') (funext (lem-swap Γ x y t1 t2)) d
+    act-exchange-synth {Γ} {x} {y} {t1} {t2} {t} {t'} {e} {e'} {α} x≠y d = tr (λ q → q ⊢ e => t ~ α ~> e' => t') (funext (lem-swap Γ x y t1 t2 {x≠y})) d
 
     act-exchange-ana :  ∀{ Γ x y t1 t2 t e e' α } →
+                         (x == y → ⊥) →
                          ((Γ ,, (x , t1)) ,, (y , t2)) ⊢ e ~ α ~> e' ⇐ t →
                          ((Γ ,, (y , t2)) ,, (x , t1)) ⊢ e ~ α ~> e' ⇐ t
-    act-exchange-ana {Γ} {x} {y} {t1} {t2} {t} {e} {e'} {α} d = tr (λ q → q ⊢ e ~ α ~> e' ⇐ t) (funext (lem-swap Γ x y t1 t2)) d
+    act-exchange-ana {Γ} {x} {y} {t1} {t2} {t} {e} {e'} {α} x≠y d = tr (λ q → q ⊢ e ~ α ~> e' ⇐ t) (funext (lem-swap Γ x y t1 t2 {x≠y})) d
 
   mutual
     act-contract-synth : ∀{ Γ x t t' t'' e e' α } →
