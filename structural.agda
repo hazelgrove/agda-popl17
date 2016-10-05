@@ -2,6 +2,7 @@ open import Nat
 open import Prelude
 open import core
 open import checks
+open import judgemental-erase
 
 module structural where
   -- this module contains proofs that the judgements that mention contexts
@@ -52,6 +53,47 @@ module structural where
   fresh x <||> = ⊤
   fresh x <| e |> = fresh x e
   fresh x (e1 ∘ e2) = fresh x e1 × fresh x e2
+
+  mutual
+    fresh-synth : ∀{Γ e t α e' t'} →
+                                Nat →
+                                (Γ ⊢ e => t ~ α ~> e' => t') →
+                                Set
+    fresh-synth x (SAMove x₁) = ⊤
+    fresh-synth x SADel = ⊤
+    fresh-synth x SAConAsc = ⊤
+    fresh-synth x₁ (SAConVar {x = x} p) = ⊤ -- maybe ban one
+    fresh-synth x₁ (SAConLam {x = x} x₂) = natEQp x₁ x
+    fresh-synth x (SAConApArr x₁) = ⊤
+    fresh-synth x (SAConApOtw x₁) = ⊤
+    fresh-synth x SAConArg = ⊤
+    fresh-synth x SAConNumlit = ⊤
+    fresh-synth x (SAConPlus1 x₁) = ⊤
+    fresh-synth x (SAConPlus2 x₁) = ⊤
+    fresh-synth x SAConNEHole = ⊤
+    fresh-synth x (SAFinish x₁) = ⊤
+    fresh-synth x (SAZipAsc1 x₁) = fresh-ana x x₁
+    fresh-synth x (SAZipAsc2 x₁ x₂ x₃ x₄) = ⊤
+    fresh-synth x (SAZipApArr x₁ x₂ x₃ d x₄) = fresh-synth x d
+    fresh-synth x (SAZipApAna x₁ x₂ x₃) = fresh-ana x x₃
+    fresh-synth x (SAZipPlus1 x₁) = fresh-ana x x₁
+    fresh-synth x (SAZipPlus2 x₁) = fresh-ana x x₁
+    fresh-synth x (SAZipHole x₁ x₂ d) = fresh-synth x d
+
+    fresh-ana : ∀{Γ e t α e'} →
+                                Nat →
+                                (Γ ⊢ e ~ α ~> e' ⇐ t) →
+                                Set
+    fresh-ana x (AASubsume x₁ x₂ x₃ x₄) = fresh-synth x x₃
+    fresh-ana x (AAMove x₁) = ⊤
+    fresh-ana x AADel = ⊤
+    fresh-ana x AAConAsc = ⊤
+    fresh-ana x₁ (AAConVar {x = x} x₂ p) = {!natEQp x x₁!}
+    fresh-ana x₁ (AAConLam1 {x = x} x₂ x₃) = {!!}
+    fresh-ana x₁ (AAConLam2 {x = x} x₂ x₃) = {!!}
+    fresh-ana x (AAConNumlit x₁) = ⊤
+    fresh-ana x (AAFinish x₁) = ⊤
+    fresh-ana x₁ (AAZipLam x₂ x₃ d) = {!!}
 
   ---- lemmas
 
@@ -143,7 +185,7 @@ module structural where
     wt-weak-ana A F (ASubsume x₁ x₂) = ASubsume (wt-weak-synth A F x₁) x₂
     wt-weak-ana {x = x} A F (ALam {x = x₁} x₂ x₃ wt) with natEQ x x₁
     wt-weak-ana A F (ALam x₂ x₃ wt) | Inl refl = abort F
-    wt-weak-ana {x = x} A F (ALam {x = z} x₂ x₃ wt) | Inr neq = ALam (lem-extend (flip neq) x₂) x₃ {!wt-weak-ana ? ? wt!}
+    wt-weak-ana {x = x} A F (ALam {x = z} x₂ x₃ wt) | Inr neq = ALam (lem-extend (flip neq) x₂) x₃ {!!}
 
   ---- action semantics judgements
   mutual
@@ -173,45 +215,50 @@ module structural where
   mutual
     act-weak-synth : ∀{ Γ x t t' t'' e e' α } →
                          x # Γ →
-                         Γ ⊢ e => t ~ α ~> e' => t' →
+                         (d : Γ ⊢ e => t ~ α ~> e' => t') →
+                         fresh-synth x d →
                          (Γ ,, (x , t'')) ⊢ e => t ~ α ~> e' => t'
-    act-weak-synth apt (SAMove x₁) = SAMove x₁
-    act-weak-synth apt SADel = SADel
-    act-weak-synth apt SAConAsc = SAConAsc
-    act-weak-synth {x = x} apt (SAConVar {x = x'} p) with natEQ x x'
-    act-weak-synth apt (SAConVar p) | Inl refl = SAConVar (abort (somenotnone (! p · apt)))
-    ... | Inr neq = {!!}
-    act-weak-synth apt  (SAConLam x₂) = SAConLam {!!}
-    act-weak-synth apt (SAConApArr x₁) = SAConApArr x₁
-    act-weak-synth apt (SAConApOtw x₁) = SAConApOtw x₁
-    act-weak-synth apt SAConArg = SAConArg
-    act-weak-synth apt SAConNumlit = SAConNumlit
-    act-weak-synth apt (SAConPlus1 x₁) = SAConPlus1 x₁
-    act-weak-synth apt (SAConPlus2 x₁) = SAConPlus2 x₁
-    act-weak-synth apt SAConNEHole = SAConNEHole
-    act-weak-synth apt (SAFinish x₁) = SAFinish (wt-weak-synth apt {!!} x₁)
-    act-weak-synth apt (SAZipAsc1 x₁) = SAZipAsc1 (act-weak-ana apt x₁)
-    act-weak-synth apt (SAZipAsc2 x₁ x₂ x₃ x₄) = SAZipAsc2 x₁ x₂ x₃ (wt-weak-ana apt {!!} x₄)
-    act-weak-synth apt (SAZipApArr x₁ x₂ x₃ d x₄) = SAZipApArr x₁ x₂ (wt-weak-synth apt {!!} x₃) (act-weak-synth apt d) (wt-weak-ana apt {!!} x₄)
-    act-weak-synth apt (SAZipApAna x₁ x₂ x₃) = SAZipApAna x₁ (wt-weak-synth apt {!!} x₂) (act-weak-ana apt x₃)
-    act-weak-synth apt (SAZipPlus1 x₁) = SAZipPlus1 (act-weak-ana apt x₁)
-    act-weak-synth apt (SAZipPlus2 x₁) = SAZipPlus2 (act-weak-ana apt x₁)
-    act-weak-synth apt (SAZipHole x₁ x₂ d) = SAZipHole x₁ (wt-weak-synth apt {!!} x₂) (act-weak-synth apt d)
+    act-weak-synth apt (SAMove x₁) _ = SAMove x₁
+    act-weak-synth apt SADel _ = SADel
+    act-weak-synth apt SAConAsc _ = SAConAsc
+    act-weak-synth {x = x} apt  (SAConVar {x = x'} p) _ with natEQ x x'
+    act-weak-synth apt (SAConVar p) _ | Inl refl = SAConVar (abort (somenotnone (! p · apt)))
+    ... | Inr neq = SAConVar (lem-extend (flip neq) p)
+    act-weak-synth {x = x} apt (SAConLam {x = x₁} x₂) F with natEQ x x₁
+    act-weak-synth apt (SAConLam x₃) F | Inl refl = abort F
+    act-weak-synth apt (SAConLam x₃) F | Inr x₂ = SAConLam {!!}
+    act-weak-synth apt (SAConApArr x₁) F = SAConApArr x₁
+    act-weak-synth apt (SAConApOtw x₁) F = SAConApOtw x₁
+    act-weak-synth apt SAConArg F = SAConArg
+    act-weak-synth apt SAConNumlit F = SAConNumlit
+    act-weak-synth apt (SAConPlus1 x₁) F = SAConPlus1 x₁
+    act-weak-synth apt (SAConPlus2 x₁) F = SAConPlus2 x₁
+    act-weak-synth apt SAConNEHole F = SAConNEHole
+    act-weak-synth apt (SAFinish x₁) F = SAFinish (wt-weak-synth apt {!!} x₁)
+    act-weak-synth apt (SAZipAsc1 x₁) F = SAZipAsc1 (act-weak-ana apt {!!} x₁)
+    act-weak-synth apt (SAZipAsc2 x₁ x₂ x₃ x₄) F = SAZipAsc2 x₁ x₂ x₃ (wt-weak-ana apt {!!} x₄)
+    ---- act-weak-synth apt (SAZipApArr x₁ x₂ x₃ d x₄) F = SAZipApArr x₁ x₂ (wt-weak-synth apt {!!} {!!}) (act-weak-synth apt d {!!}) (wt-weak-ana apt {!!} x₄)
+    act-weak-synth apt (SAZipApArr x₁ x₂ x₃ d x₄) F = {!!}
+    act-weak-synth apt (SAZipApAna x₁ x₂ x₃) F = SAZipApAna x₁ (wt-weak-synth apt {!!} x₂) (act-weak-ana apt {!!} x₃)
+    act-weak-synth apt (SAZipPlus1 x₁) F = SAZipPlus1 (act-weak-ana apt {!!} x₁)
+    act-weak-synth apt (SAZipPlus2 x₁) F = SAZipPlus2 (act-weak-ana apt {!!} x₁)
+    act-weak-synth apt (SAZipHole x₁ x₂ d) F = SAZipHole x₁ (wt-weak-synth apt {!!} x₂) (act-weak-synth apt d {!!})
 
     act-weak-ana : ∀{ Γ x t t' e e' α } →
                          x # Γ →
+                         fresh x (e ◆e) →
                          Γ ⊢ e ~ α ~> e' ⇐ t →
                          (Γ ,, (x , t')) ⊢ e ~ α ~> e' ⇐ t
-    act-weak-ana apt (AASubsume x₁ x₂ x₃ x₄) = {!!}
-    act-weak-ana apt (AAMove x₁) = AAMove x₁
-    act-weak-ana apt AADel = AADel
-    act-weak-ana apt AAConAsc = {!!}
-    act-weak-ana apt (AAConVar x₂ p) = {!!}
-    act-weak-ana apt (AAConLam1 x₂ x₃) = {!!}
-    act-weak-ana apt (AAConLam2 x₂ x₃) = {!!}
-    act-weak-ana apt (AAConNumlit x₁) = AAConNumlit x₁
-    act-weak-ana apt (AAFinish x₁) = {!!}
-    act-weak-ana apt (AAZipLam x₂ x₃ d) = {!!}
+    act-weak-ana apt F (AASubsume x₁ x₂ x₃ x₄) = {!!}
+    act-weak-ana apt F (AAMove x₁) = AAMove x₁
+    act-weak-ana apt F AADel = AADel
+    act-weak-ana apt F AAConAsc = AAConAsc
+    act-weak-ana apt F (AAConVar x₂ p) = AAConVar x₂ {!!}
+    act-weak-ana apt F (AAConLam1 x₂ x₃) = {!!}
+    act-weak-ana apt F (AAConLam2 x₂ x₃) = {!!}
+    act-weak-ana apt F (AAConNumlit x₁) = AAConNumlit x₁
+    act-weak-ana apt F (AAFinish x₁) = AAFinish (wt-weak-ana apt F x₁)
+    act-weak-ana apt F (AAZipLam x₂ x₃ d) = AAZipLam (lem-extend {!!} {!!}) x₃ (act-weak-ana {!!} {!!} d)
 
 
   -- what about transitivity / cut elimination?
