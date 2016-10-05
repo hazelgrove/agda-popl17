@@ -293,7 +293,7 @@ module determinism where
     actdet-ana (EELam er) (ALam x₁ x₂ wt) (AAZipLam x₃ x₄ d1) (AAZipLam x₅ x₆ d2) {p1} {p2}
        with matcharrunicity x₄ x₆
     ... | refl with matcharrunicity x₄ x₂
-    ... | refl with actdet-ana er wt d1 d2  {p1 = p1} {p2 = p2}
+    ... | refl with actdet-ana er wt d1 d2  {p1} {p2}
     ... | refl = refl
 
     ---- now the subsumption cases
