@@ -170,3 +170,7 @@ module aasubsume-min where
   min-ana-lem (SAZipPlus1 x) min = min
   min-ana-lem (SAZipPlus2 x) min = min
   min-ana-lem (SAZipHole x x₁ c) min = min
+  min-ana-lem SAConInl min = <>
+  min-ana-lem SAConInr min = <>
+  min-ana-lem (SAConCase1 x₁ x₂ x₃) min = <>
+  min-ana-lem (SAConCase2 x₁ x₂ x₃) min = <>
