@@ -146,8 +146,8 @@ module determinism where
     actdet-synth (EEAscL E) (SAsc x) (SAMove x₁) (SAMove x₂) = movedet x₁ x₂ , refl
     actdet-synth (EEAscL E) (SAsc x) (SAMove EMAscParent1) (SAZipAsc1 x₂) = abort (lem-nomove-para x₂)
     actdet-synth (EEAscL E) (SAsc x) (SAZipAsc1 x₁) (SAMove EMAscParent1) = abort (lem-nomove-para x₁)
-    actdet-synth (EEAscL E) (SAsc x) (SAZipAsc1 x₁) (SAZipAsc1 x₂) {p1 = p1} {p2 = p2}
-     with actdet-ana E x x₁ x₂ {p1 = p1} {p2 = p2}
+    actdet-synth (EEAscL E) (SAsc x) (SAZipAsc1 x₁) (SAZipAsc1 x₂) {p1} {p2}
+     with actdet-ana E x x₁ x₂ {p1} {p2}
     ... | refl = refl , refl
 
     actdet-synth (EEAscR x) (SAsc x₁) (SAMove x₂) (SAMove x₃) = movedet x₂ x₃ , refl
@@ -201,7 +201,7 @@ module determinism where
     actdet-synth (EEApR E) (SAp m wt x) (SAMove x₁) (SAMove x₂) = movedet x₁ x₂ , refl
     actdet-synth (EEApR E) (SAp m wt x) (SAMove EMApParent2) (SAZipApAna x₂ x₃ x₄) = abort (lem-nomove-para x₄)
     actdet-synth (EEApR E) (SAp m wt x) (SAZipApAna x₁ x₂ x₃) (SAMove EMApParent2) = abort (lem-nomove-para x₃)
-    actdet-synth (EEApR E) (SAp m wt x) (SAZipApAna x₁ x₂ d1) (SAZipApAna x₄ x₅ d2) {p1} {p2}
+    actdet-synth (EEApR E) (SAp m wt x) (SAZipApAna x₁ x₂ d1) (SAZipApAna x₄ x₅ d2)  {p1} {p2}
      with synthunicity m x₂
     ... | refl with matcharrunicity x₁ wt
     ... | refl with synthunicity m x₅
@@ -291,7 +291,7 @@ module determinism where
     actdet-synth (EENEHole E) (SNEHole wt) (SAZipHole a x d1) (SAZipHole b x₁ d2) {p1} {p2}
       with erasee-det a b
     ... | refl with synthunicity x x₁
-    ... | refl with actdet-synth a x d1 d2 {p1} {p2}
+    ... | refl with actdet-synth a x d1 d2  {p1} {p2}
     ... | refl , refl = refl , refl
 
       -- new cases for sums
@@ -347,7 +347,7 @@ module determinism where
 
     ---- now the subsumption cases
       -- subsume / subsume, so pin things down then recurr
-    actdet-ana er (ASubsume a b) (AASubsume x x₁ x₂ x₃) (AASubsume x₄ x₅ x₆ x₇)  {p1} {p2}
+    actdet-ana er (ASubsume a b) (AASubsume x x₁ x₂ x₃) (AASubsume x₄ x₅ x₆ x₇) {p1} {p2}
       with erasee-det x₄ x
     ... | refl with erasee-det er x₄
     ... | refl with synthunicity x₅ x₁
