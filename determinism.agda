@@ -351,7 +351,7 @@ module determinism where
       with erasee-det x₄ x
     ... | refl with erasee-det er x₄
     ... | refl with synthunicity x₅ x₁
-    ... | refl = π1 (actdet-synth x x₅ x₂ x₆ {min-ana-lem {c = x₂} p1} {min-ana-lem {c = x₆} p2})
+    ... | refl = π1 (actdet-synth x x₅ x₂ x₆ {min-ana-lem x₂ p1} {min-ana-lem x₆ p2})
 
     -- (these are all repeated below, irritatingly.)
     actdet-ana EETop (ASubsume a b) (AASubsume EETop x SADel x₁) AADel = refl
