@@ -95,29 +95,31 @@ module aasubsume-min where
     min-ana (AAZipLam x₁ x₂ d) with min-ana d
     ... | a , b , c = _ , AAZipLam x₁ x₂ b , c
 
+  -- the minimization predicate propagates through subsumption rules as
+  -- you'd expect
   min-ana-lem : ∀{e e' e◆ Γ t t' t'' α}
                  {a : erase-e e e◆}
                  {b : Γ ⊢ e◆ => t'}
-                 {c : Γ ⊢ e => t' ~ α ~> e' => t''}
-                 {d : t ~ t''}
-                → aasubmin-ana (AASubsume a b c d) → aasubmin-synth c
-  min-ana-lem {c = SAMove x} min = <>
-  min-ana-lem {c = SADel} min = <>
-  min-ana-lem {c = SAConAsc} min = <>
-  min-ana-lem {c = SAConVar p} min = <>
-  min-ana-lem {c = SAConLam x₁} min = <>
-  min-ana-lem {c = SAConApArr x} min = <>
-  min-ana-lem {c = SAConApOtw x} min = <>
-  min-ana-lem {c = SAConArg} min = <>
-  min-ana-lem {c = SAConNumlit} min = <>
-  min-ana-lem {c = SAConPlus1 x} min = <>
-  min-ana-lem {c = SAConPlus2 x} min = <>
-  min-ana-lem {c = SAConNEHole} min = <>
-  min-ana-lem {c = SAFinish x} min = <>
-  min-ana-lem {c = SAZipAsc1 x} min = min
-  min-ana-lem {c = SAZipAsc2 x x₁ x₂ x₃} min = <>
-  min-ana-lem {c = SAZipApArr x x₁ x₂ c x₃} min = min
-  min-ana-lem {c = SAZipApAna x x₁ x₂} min = min
-  min-ana-lem {c = SAZipPlus1 x} min = min
-  min-ana-lem {c = SAZipPlus2 x} min = min
-  min-ana-lem {c = SAZipHole x x₁ c} min = min
+                 {c : t ~ t''} →
+                 (d : Γ ⊢ e => t' ~ α ~> e' => t'')
+                → aasubmin-ana (AASubsume a b d c) → aasubmin-synth d
+  min-ana-lem (SAMove x) min = <>
+  min-ana-lem (SADel) min = <>
+  min-ana-lem (SAConAsc) min = <>
+  min-ana-lem (SAConVar p) min = <>
+  min-ana-lem (SAConLam x₁) min = <>
+  min-ana-lem (SAConApArr x) min = <>
+  min-ana-lem (SAConApOtw x) min = <>
+  min-ana-lem (SAConArg) min = <>
+  min-ana-lem (SAConNumlit) min = <>
+  min-ana-lem (SAConPlus1 x) min = <>
+  min-ana-lem (SAConPlus2 x) min = <>
+  min-ana-lem (SAConNEHole) min = <>
+  min-ana-lem (SAFinish x) min = <>
+  min-ana-lem (SAZipAsc1 x) min = min
+  min-ana-lem (SAZipAsc2 x x₁ x₂ x₃) min = <>
+  min-ana-lem (SAZipApArr x x₁ x₂ c x₃) min = min
+  min-ana-lem (SAZipApAna x x₁ x₂) min = min
+  min-ana-lem (SAZipPlus1 x) min = min
+  min-ana-lem (SAZipPlus2 x) min = min
+  min-ana-lem (SAZipHole x x₁ c) min = min
