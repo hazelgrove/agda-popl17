@@ -48,8 +48,8 @@ module examples where
   -- corresponding agda syntax.
 
   -- this is figure one from the paper in full detail
-  l : List action
-  l = construct (lam 0)
+  fig1-l : List action
+  fig1-l = construct (lam 0)
     :: construct num
     :: move parent
     :: move (child 2)
@@ -64,7 +64,7 @@ module examples where
     :: []
 
 
-  figure1 : runsynth ∅ ▹ <||> ◃ <||> l (·λ 0 (X 0 ·+₂ ▹ N 1 ◃) ·:₁ (num ==> num)) (num ==> num)
+  figure1 : runsynth ∅ ▹ <||> ◃ <||> fig1-l (·λ 0 (X 0 ·+₂ ▹ N 1 ◃) ·:₁ (num ==> num)) (num ==> num)
   figure1 =
         DoSynth (SAConLam refl)
         (DoSynth (SAZipAsc2 (TMArrZip1 TMConNum) (ETArrL ETTop) (ETArrL ETTop) (ALam refl MAArr (ASubsume SEHole TCRefl)))
@@ -83,6 +83,34 @@ module examples where
                                                             (ASubsume SEHole TCHole1))
                                                             (SAZipPlus2 (AASubsume EETop SEHole SAConNumlit TCRefl)) TCRefl)))
         DoRefl)))))))))))
+
+  -- this is figure two from the paper
+  incr : Nat
+  incr = 0
+
+  fig2-l : List action
+  fig2-l =    construct (var incr)
+           :: construct ap
+           :: construct (var incr)
+           :: construct ap
+           :: construct (numlit 3)
+           :: move parent
+           :: move parent
+           :: finish
+           :: []
+
+  figure2 : runsynth (∅ ,, (incr , num ==> num)) ▹ <||> ◃ <||> fig2-l (X incr ∘₂ ▹ X incr ∘ (N 3) ◃)  num
+  figure2 =  DoSynth (SAConVar refl)
+            (DoSynth (SAConApArr MAArr)
+            (DoSynth (SAZipApAna MAArr (SVar refl) (AAConVar (λ ()) refl))
+            (DoSynth (SAZipApAna MAArr (SVar refl) (AASubsume (EENEHole EETop) (SNEHole (SVar refl)) (SAZipHole EETop (SVar refl) (SAConApArr MAArr)) TCHole1))
+            (DoSynth (SAZipApAna MAArr (SVar refl) (AASubsume (EENEHole (EEApR EETop)) (SNEHole (SAp (SVar refl) MAArr (ASubsume SEHole TCHole1))) (SAZipHole (EEApR EETop) (SAp (SVar refl) MAArr (ASubsume SEHole TCHole1)) (SAZipApAna MAArr (SVar refl)
+                                                                                                                    (AASubsume EETop SEHole SAConNumlit TCRefl))) TCHole1))
+            (DoSynth (SAZipApAna MAArr (SVar refl) (AASubsume (EENEHole (EEApR EETop)) (SNEHole (SAp (SVar refl) MAArr (ASubsume SNum TCRefl))) (SAZipHole (EEApR EETop) (SAp (SVar refl) MAArr (ASubsume SNum TCRefl)) (SAMove EMApParent2)) TCHole1))
+            (DoSynth (SAZipApAna MAArr (SVar refl) (AAMove EMNEHoleParent))
+            (DoSynth (SAZipApAna MAArr (SVar refl) (AAFinish (ASubsume (SAp (SVar refl) MAArr (ASubsume SNum TCRefl)) TCRefl)))
+             DoRefl)))) )))
+
 
   -- these smaller derivations motivate the need for the zipper rules: you
   -- have to unzip down to the point of the structure where you want to
