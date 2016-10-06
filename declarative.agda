@@ -29,6 +29,22 @@ module declarative where
                 (Γ ,, (n , t1)) ⊢ e :: t2 →
                 Γ ⊢ (·λ n e) :: t
      DSubsume : ∀{ Γ e a b } → Γ ⊢ e :: b → a ~ b → Γ ⊢ e :: a
+     DInl : {Γ : ·ctx} {e : ė} {t+ t1 t2 : τ̇} →
+                 t+ ▸plus (t1 ⊕ t2) →
+                 Γ ⊢ e :: t1 →
+                 Γ ⊢ inl e :: t+
+     DInr : {Γ : ·ctx} {e : ė} {t+ t1 t2 : τ̇} →
+                 t+ ▸plus (t1 ⊕ t2) →
+                 Γ ⊢ e :: t2 →
+                 Γ ⊢ inr e :: t+
+     DCase : {Γ : ·ctx} {e e1 e2 : ė} {t t+ t1 t2 : τ̇} {x y : Nat} →
+                 x # Γ →
+                 y # Γ →
+                 t+ ▸plus (t1 ⊕ t2) →
+                 Γ ⊢ e :: t+ →
+                 (Γ ,, (x , t1)) ⊢ e1 :: t →
+                 (Γ ,, (y , t2)) ⊢ e2 :: t →
+                 Γ ⊢ case e x e1 y e2 :: t
 
   dex1 : ∅ ⊢ <||> ·+ <||> :: num
   dex1 = DPlus (DSubsume DEHole TCHole1) (DSubsume DEHole TCHole1)
@@ -56,6 +72,19 @@ module declarative where
               er-asc e1 e1' →
               er-asc e2 e2' →
               er-asc (e1 ∘ e2) (e1' ∘ e2')
+     ERAInl : ∀{e e'} →
+              er-asc e e' →
+              er-asc (inl e) (inl e')
+     ERAInr : ∀{e e'} →
+              er-asc e e' →
+              er-asc (inr e) (inr e')
+     ERACase : ∀{x y e1 e2 e3 e1' e2' e3'} →
+              er-asc e1 e1' →
+              er-asc e2 e2' →
+              er-asc e3 e3' →
+              er-asc (case e1 x e2 y e3) (case e1' x e2' y e3')
+
+
 
 
   bidirdec : {Γ : ·ctx} {e e' : ė} {t : τ̇}
@@ -73,3 +102,8 @@ module declarative where
 
   bidirdec (Inr (ASubsume x x₁)) er = DSubsume (bidirdec (Inl x) er) x₁
   bidirdec (Inr (ALam x₁ x₂ x₃)) (ERALam er) = DLam x₁ x₂ (bidirdec (Inr x₃) er)
+  bidirdec (Inr (AInl x y)) (ERAInl er) = DInl x (bidirdec (Inr y) er)
+  bidirdec (Inr (AInr x y)) (ERAInr er) = DInr x (bidirdec (Inr y) er)
+  bidirdec (Inr (ACase a b c d e₁ f)) (ERACase er er₁ er₂) = DCase a b c (bidirdec (Inl d) er)
+                                                                         (bidirdec (Inr e₁) er₁)
+                                                                         (bidirdec (Inr f) er₂)
