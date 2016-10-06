@@ -54,7 +54,8 @@ module moveerase where
   moveeraset' er m with erase-t◆ er
   moveeraset' er m | refl = ◆erase-t _ _ (! (moveeraset m))
 
-  -- movements don't change either the type or expression
+  -- movements don't change either the type or expression under expression
+  -- actions
   mutual
     moveerase-synth : ∀{Γ e e' e◆ t t' δ } →
                        (er : erase-e e e◆) →
@@ -87,6 +88,6 @@ module moveerase where
                       (e ◆e) == (e' ◆e)
     moveerase-ana er wt (AASubsume x x₁ x₂ x₃) = π1 (moveerase-synth x x₁ x₂)
     moveerase-ana er wt (AAMove x) = moveerase x
-    moveerase-ana (EELam er) (ASubsume () x₂) (AAZipLam x₃ x₄ d)
+    moveerase-ana (EELam er) (ASubsume () x₂) _
     moveerase-ana (EELam er) (ALam x₁ x₂ wt) (AAZipLam x₃ x₄ d) with matcharrunicity x₂ x₄
     ... | refl =  ap1 (λ q → ·λ _ q) (moveerase-ana er wt d)
