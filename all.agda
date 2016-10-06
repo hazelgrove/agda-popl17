@@ -27,5 +27,5 @@ open import constructability
 
 -- third wave theorems (and future work)
 --open import complete-dynamics
---open import declarative
+open import declarative
 --open import future-work
