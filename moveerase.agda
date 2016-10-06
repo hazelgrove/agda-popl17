@@ -78,24 +78,31 @@ module moveerase where
   -- more generally, both of the full action judgments don't do anything to
   -- corrupt what happens with the movements.
   mutual
-    moveerase-synth : ∀{Γ e e' t δ } →
+    moveerase-synth' : ∀{Γ e e' t δ } →
                           Γ ⊢ e => t ~ move δ ~> e' => t →
                           (e ◆e) == (e' ◆e)
-    moveerase-synth (SAMove x) = moveerase x
-    moveerase-synth (SAZipAsc1 x) = ap1 (λ q → q ·: _) (moveerase-ana x)
-    moveerase-synth (SAZipAsc2 x x₁ x₂ x₃) = ap1 (λ q → _ ·: q) (moveeraset x)
-    moveerase-synth (SAZipApArr x x₁ x₂ d x₃) with pin x₁ x₂ d
-    ... | refl = ap1 (λ q → q ∘ _) (moveerase-synth d)
-    moveerase-synth (SAZipApAna x x₁ x₂) = ap1 (λ q → _ ∘ q) (moveerase-ana x₂)
-    moveerase-synth (SAZipPlus1 x) = ap1 (λ q → q ·+ _) (moveerase-ana x)
-    moveerase-synth (SAZipPlus2 x) = ap1 (λ q → _ ·+ q) (moveerase-ana x)
-    moveerase-synth (SAZipHole x x₁ d) with pin x x₁ d
-    ... | refl = ap1 <|_|> (moveerase-synth d)
+    moveerase-synth' (SAMove x) = moveerase x
+    moveerase-synth' (SAZipAsc1 x) = ap1 (λ q → q ·: _) (moveerase-ana x)
+    moveerase-synth' (SAZipAsc2 x x₁ x₂ x₃) = ap1 (λ q → _ ·: q) (moveeraset x)
+    moveerase-synth' (SAZipApArr x x₁ x₂ d x₃) with pin x₁ x₂ d
+    ... | refl = ap1 (λ q → q ∘ _) (moveerase-synth' d)
+    moveerase-synth' (SAZipApAna x x₁ x₂) = ap1 (λ q → _ ∘ q) (moveerase-ana x₂)
+    moveerase-synth' (SAZipPlus1 x) = ap1 (λ q → q ·+ _) (moveerase-ana x)
+    moveerase-synth' (SAZipPlus2 x) = ap1 (λ q → _ ·+ q) (moveerase-ana x)
+    moveerase-synth' (SAZipHole x x₁ d) with pin x x₁ d
+    ... | refl = ap1 <|_|> (moveerase-synth' d)
 
     moveerase-ana : ∀{Γ e e' t δ } →
                         Γ ⊢ e ~ move δ ~> e' ⇐ t →
                         (e ◆e) == (e' ◆e)
     moveerase-ana (AASubsume x x₁ x₂ x₃) with pin x x₁ x₂
-    ... | refl = moveerase-synth x₂
+    ... | refl = moveerase-synth' x₂
     moveerase-ana (AAMove x) = moveerase x
     moveerase-ana (AAZipLam x₁ x₂ d) = ap1 (λ q → ·λ _ q) (moveerase-ana d)
+
+  moveerase-synth : ∀{Γ e e' t t' δ } →
+                       Γ ⊢ (e ◆e) => t →
+                       Γ ⊢ e => t ~ move δ ~> e' => t' →
+                       (e ◆e) == (e' ◆e) × t == t'
+  moveerase-synth wt d with pin (rel◆ _) wt d
+  moveerase-synth wt d | refl = (moveerase-synth' d) , refl
