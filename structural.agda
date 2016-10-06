@@ -60,13 +60,13 @@ module structural where
     fresh'-synth x (SVar {n = n} x₁) = natEQp x n
     fresh'-synth x (SAp d x₁ x₂) = (fresh'-synth x d) × (fresh'-ana x x₂)
     fresh'-synth x SNum = ⊤
-    fresh'-synth x (SPlus x₁ x₂) = (fresh'-ana x x₁) × (fresh'-ana x x₁)
+    fresh'-synth x (SPlus x₁ x₂) = (fresh'-ana x x₁) × (fresh'-ana x x₂)
     fresh'-synth x SEHole = ⊤
     fresh'-synth x (SNEHole d) = fresh'-synth x d
 
     fresh'-ana : ∀{Γ e t} → Nat → (Γ ⊢ e <= t) → Set
     fresh'-ana x (ASubsume x₁ x₂) = fresh'-synth x x₁
-    fresh'-ana x (ALam {x = x₁} x₂ x₃ d) = (natEQp x x₁) × fresh'-ana x₁ d --- the recursive call  may or may not be x or x1? are they the same? if you get a 0 from the LHS they are equal; so they're not the same?
+    fresh'-ana x (ALam {x = x₁} x₂ x₃ d) = (natEQp x x₁) × fresh'-ana x d × fresh'-ana x₁ d --- the recursive call  may or may not be x or x1? are they the same? if you get a 0 from the LHS they are equal; so they're not the same?
 
   mutual
     fresh-synth : ∀{Γ e t α e' t'} →
@@ -181,36 +181,26 @@ module structural where
                     (wt : Γ ⊢ e => t) →
                     fresh'-synth x wt →
                     (Γ ,, (x , t')) ⊢ e => t
-    wt-weak-synth apt (SAsc x₁) f = {!!}
-    wt-weak-synth apt (SVar x₁) f = {!!}
-    wt-weak-synth apt (SAp wt x₁ x₂) f = {!!}
+    wt-weak-synth apt (SAsc x₁) f = SAsc (wt-weak-ana apt x₁ f)
+    wt-weak-synth {x = x} apt (SVar {n = n} x₁) f with natEQ n x
+    wt-weak-synth apt (SVar x₂) f | Inl refl = abort (somenotnone (! x₂ · apt))
+    wt-weak-synth apt (SVar x₂) f | Inr x₁ = SVar (lem-extend x₁ x₂)
+    wt-weak-synth apt (SAp wt x₁ x₂) (f1 , f2) = SAp (wt-weak-synth apt wt f1) x₁ (wt-weak-ana apt x₂ f2)
     wt-weak-synth apt SNum f = SNum
-    wt-weak-synth apt (SPlus x₁ x₂) f = {!!}
+    wt-weak-synth apt (SPlus x₁ x₂) (f1 , f2) = SPlus (wt-weak-ana apt x₁ f1) (wt-weak-ana apt x₂ f2)
     wt-weak-synth apt SEHole f = SEHole
-    wt-weak-synth apt (SNEHole wt) f = {!!}
-    -- wt-weak-synth A F (SAsc x₁) = SAsc (wt-weak-ana A F x₁)
-    -- wt-weak-synth {x = x} A F (SVar {n = n} x₁) with natEQ n x
-    -- wt-weak-synth A F (SVar x₁) | Inl refl = abort (somenotnone (! x₁ · A))
-    -- ... | Inr qq = SVar (lem-extend qq x₁)
-    -- wt-weak-synth A F (SAp wt x₁ x₂) = SAp (wt-weak-synth A (π1 F) wt) x₁ (wt-weak-ana A (π2 F) x₂)
-    -- wt-weak-synth A F SNum = SNum
-    -- wt-weak-synth A F(SPlus x₁ x₂) = SPlus (wt-weak-ana A (π1 F) x₁) (wt-weak-ana A (π2 F) x₂)
-    -- wt-weak-synth A F SEHole = SEHole
-    -- wt-weak-synth A F (SNEHole wt) = SNEHole (wt-weak-synth A F wt)
+    wt-weak-synth apt (SNEHole wt) f = SNEHole (wt-weak-synth apt wt f)
 
     wt-weak-ana : {Γ : ·ctx} {x : Nat} {t t' : τ̇} {e : ė} →
                     x # Γ →
                     (wt : Γ ⊢ e <= t) →
                     fresh'-ana x wt →
                     (Γ ,, (x , t')) ⊢ e <= t
-    wt-weak-ana apt (ASubsume x₁ x₂) f = {!!}
+    wt-weak-ana apt (ASubsume x₁ x₂) f = ASubsume (wt-weak-synth apt x₁ f) x₂
     wt-weak-ana {x = x} apt (ALam {x = x₁} x₂ x₃ wt) f with natEQ x x₁
-    wt-weak-ana apt (ALam x₃ x₄ wt) f | Inl refl = abort (π1 f)
-    wt-weak-ana {x = x} apt (ALam {x = x₁} x₃ x₄ wt) f | Inr x₂ = ALam (lem-extend (flip x₂) x₃) x₄ (wt-weak-ana apt {!wt!} (π2 f))
-    -- wt-weak-ana A F (ASubsume x₁ x₂) = ASubsume (wt-weak-synth A F x₁) x₂
-    -- wt-weak-ana {x = x} A F (ALam {x = x₁} x₂ x₃ wt) with natEQ x x₁
-    -- wt-weak-ana A F (ALam x₂ x₃ wt) | Inl refl = abort F
-    -- wt-weak-ana {x = x} A F (ALam {x = z} x₂ x₃ wt) | Inr neq = ALam (lem-extend (flip neq) x₂) x₃ {!!}
+    wt-weak-ana apt (ALam x₃ x₄ wt) (f1 , _) | Inl refl = abort f1
+    wt-weak-ana apt (ALam x₃ m wt) (f1 , f2 , f3) | Inr x₂ = ALam (lem-extend (flip x₂) x₃) m (wt-weak-ana {!!} wt {!f2!})
+
 
   -- mutual
   --   lem-fresh-synth : ∀{x Γ e t} → x # Γ → Γ ⊢ e => t → fresh x e
