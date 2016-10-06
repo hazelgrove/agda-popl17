@@ -47,6 +47,20 @@ module examples where
   -- to aid in comparision between the on-paper notation and the
   -- corresponding agda syntax.
 
+  -- these smaller derivations motivate the need for the zipper rules: you
+  -- have to unzip down to the point of the structure where you want to
+  -- apply an edit, do the local edit rule, and then put it back together
+  -- around you
+  talk0 :  ∅ ⊢ (▹ <||> ◃ ·+₁ <||>) => num ~ construct (numlit 7) ~>
+               (▹ N 7 ◃  ·+₁ <||>) => num
+  talk0 = SAZipPlus1 (AASubsume EETop SEHole SAConNumlit TCRefl)
+
+  talk1 : ∅ ⊢ (·λ 0 <||> ·:₂ (▹ <||> ◃ ==>₁ <||>)) => (<||> ==> <||>) ~ construct num ~>
+              (·λ 0 <||> ·:₂ (▹ num ◃ ==>₁ <||>)) => (num ==> <||>)
+  talk1 = SAZipAsc2 (TMArrZip1 TMConNum) (ETArrL ETTop) (ETArrL ETTop)
+                    (ALam refl MAArr (ASubsume SEHole TCRefl))
+
+
   -- this is figure one from the paper in full detail
   fig1-l : List action
   fig1-l = construct (lam 0)
@@ -112,15 +126,30 @@ module examples where
              DoRefl)))) )))
 
 
-  -- these smaller derivations motivate the need for the zipper rules: you
-  -- have to unzip down to the point of the structure where you want to
-  -- apply an edit, do the local edit rule, and then put it back together
-  -- around you
-  talk0 :  ∅ ⊢ (▹ <||> ◃ ·+₁ <||>) => num ~ construct (numlit 7) ~>
-               (▹ N 7 ◃  ·+₁ <||>) => num
-  talk0 = SAZipPlus1 (AASubsume EETop SEHole SAConNumlit TCRefl)
+  --- this demonstrates that the other ordering discussed is also fine. it
+  --- results in different proof terms and actions but ultimately produces
+  --- the same expression. there are many other lists of actions that would
+  --- also work, these are just two.
+  fig2alt-l : List action
+  fig2alt-l =  construct (var incr)
+           :: construct ap
+           :: construct ap
+           :: construct (numlit 3)
+           :: move parent
+           :: move (child 1)
+           :: construct (var incr)
+           :: move parent
+           :: []
 
-  talk1 : ∅ ⊢ (·λ 0 <||> ·:₂ (▹ <||> ◃ ==>₁ <||>)) => (<||> ==> <||>) ~ construct num ~>
-              (·λ 0 <||> ·:₂ (▹ num ◃ ==>₁ <||>)) => (num ==> <||>)
-  talk1 = SAZipAsc2 (TMArrZip1 TMConNum) (ETArrL ETTop) (ETArrL ETTop)
-                    (ALam refl MAArr (ASubsume SEHole TCRefl))
+  figure2alt : runsynth (∅ ,, (incr , num ==> num)) ▹ <||> ◃ <||> fig2alt-l (X incr ∘₂ ▹ X incr ∘ (N 3) ◃)  num
+  figure2alt = DoSynth (SAConVar refl)
+            (DoSynth (SAConApArr MAArr)
+            (DoSynth (SAZipApAna MAArr (SVar refl) (AASubsume EETop SEHole (SAConApArr MAHole) TCHole1))
+            (DoSynth (SAZipApAna MAArr (SVar refl) (AASubsume (EEApR EETop) (SAp SEHole MAHole (ASubsume SEHole TCRefl)) (SAZipApAna MAHole SEHole
+                                                                                                                            (AASubsume EETop SEHole SAConNumlit TCHole2)) TCHole1))
+            (DoSynth (SAZipApAna MAArr (SVar refl) (AAMove EMApParent2))
+            (DoSynth (SAZipApAna MAArr (SVar refl) (AAMove EMApChild1))
+            (DoSynth (SAZipApAna MAArr (SVar refl) (AASubsume (EEApL EETop) (SAp SEHole MAHole (ASubsume SNum TCHole2)) (SAZipApArr MAArr EETop SEHole (SAConVar refl)
+                                                                                                                           (ASubsume SNum TCRefl)) TCRefl))
+            (DoSynth (SAZipApAna MAArr (SVar refl) (AAMove EMApParent1))
+            ( DoRefl))))))))
