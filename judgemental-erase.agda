@@ -105,8 +105,9 @@ module judgemental-erase where
   erase-e-mode : (e : ê) → Σ[ er ∈ ė ] (erase-e e er)
   erase-e-mode e = (e ◆e) , (◆erase-e e (e ◆e) refl)
 
-  -- some translations. these are not needed to show that this is an ok
-  -- encoding pair, but they are helpful when actually using it.
+  -- some translations and lemmas to move between the different
+  -- forms. these are not needed to show that this is an ok encoding pair,
+  -- but they are helpful when actually using it.
 
   -- even more specifically, the relation relates an expression to its
   -- functional erasure.
@@ -143,3 +144,11 @@ module judgemental-erase where
                     erase-e e e◆ →
                     erase-e e' e◆
   eq-er-trans {e} {e◆} {e'} eq er = tr (λ f → erase-e e' f) (erasee-det (◆erase-e e (e' ◆e) eq) er) (rel◆ e')
+
+
+  eq-ert-trans : ∀{t t' t1 t2} →
+                (t ◆t) == (t' ◆t) →
+                erase-t t t1 →
+                erase-t t' t2 →
+                t1 == t2
+  eq-ert-trans eq er1 er2 = ! (erase-t◆ er1) · (eq · (erase-t◆ er2))
