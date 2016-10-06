@@ -47,9 +47,8 @@ internally, but we give a brief description here in alphabetical order.
 - [core.agda](core.agda) defines the main judgements and grammars of the
   language, and gives a few lemmas.
 
-- [declarative.agda](declarative.agda) is incomplete, but defines a
-  declarative rather than bidirectional typing system and relates it to the
-  main system.
+- [declarative.agda](declarative.agda) defines a declarative rather than
+  bidirectional typing system and relates it to the main system.
 
 - [determinism.agda](determinism.agda) proves that the action
   semantics, modulo the predicate defined in
