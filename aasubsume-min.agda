@@ -35,7 +35,6 @@ module aasubsume-min where
     min-synth (SAConLam x₁) = _ , SAConLam x₁ , <>
     min-synth (SAConApArr x) = _ , SAConApArr x , <>
     min-synth (SAConApOtw x) = _ , SAConApOtw x , <>
-    min-synth SAConArg = _ , SAConArg , <>
     min-synth SAConNumlit = _ , SAConNumlit , <>
     min-synth (SAConPlus1 x) = _ , SAConPlus1 x , <>
     min-synth (SAConPlus2 x) = _ , SAConPlus2 x , <>
@@ -65,7 +64,6 @@ module aasubsume-min where
     min-ana (AASubsume EETop SEHole (SAConLam x₃) (TCArr x₄ x₅)) = _ , AAConLam1 x₃ MAArr , <>
     min-ana (AASubsume x x₁ (SAConApArr x₂) x₃) = _ , AASubsume x x₁ (SAConApArr x₂) x₃ , <>
     min-ana (AASubsume x x₁ (SAConApOtw x₂) x₃) = _ , AASubsume x x₁ (SAConApOtw x₂) x₃ , <>
-    min-ana (AASubsume x x₁ SAConArg x₃) = _ , AASubsume x x₁ SAConArg x₃ , <>
     min-ana (AASubsume x x₁ SAConNumlit x₃) = _ , AASubsume x x₁ SAConNumlit x₃ , <>
     min-ana (AASubsume x x₁ (SAConPlus1 x₂) x₃) = _ , AASubsume x x₁ (SAConPlus1 x₂) x₃ , <>
     min-ana (AASubsume x x₁ (SAConPlus2 x₂) x₃) = _ , AASubsume x x₁ (SAConPlus2 x₂) x₃ , <>
@@ -110,7 +108,6 @@ module aasubsume-min where
   min-ana-lem (SAConLam x₁) min = <>
   min-ana-lem (SAConApArr x) min = <>
   min-ana-lem (SAConApOtw x) min = <>
-  min-ana-lem (SAConArg) min = <>
   min-ana-lem (SAConNumlit) min = <>
   min-ana-lem (SAConPlus1 x) min = <>
   min-ana-lem (SAConPlus2 x) min = <>
