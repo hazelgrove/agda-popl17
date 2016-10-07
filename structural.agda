@@ -40,74 +40,33 @@ module structural where
   -- anywhere in the term at all; it must be totally fresh. it's possible
   -- to drop this requirement with alpha-renaming to recover the standard
   -- description of these things, so we allow it here for convenience.
-  -- fresh : Nat → ė → Set
-  -- fresh x (e ·: t) = fresh x e
-  -- fresh x (X y) with natEQ x y
-  -- ... | Inl eq = ⊥
-  -- ... | Inr neq = ⊤
-  -- fresh x (·λ y e) with natEQ x y
-  -- ... | Inl eq = ⊥
-  -- ... | Inr neq = fresh x e
-  -- fresh x (N n) = ⊤
-  -- fresh x (e1 ·+ e2) = fresh x e1 × fresh x e2
-  -- fresh x <||> = ⊤
-  -- fresh x <| e |> = fresh x e
-  -- fresh x (e1 ∘ e2) = fresh x e1 × fresh x e2
+  fresh : Nat → ė → Set
+  fresh x (e ·: t) = fresh x e
+  fresh x (X y) with natEQ x y
+  ... | Inl eq = ⊥
+  ... | Inr neq = ⊤
+  fresh x (·λ y e) with natEQ x y
+  ... | Inl eq = ⊥
+  ... | Inr neq = fresh x e
+  fresh x (N n) = ⊤
+  fresh x (e1 ·+ e2) = fresh x e1 × fresh x e2
+  fresh x <||> = ⊤
+  fresh x <| e |> = fresh x e
+  fresh x (e1 ∘ e2) = fresh x e1 × fresh x e2
 
-  mutual
-    fresh'-synth : ∀{Γ e t} → Nat → (Γ ⊢ e => t) → Set
-    fresh'-synth x (SAsc x₁) = fresh'-ana x x₁
-    fresh'-synth x (SVar {n = n} x₁) = natEQp x n
-    fresh'-synth x (SAp d x₁ x₂) = (fresh'-synth x d) × (fresh'-ana x x₂)
-    fresh'-synth x SNum = ⊤
-    fresh'-synth x (SPlus x₁ x₂) = (fresh'-ana x x₁) × (fresh'-ana x x₂)
-    fresh'-synth x SEHole = ⊤
-    fresh'-synth x (SNEHole d) = fresh'-synth x d
+  -- mutual
+  --   fresh'-synth : ∀{Γ e t} → Nat → (Γ ⊢ e => t) → Set
+  --   fresh'-synth x (SAsc x₁) = fresh'-ana x x₁
+  --   fresh'-synth x (SVar {n = n} x₁) = natEQp x n
+  --   fresh'-synth x (SAp d x₁ x₂) = (fresh'-synth x d) × (fresh'-ana x x₂)
+  --   fresh'-synth x SNum = ⊤
+  --   fresh'-synth x (SPlus x₁ x₂) = (fresh'-ana x x₁) × (fresh'-ana x x₂)
+  --   fresh'-synth x SEHole = ⊤
+  --   fresh'-synth x (SNEHole d) = fresh'-synth x d
 
-    fresh'-ana : ∀{Γ e t} → Nat → (Γ ⊢ e <= t) → Set
-    fresh'-ana x (ASubsume x₁ x₂) = fresh'-synth x x₁
-    fresh'-ana x (ALam {x = x₁} x₂ x₃ d) = (natEQp x x₁) × fresh'-ana x d × fresh'-ana x₁ d --- the recursive call  may or may not be x or x1? are they the same? if you get a 0 from the LHS they are equal; so they're not the same?
-
-  mutual
-    fresh-synth : ∀{Γ e t α e' t'} →
-                                Nat →
-                                (Γ ⊢ e => t ~ α ~> e' => t') →
-                                Set
-    fresh-synth x (SAMove x₁) = ⊤
-    fresh-synth x SADel = ⊤
-    fresh-synth x SAConAsc = ⊤
-    fresh-synth x₁ (SAConVar {x = x} p) = ⊤ -- maybe ban one
-    fresh-synth x₁ (SAConLam {x = x} x₂) = natEQp x₁ x
-    fresh-synth x (SAConApArr x₁) = ⊤
-    fresh-synth x (SAConApOtw x₁) = ⊤
-    fresh-synth x SAConArg = ⊤
-    fresh-synth x SAConNumlit = ⊤
-    fresh-synth x (SAConPlus1 x₁) = ⊤
-    fresh-synth x (SAConPlus2 x₁) = ⊤
-    fresh-synth x SAConNEHole = ⊤
-    fresh-synth x (SAFinish x₁) = ⊤
-    fresh-synth x (SAZipAsc1 x₁) = fresh-ana x x₁
-    fresh-synth x (SAZipAsc2 x₁ x₂ x₃ x₄) = ⊤
-    fresh-synth x (SAZipApArr x₁ x₂ x₃ d x₄) = fresh-synth x d
-    fresh-synth x (SAZipApAna x₁ x₂ x₃) = fresh-ana x x₃
-    fresh-synth x (SAZipPlus1 x₁) = fresh-ana x x₁
-    fresh-synth x (SAZipPlus2 x₁) = fresh-ana x x₁
-    fresh-synth x (SAZipHole x₁ x₂ d) = fresh-synth x d
-
-    fresh-ana : ∀{Γ e t α e'} →
-                                Nat →
-                                (Γ ⊢ e ~ α ~> e' ⇐ t) →
-                                Set
-    fresh-ana x (AASubsume x₁ x₂ x₃ x₄) = fresh-synth x x₃
-    fresh-ana x (AAMove x₁) = ⊤
-    fresh-ana x AADel = ⊤
-    fresh-ana x AAConAsc = ⊤
-    fresh-ana x₁ (AAConVar {x = x} x₂ p) = natEQp x x₁
-    fresh-ana x₁ (AAConLam1 {x = x} x₂ x₃) = natEQp x x₁
-    fresh-ana x₁ (AAConLam2 {x = x} x₂ x₃) = natEQp x x₁
-    fresh-ana x (AAConNumlit x₁) = ⊤
-    fresh-ana x (AAFinish x₁) = ⊤
-    fresh-ana x₁ (AAZipLam {x = x} x₂ x₃ d) = natEQp x x₁
+  --   fresh'-ana : ∀{Γ e t} → Nat → (Γ ⊢ e <= t) → Set
+  --   fresh'-ana x (ASubsume x₁ x₂) = fresh'-synth x x₁
+  --   fresh'-ana x (ALam {x = x₁} x₂ x₃ d) = (natEQp x x₁) × fresh'-ana x d
 
   ---- lemmas
 
@@ -198,8 +157,10 @@ module structural where
                     (Γ ,, (x , t')) ⊢ e <= t
     wt-weak-ana apt (ASubsume x₁ x₂) f = ASubsume (wt-weak-synth apt x₁ f) x₂
     wt-weak-ana {x = x} apt (ALam {x = x₁} x₂ x₃ wt) f with natEQ x x₁
-    wt-weak-ana apt (ALam x₃ x₄ wt) (f1 , _) | Inl refl = abort f1
-    wt-weak-ana apt (ALam x₃ m wt) (f1 , f2 , f3) | Inr x₂ = ALam (lem-extend (flip x₂) x₃) m (wt-weak-ana {!!} wt {!f2!})
+    wt-weak-ana apt (ALam x₃ x₄ wt) (f1 , _)      | Inl refl = abort f1
+    wt-weak-ana {Γ} {x} apt (ALam {x = z} x₃ m wt) (f1 , f2) | Inr x₂ =
+      ALam (lem-extend (flip x₂) x₃) m (wt-exchange-ana {Γ = Γ} {x = z} {y = x} {x≠y = flip x₂}
+                                        (wt-weak-ana (lem-extend x₂ apt) wt f2))
 
 
   -- mutual
@@ -219,6 +180,50 @@ module structural where
   --   lem-fresh-ana {x} a (ALam {x = y} x₂ x₃ d) with natEQ x y
   --   lem-fresh-ana a (ALam x₃ x₄ d) | Inr x₂ = lem-fresh-ana (lem-extend x₂ a) d
   --   lem-fresh-ana {x} a (ALam x₃ x₄ d) | Inl refl = {! !}
+
+
+
+  mutual
+    fresh-synth : ∀{Γ e t α e' t'} →
+                                Nat →
+                                (Γ ⊢ e => t ~ α ~> e' => t') →
+                                Set
+    fresh-synth x (SAMove x₁) = ⊤
+    fresh-synth x SADel = ⊤
+    fresh-synth x SAConAsc = ⊤
+    fresh-synth x₁ (SAConVar {x = x} p) = ⊤ -- maybe ban one
+    fresh-synth x₁ (SAConLam {x = x} x₂) = natEQp x₁ x
+    fresh-synth x (SAConApArr x₁) = ⊤
+    fresh-synth x (SAConApOtw x₁) = ⊤
+    fresh-synth x SAConArg = ⊤
+    fresh-synth x SAConNumlit = ⊤
+    fresh-synth x (SAConPlus1 x₁) = ⊤
+    fresh-synth x (SAConPlus2 x₁) = ⊤
+    fresh-synth x SAConNEHole = ⊤
+    fresh-synth x (SAFinish x₁) = ⊤
+    fresh-synth x (SAZipAsc1 x₁) = fresh-ana x x₁
+    fresh-synth x (SAZipAsc2 x₁ x₂ x₃ x₄) = ⊤
+    fresh-synth x (SAZipApArr x₁ x₂ x₃ d x₄) = fresh-synth x d
+    fresh-synth x (SAZipApAna x₁ x₂ x₃) = fresh-ana x x₃
+    fresh-synth x (SAZipPlus1 x₁) = fresh-ana x x₁
+    fresh-synth x (SAZipPlus2 x₁) = fresh-ana x x₁
+    fresh-synth x (SAZipHole x₁ x₂ d) = fresh-synth x d
+
+    fresh-ana : ∀{Γ e t α e'} →
+                                Nat →
+                                (Γ ⊢ e ~ α ~> e' ⇐ t) →
+                                Set
+    fresh-ana x (AASubsume x₁ x₂ x₃ x₄) = fresh-synth x x₃
+    fresh-ana x (AAMove x₁) = ⊤
+    fresh-ana x AADel = ⊤
+    fresh-ana x AAConAsc = ⊤
+    fresh-ana x₁ (AAConVar {x = x} x₂ p) = natEQp x x₁
+    fresh-ana x₁ (AAConLam1 {x = x} x₂ x₃) = natEQp x x₁
+    fresh-ana x₁ (AAConLam2 {x = x} x₂ x₃) = natEQp x x₁
+    fresh-ana x (AAConNumlit x₁) = ⊤
+    fresh-ana x (AAFinish x₁) = ⊤
+    fresh-ana x₁ (AAZipLam {x = x} x₂ x₃ d) = natEQp x x₁
+
 
   ---- action semantics judgements
   mutual
