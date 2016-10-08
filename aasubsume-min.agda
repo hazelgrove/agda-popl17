@@ -58,6 +58,10 @@ module aasubsume-min where
   min-ana-lem (SAZipPlus1 x) min = min
   min-ana-lem (SAZipPlus2 x) min = min
   min-ana-lem (SAZipHole x x₁ c) min = min
+  min-ana-lem SAConInl _ = <>
+  min-ana-lem SAConInr _ = <>
+  min-ana-lem (SAConCase1 x₁ x₂ x₃) _ = <>
+  min-ana-lem (SAConCase2 x₁ x₂ x₃) _ = <>
 
   -- any derivation of an action can be minimized to avoid this cases that
   -- induce non-determinism.

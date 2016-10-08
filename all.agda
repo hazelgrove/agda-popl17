@@ -14,7 +14,7 @@ open import judgemental-erase
 open import judgemental-inconsistency
 open import moveerase
 open import examples
-open import structural
+-- open import structural
 
 -- first wave theorems
 open import sensibility
