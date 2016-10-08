@@ -97,21 +97,6 @@ module moveerase where
     moveerase-synth (EEPlusR er) (SPlus x x₁) (SAZipPlus2 x₂) = ap1 (λ q → _ ·+ q) (moveerase-ana er x₁ x₂) , refl
     moveerase-synth er wt (SAZipHole x x₁ d) = ap1 <|_|> (π1 (moveerase-synth x x₁ d)) , refl
 
--- <<<<<<< HEAD
---     moveerase-ana : ∀{Γ e e' t δ } →
---                         Γ ⊢ e ~ move δ ~> e' ⇐ t →
---                         (e ◆e) == (e' ◆e)
---     moveerase-ana (AASubsume x x₁ x₂ x₃) with pin x x₁ x₂
---     ... | refl = moveerase-synth x₂
---     moveerase-ana (AAMove x) = moveerase x
---     moveerase-ana (AAZipLam x₁ x₂ d) = ap1 (λ q → ·λ _ q) (moveerase-ana d)
---     moveerase-ana (AAZipInl x x₁) = ap1 inl (moveerase-ana x₁)
---     moveerase-ana (AAZipInr x x₁) = ap1 inr (moveerase-ana x₁)
---     moveerase-ana (AAZipCase1 x₁ x₂ x₃ x₄ x₅ x₆ x₇ x₈) with pin x₃ x₄ x₅
---     ... | refl = ap1 (λ q → case q _ _ _ _) (moveerase-synth x₅)
---     moveerase-ana (AAZipCase2 x₁ x₂ x₃ x₄ x₅) = ap1 (λ q → case _ _ q _ _) (moveerase-ana x₅)
---     moveerase-ana (AAZipCase3 x₁ x₂ x₃ x₄ x₅) = ap1 (λ q → case _ _ _ _ q) (moveerase-ana x₅)
--- =======
     moveerase-ana : ∀{Γ e e' e◆ t δ } →
                       (er : erase-e e e◆) →
                       Γ ⊢ e◆ <= t →
@@ -122,3 +107,20 @@ module moveerase where
     moveerase-ana (EELam er) (ASubsume () x₂) _
     moveerase-ana (EELam er) (ALam x₁ x₂ wt) (AAZipLam x₃ x₄ d) with matcharrunicity x₂ x₄
     ... | refl =  ap1 (λ q → ·λ _ q) (moveerase-ana er wt d)
+    moveerase-ana (EEInl er) (ASubsume () x₁) (AAZipInl x₂ d)
+    moveerase-ana (EEInl er) (AInl x wt) (AAZipInl x₁ d) with matchplusunicity x x₁
+    ... | refl =  ap1 inl (moveerase-ana er wt d)
+    moveerase-ana (EEInr er) (ASubsume () x₁) (AAZipInr x₂ d)
+    moveerase-ana (EEInr er) (AInr x wt) (AAZipInr x₁ d) with matchplusunicity x x₁
+    ... | refl = ap1 inr (moveerase-ana er wt d)
+    moveerase-ana er wt (AAZipCase1 x₁ x₂ x₃ x₄ x₅ x₆ x₇ x₈) = ap1 (λ q → case q _ _ _ _) (π1(moveerase-synth x₃ x₄ x₅))
+    moveerase-ana (EECase2 er) (ASubsume () x₂) (AAZipCase2 x₃ x₄ x₅ x₆ d)
+    moveerase-ana (EECase2 er) (ACase x₁ x₂ x₃ x₄ wt wt₁) (AAZipCase2 x₅ x₆ x₇ x₈ d)
+      with synthunicity x₄ x₇
+    ... | refl with matchplusunicity x₃ x₈
+    ... | refl = ap1 (λ q → case _ _ q _ _) (moveerase-ana er wt d)
+    moveerase-ana (EECase3 er) (ASubsume () x₂) (AAZipCase3 x₃ x₄ x₅ x₆ d)
+    moveerase-ana (EECase3 er) (ACase x₁ x₂ x₃ x₄ wt wt₁) (AAZipCase3 x₅ x₆ x₇ x₈ d)
+      with synthunicity x₄ x₇
+    ... | refl with matchplusunicity x₃ x₈
+    ... | refl = ap1 (λ q → case _ _ _ _ q) (moveerase-ana er wt₁ d)
