@@ -27,7 +27,6 @@ module sensibility where
     actsense-synth EETop (EEAscR (ETArrL ETTop)) (SAConLam x) SEHole = SAsc (ALam x MAArr (ASubsume SEHole TCRefl))
     actsense-synth EETop (EEApR EETop) (SAConApArr x) wt = SAp wt x (ASubsume SEHole TCHole1)
     actsense-synth EETop (EEApR EETop) (SAConApOtw x) wt = SAp (SNEHole wt) MAHole (ASubsume SEHole TCRefl)
-    actsense-synth EETop (EEApL EETop) SAConArg wt = SAp SEHole MAHole (ASubsume wt TCHole2)
     actsense-synth _ EETop SAConNumlit _ = SNum
     actsense-synth EETop (EEPlusR EETop) (SAConPlus1 TCRefl) wt = SPlus (ASubsume wt TCRefl) (ASubsume SEHole TCHole1)
     actsense-synth EETop (EEPlusR EETop) (SAConPlus1 TCHole2) wt = SPlus (ASubsume wt TCHole1) (ASubsume SEHole TCHole1)

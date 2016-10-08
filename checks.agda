@@ -225,7 +225,7 @@ module checks where
   endpoints _ DoRefl AM[] = refl
   endpoints wt (DoSynth x rs) (AM:: mv)
     with endpoints (actsense-synth (rel◆ _) (rel◆ _) x wt) rs mv
-  ... | refl = pin (rel◆ _) wt x
+  ... | refl = π2 (moveerase-synth (rel◆ _) wt x)
 
   ziplem-moves-asc2 : ∀{ Γ l t t' e t◆ } →
                       movements l →
@@ -244,7 +244,7 @@ module checks where
                    runsynth Γ e t' l e' t' →
                    runana Γ e l e' t
   synthana-moves _ _ _ DoRefl = DoRefl
-  synthana-moves wt (AM:: m) c (DoSynth x rs) with pin (rel◆ _) wt x
+  synthana-moves wt (AM:: m) c (DoSynth x rs) with π2 (moveerase-synth (rel◆ _) wt x)
   ... | refl = DoAna (AASubsume (rel◆ _) wt x c)
                      (synthana-moves (actsense-synth (rel◆ _) (rel◆ _) x wt) m c rs)
 
@@ -256,7 +256,7 @@ module checks where
                    runsynth Γ e1 t l e1' t →
                    runsynth Γ (e1 ∘₁ e2) t' l (e1' ∘₁ e2) t'
   ziplem-moves-ap1 _ _ _ _ DoRefl = DoRefl
-  ziplem-moves-ap1 wt1 mch wt2 (AM:: m) (DoSynth x rs) with pin (rel◆ _) wt1 x
+  ziplem-moves-ap1 wt1 mch wt2 (AM:: m) (DoSynth x rs) with π2 (moveerase-synth (rel◆ _) wt1 x)
   ... | refl = DoSynth (SAZipApArr mch (rel◆ _) wt1 x wt2)
                         (ziplem-moves-ap1 (actsense-synth (rel◆ _) (rel◆ _) x wt1)
                                                      mch wt2 m rs)

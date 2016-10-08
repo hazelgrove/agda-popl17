@@ -32,7 +32,35 @@ module aasubsume-min where
     aasubmin-ana (AAZipCase3 a b c d f) = aasubmin-ana f
     aasubmin-ana _ = ⊤
 
+  -- the minimization predicate propagates through subsumption rules
+  min-ana-lem : ∀{e e' e◆ Γ t t' t'' α}
+                 {a : erase-e e e◆}
+                 {b : Γ ⊢ e◆ => t'}
+                 {c : t ~ t''} →
+                 (d : Γ ⊢ e => t' ~ α ~> e' => t'')
+                → aasubmin-ana (AASubsume a b d c) → aasubmin-synth d
+  min-ana-lem (SAMove x) min = <>
+  min-ana-lem (SADel) min = <>
+  min-ana-lem (SAConAsc) min = <>
+  min-ana-lem (SAConVar p) min = <>
+  min-ana-lem (SAConLam x₁) min = <>
+  min-ana-lem (SAConApArr x) min = <>
+  min-ana-lem (SAConApOtw x) min = <>
+  min-ana-lem (SAConNumlit) min = <>
+  min-ana-lem (SAConPlus1 x) min = <>
+  min-ana-lem (SAConPlus2 x) min = <>
+  min-ana-lem (SAConNEHole) min = <>
+  min-ana-lem (SAFinish x) min = <>
+  min-ana-lem (SAZipAsc1 x) min = min
+  min-ana-lem (SAZipAsc2 x x₁ x₂ x₃) min = <>
+  min-ana-lem (SAZipApArr x x₁ x₂ c x₃) min = min
+  min-ana-lem (SAZipApAna x x₁ x₂) min = min
+  min-ana-lem (SAZipPlus1 x) min = min
+  min-ana-lem (SAZipPlus2 x) min = min
+  min-ana-lem (SAZipHole x x₁ c) min = min
 
+  -- any derivation of an action can be minimized to avoid this cases that
+  -- induce non-determinism.
   mutual
     min-synth : ∀{Γ e t α e' t'} → (d : Γ ⊢ e => t ~ α ~> e' => t') →
                         Σ[ e'' ∈ ê ] Σ[ d' ∈ Γ ⊢ e => t ~ α ~> e'' => t' ] aasubmin-synth d'
@@ -43,7 +71,6 @@ module aasubsume-min where
     min-synth (SAConLam x₁) = _ , SAConLam x₁ , <>
     min-synth (SAConApArr x) = _ , SAConApArr x , <>
     min-synth (SAConApOtw x) = _ , SAConApOtw x , <>
-    min-synth SAConArg = _ , SAConArg , <>
     min-synth SAConNumlit = _ , SAConNumlit , <>
     min-synth (SAConPlus1 x) = _ , SAConPlus1 x , <>
     min-synth (SAConPlus2 x) = _ , SAConPlus2 x , <>
@@ -77,7 +104,6 @@ module aasubsume-min where
     min-ana (AASubsume EETop SEHole (SAConLam x₃) (TCArr x₄ x₅)) = _ , AAConLam1 x₃ MAArr , <>
     min-ana (AASubsume x x₁ (SAConApArr x₂) x₃) = _ , AASubsume x x₁ (SAConApArr x₂) x₃ , <>
     min-ana (AASubsume x x₁ (SAConApOtw x₂) x₃) = _ , AASubsume x x₁ (SAConApOtw x₂) x₃ , <>
-    min-ana (AASubsume x x₁ SAConArg x₃) = _ , AASubsume x x₁ SAConArg x₃ , <>
     min-ana (AASubsume x x₁ SAConNumlit x₃) = _ , AASubsume x x₁ SAConNumlit x₃ , <>
     min-ana (AASubsume x x₁ (SAConPlus1 x₂) x₃) = _ , AASubsume x x₁ (SAConPlus1 x₂) x₃ , <>
     min-ana (AASubsume x x₁ (SAConPlus2 x₂) x₃) = _ , AASubsume x x₁ (SAConPlus2 x₂) x₃ , <>
@@ -142,35 +168,25 @@ module aasubsume-min where
     min-ana (AAZipCase3 x₁ x₂ x₃ x₄ x₆) with min-ana x₆
     ... | a , b , c = _ , AAZipCase3 x₁ x₂ x₃ x₄ b , c
 
-  -- the minimization predicate propagates through subsumption rules as
-  -- you'd expect
-  min-ana-lem : ∀{e e' e◆ Γ t t' t'' α}
-                 {a : erase-e e e◆}
-                 {b : Γ ⊢ e◆ => t'}
-                 {c : t ~ t''} →
-                 (d : Γ ⊢ e => t' ~ α ~> e' => t'')
-                → aasubmin-ana (AASubsume a b d c) → aasubmin-synth d
-  min-ana-lem (SAMove x) min = <>
-  min-ana-lem (SADel) min = <>
-  min-ana-lem (SAConAsc) min = <>
-  min-ana-lem (SAConVar p) min = <>
-  min-ana-lem (SAConLam x₁) min = <>
-  min-ana-lem (SAConApArr x) min = <>
-  min-ana-lem (SAConApOtw x) min = <>
-  min-ana-lem (SAConArg) min = <>
-  min-ana-lem (SAConNumlit) min = <>
-  min-ana-lem (SAConPlus1 x) min = <>
-  min-ana-lem (SAConPlus2 x) min = <>
-  min-ana-lem (SAConNEHole) min = <>
-  min-ana-lem (SAFinish x) min = <>
-  min-ana-lem (SAZipAsc1 x) min = min
-  min-ana-lem (SAZipAsc2 x x₁ x₂ x₃) min = <>
-  min-ana-lem (SAZipApArr x x₁ x₂ c x₃) min = min
-  min-ana-lem (SAZipApAna x x₁ x₂) min = min
-  min-ana-lem (SAZipPlus1 x) min = min
-  min-ana-lem (SAZipPlus2 x) min = min
-  min-ana-lem (SAZipHole x x₁ c) min = min
-  min-ana-lem SAConInl min = <>
-  min-ana-lem SAConInr min = <>
-  min-ana-lem (SAConCase1 x₁ x₂ x₃) min = <>
-  min-ana-lem (SAConCase2 x₁ x₂ x₃) min = <>
+  -- if a derivation is already subsumption minimal, the minimizer doesn't
+  -- change it.
+
+  same-synth :  ∀ {Γ e t α e'1 t' e'2 } →
+              (d1 : Γ ⊢ e => t ~ α ~> e'1 => t') →
+              (d2 : Γ ⊢ e => t ~ α ~> e'2 => t') → Set
+  same-synth {e'1 = e'1} {e'2 = e'2} d1 d2 = e'1 == e'2
+
+  -- same-synth :  ∀ {Γ1 e1 t1 α1 e'1 t'1 Γ2 e2 t2 α2 e'2 t'2} →
+  --             (d1 : Γ1 ⊢ e1 => t1 ~ α1 ~> e'1 => t'1) →
+  --             (d2 : Γ2 ⊢ e2 => t2 ~ α2 ~> e'2 => t'2) → Set
+  -- same-synth = {!!}
+
+--  mutual
+    -- min-idempote-synth : ∀ {Γ e t α e' t'} →
+    --                      (d : Γ ⊢ e => t ~ α ~> e' => t') →
+    --                      aasubmin-synth d →
+    --                      d == (π1 (π2 (min-synth d)))
+    -- min-idempote-synth = {!!}
+
+    -- min-idempote-ana : {!!}
+    -- min-idempote-ana = {!!}

@@ -38,17 +38,11 @@ internally, but we give a brief description here in alphabetical order.
 - [checks.agda](checks.agda) defines the iterated action semantics and the
   lemmas that lift the zipper rules to them.
 
-- [complete-dynamics.agda](complete-dynamics.agda) is incomplete, but
-  defines a notion of a dynamics on complete terms.
-
 - [constructability.agda](constructability.agda) gives the proof of
   constructability.
 
 - [core.agda](core.agda) defines the main judgements and grammars of the
   language, and gives a few lemmas.
-
-- [declarative.agda](declarative.agda) defines a declarative rather than
-  bidirectional typing system and relates it to the main system.
 
 - [determinism.agda](determinism.agda) proves that the action
   semantics, modulo the predicate defined in
@@ -79,9 +73,9 @@ internally, but we give a brief description here in alphabetical order.
 
 - [sensibility.agda](sensibility.agda) gives the proof of action sensibility.
 
-- [structural.agda](structural.agda) is incomplete, but has proofs of
-  standard structural properties like weakening, exchange, and contraction
-  for the various context-sensitive judgements.
+- [structural.agda](structural.agda) has proofs for the standard structural
+  properties of weakening, exchange, and contraction for the
+  context-sensitive judgements.
 
 
 Assumptions and Represenatation Decisions

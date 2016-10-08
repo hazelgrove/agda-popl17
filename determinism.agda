@@ -131,7 +131,6 @@ module determinism where
     actdet-synth EETop (SAsc x) (SAMove x₁) (SAMove x₂) = movedet x₁ x₂ , refl
     actdet-synth EETop (SAsc x) SADel SADel = refl , refl
     actdet-synth EETop (SAsc x) SAConAsc SAConAsc = refl , refl
-    actdet-synth EETop (SAsc x) SAConArg SAConArg = refl , refl
     actdet-synth EETop (SAsc x) (SAConPlus1 x₁) (SAConPlus1 x₂) = refl , refl
     actdet-synth EETop (SAsc x) (SAConPlus1 x₁) (SAConPlus2 x₂) = abort (x₂ x₁)
     actdet-synth EETop (SAsc x) (SAConPlus2 x₁) (SAConPlus1 x₂) = abort (x₁ x₂)
@@ -160,7 +159,6 @@ module determinism where
     actdet-synth EETop (SVar x) (SAMove x₁) (SAMove x₂) = movedet x₁ x₂ , refl
     actdet-synth EETop (SVar x) SADel SADel = refl , refl
     actdet-synth EETop (SVar x) SAConAsc SAConAsc = refl , refl
-    actdet-synth EETop (SVar x) SAConArg SAConArg = refl , refl
     actdet-synth EETop (SVar x) (SAConPlus1 x₁) (SAConPlus1 x₂) = refl , refl
     actdet-synth EETop (SVar x) (SAConPlus1 x₁) (SAConPlus2 x₂) = abort (x₂ x₁)
     actdet-synth EETop (SVar x) (SAConPlus2 x₁) (SAConPlus1 x₂) = abort (x₁ x₂)
@@ -175,7 +173,6 @@ module determinism where
     actdet-synth EETop (SAp m wt x) (SAMove x₁) (SAMove x₂) = movedet x₁ x₂ , refl
     actdet-synth EETop (SAp m wt x) SADel SADel = refl , refl
     actdet-synth EETop (SAp m wt x) SAConAsc SAConAsc = refl , refl
-    actdet-synth EETop (SAp m wt x) SAConArg SAConArg = refl , refl
     actdet-synth EETop (SAp m wt x) (SAConPlus1 x₁) (SAConPlus1 x₂) = refl , refl
     actdet-synth EETop (SAp m wt x) (SAConPlus1 x₁) (SAConPlus2 x₂) = abort (x₂ x₁)
     actdet-synth EETop (SAp m wt x) (SAConPlus2 x₁) (SAConPlus1 x₂) = abort (x₁ x₂)
@@ -212,7 +209,6 @@ module determinism where
     actdet-synth EETop SNum (SAMove x) (SAMove x₁) = movedet x x₁ , refl
     actdet-synth EETop SNum SADel SADel = refl , refl
     actdet-synth EETop SNum SAConAsc SAConAsc = refl , refl
-    actdet-synth EETop SNum SAConArg SAConArg = refl , refl
     actdet-synth EETop SNum (SAConPlus1 x) (SAConPlus1 x₁) = refl , refl
     actdet-synth EETop SNum (SAConPlus1 x) (SAConPlus2 x₁) = abort (x₁ x)
     actdet-synth EETop SNum (SAConPlus2 x) (SAConPlus1 x₁) = abort (x x₁)
@@ -227,7 +223,6 @@ module determinism where
     actdet-synth EETop (SPlus x x₁) (SAMove x₂) (SAMove x₃) = movedet x₂ x₃ , refl
     actdet-synth EETop (SPlus x x₁) SADel SADel = refl , refl
     actdet-synth EETop (SPlus x x₁) SAConAsc SAConAsc = refl , refl
-    actdet-synth EETop (SPlus x x₁) SAConArg SAConArg = refl , refl
     actdet-synth EETop (SPlus x x₁) (SAConPlus1 x₂) (SAConPlus1 x₃) = refl , refl
     actdet-synth EETop (SPlus x x₁) (SAConPlus1 x₂) (SAConPlus2 x₃) = abort (x₃ x₂)
     actdet-synth EETop (SPlus x x₁) (SAConPlus2 x₂) (SAConPlus1 x₃) = abort (x₂ x₃)
@@ -256,7 +251,6 @@ module determinism where
     actdet-synth EETop SEHole SAConAsc SAConAsc = refl , refl
     actdet-synth EETop SEHole (SAConVar {Γ = G} p) (SAConVar p₁) = refl , (ctxunicity {Γ = G} p p₁)
     actdet-synth EETop SEHole (SAConLam x₁) (SAConLam x₂) = refl , refl
-    actdet-synth EETop SEHole SAConArg SAConArg = refl , refl
     actdet-synth EETop SEHole SAConNumlit SAConNumlit = refl , refl
     actdet-synth EETop SEHole (SAConPlus1 x) (SAConPlus1 x₁) = refl , refl
     actdet-synth EETop SEHole (SAConPlus1 x) (SAConPlus2 x₁) = abort (x₁ x)
@@ -272,7 +266,6 @@ module determinism where
     actdet-synth EETop (SNEHole wt) (SAMove x) (SAMove x₁) = movedet x x₁ , refl
     actdet-synth EETop (SNEHole wt) SADel SADel = refl , refl
     actdet-synth EETop (SNEHole wt) SAConAsc SAConAsc = refl , refl
-    actdet-synth EETop (SNEHole wt) SAConArg SAConArg = refl , refl
     actdet-synth EETop (SNEHole wt) (SAConPlus1 x) (SAConPlus1 x₁) = refl , refl
     actdet-synth EETop (SNEHole wt) (SAConPlus1 x) (SAConPlus2 x₁) = abort (x₁ x)
     actdet-synth EETop (SNEHole wt) (SAConPlus2 x) (SAConPlus1 x₁) = abort (x x₁)
