@@ -290,9 +290,8 @@ module checks where
   ziplem-case1a x# y# er wt0 DoRefl m wt1 wt2 mv = DoRefl
   ziplem-case1a x# y# er wt0 (DoSynth α rs) m wt1 wt2 (AM:: mv)
     with endpoints (actsense-synth er (rel◆ _) α wt0) rs mv
-  ... | refl with pin er wt0 α
-  ... | refl = DoAna (AAZipCase1 x# y# er wt0 α m wt1 wt2)
-                     (ziplem-case1a x# y# (eq-er-trans (moveerase-synth α) er) wt0 rs m wt1 wt2 mv)
+  ... | refl with (π2 (moveerase-synth er wt0 α))
+  ... | refl = DoAna (AAZipCase1 x# y# er wt0 α m wt1 wt2) (ziplem-case1a x# y# (eq-er-trans (π1 (moveerase-synth er wt0 α)) er) wt0 rs m wt1 wt2 mv)
 
   ziplem-case1b : ∀ {Γ e e' t L t' x y t0 e◆ } →
                   x # Γ →
