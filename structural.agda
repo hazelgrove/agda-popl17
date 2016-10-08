@@ -34,12 +34,13 @@ module structural where
   -- and there requires some induction to demonstrate.
 
   -- because of our choice to use barendrecht's convention, we need a quite
-  -- strong form of apartness for weakening. specifically, we need to know
-  -- not just that the variable we're using to extend the context doesn't
-  -- appear in the context, as in a standard presentation, it can't appear
-  -- anywhere in the term at all; it must be totally fresh. it's possible
-  -- to drop this requirement with alpha-renaming to recover the standard
-  -- description of these things, so we allow it here for convenience.
+  -- strong form of freshness of a variable for weakening. specifically, we
+  -- need to know not just that the variable we're using to extend the
+  -- context doesn't appear in the context, as in a standard presentation,
+  -- it can't appear anywhere in the term at all; it must be totally
+  -- fresh. it's possible to drop this requirement with alpha-renaming to
+  -- recover the standard description of these things, so we allow it here
+  -- for convenience.
   fresh : Nat → ė → Set
   fresh x (e ·: t) = fresh x e
   fresh x (X y) = natEQp x y
@@ -51,6 +52,7 @@ module structural where
   fresh x (e1 ∘ e2) = fresh x e1 × fresh x e2
 
   ---- lemmas
+
   -- freshness interacts with erasure as you'd expect. the proofs below mix
   -- and match between judgmental and functional erasure as usual, so this
   -- is needed enough times to pull it out.
@@ -92,7 +94,7 @@ module structural where
   lem-extend neq w₁ | Inl refl = abort (neq refl)
   lem-extend neq w₁ | Inr x₁ = w₁
 
-  ---- well-typedness jugements
+  ---- structural properties for the well-typedness jugements
   mutual
     wt-exchange-synth : {Γ : ·ctx} {x y : Nat} {t1 t2 t : τ̇} {e : ė} →
                         {x≠y : x == y → ⊥} →
@@ -102,10 +104,10 @@ module structural where
       tr (λ q → q ⊢ e => t) (funext (lem-swap Γ x y t1 t2 {x≠y = x≠y})) d
 
     wt-exchange-ana : {Γ : ·ctx} {x y : Nat} {t1 t2 t : τ̇} {e : ė} →
-                        {x≠y : x == y → ⊥} →
+                        (x≠y : x == y → ⊥) →
                         ((Γ ,, (x , t1)) ,, (y , t2)) ⊢ e <= t →
                         ((Γ ,, (y , t2)) ,, (x , t1)) ⊢ e <= t
-    wt-exchange-ana {Γ} {x} {y} {t1} {t2} {t} {e} {x≠y} d =
+    wt-exchange-ana {Γ} {x} {y} {t1} {t2} {t} {e} x≠y d =
       tr (λ q → q ⊢ e <= t) (funext (lem-swap Γ x y t1 t2 {x≠y = x≠y})) d
 
   mutual
@@ -124,7 +126,7 @@ module structural where
   mutual
     wt-weak-synth : {Γ : ·ctx} {x : Nat} {t t' : τ̇} {e : ė} →
                     x # Γ →
-                    (wt : Γ ⊢ e => t) →
+                    Γ ⊢ e => t →
                     fresh x e →
                     (Γ ,, (x , t')) ⊢ e => t
     wt-weak-synth apt (SAsc x₁) f = SAsc (wt-weak-ana apt x₁ f)
@@ -139,17 +141,17 @@ module structural where
 
     wt-weak-ana : {Γ : ·ctx} {x : Nat} {t t' : τ̇} {e : ė} →
                     x # Γ →
-                    (wt : Γ ⊢ e <= t) →
+                    Γ ⊢ e <= t →
                     fresh x e →
                     (Γ ,, (x , t')) ⊢ e <= t
     wt-weak-ana apt (ASubsume x₁ x₂) f = ASubsume (wt-weak-synth apt x₁ f) x₂
     wt-weak-ana {x = x} apt (ALam {x = x₁} x₂ x₃ wt) f with natEQ x x₁
-    wt-weak-ana apt (ALam x₃ x₄ wt) (f1 , _)      | Inl refl = abort f1
-    wt-weak-ana {Γ} {x} apt (ALam {x = z} x₃ m wt) (f1 , f2) | Inr x₂ =
-      ALam (lem-extend (flip x₂) x₃) m (wt-exchange-ana {Γ = Γ} {x = z} {y = x} {x≠y = flip x₂}
-                                        (wt-weak-ana (lem-extend x₂ apt) wt f2))
+    wt-weak-ana apt (ALam x₃ x₄ wt) (f1 , _) | Inl refl = abort f1
+    wt-weak-ana apt (ALam x₃ m wt) (f1 , f2) | Inr x₂ = ALam (lem-extend (flip x₂) x₃) m (wt-exchange-ana (flip x₂) (wt-weak-ana (lem-extend x₂ apt) wt f2))
 
-  ---- action semantics judgements
+
+
+  ---- structural properties for the action jugements
   mutual
     act-exchange-synth : ∀{ Γ x y t1 t2 t t' e e' α } →
                          (x == y → ⊥) →
