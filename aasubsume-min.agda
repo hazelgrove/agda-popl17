@@ -135,7 +135,7 @@ module aasubsume-min where
   --             (d2 : Γ2 ⊢ e2 => t2 ~ α2 ~> e'2 => t'2) → Set
   -- same-synth = {!!}
 
-  mutual
+--  mutual
     -- min-idempote-synth : ∀ {Γ e t α e' t'} →
     --                      (d : Γ ⊢ e => t ~ α ~> e' => t') →
     --                      aasubmin-synth d →
