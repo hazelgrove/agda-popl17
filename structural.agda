@@ -51,6 +51,11 @@ module structural where
   fresh x (e1 ∘ e2) = fresh x e1 × fresh x e2
 
   ---- lemmas
+  -- freshness interacts with erasure as you'd expect. the proofs below mix
+  -- and match between judgmental and functional erasure as usual, so this
+  -- is needed enough times to pull it out.
+  fresh-er-lem : ∀{ e e◆ x} → erase-e e e◆ → fresh x (e ◆e) → fresh x e◆
+  fresh-er-lem er f = tr (λ q → fresh _ q) ( ! (erasee-det er (rel◆ _))) f
 
   --- a contracted context gives all the same responses as the
   --- non-contracted context
@@ -193,12 +198,16 @@ module structural where
     act-weak-synth apt f f' SAConNEHole = SAConNEHole
     act-weak-synth apt f f' (SAFinish x₁) = SAFinish (wt-weak-synth apt x₁ f')
     act-weak-synth apt f f' (SAZipAsc1 x₁) = SAZipAsc1 (act-weak-ana apt f f' x₁)
-    act-weak-synth apt f f' (SAZipAsc2 x₁ x₂ x₃ x₄) = {!!}
-    act-weak-synth apt f f' (SAZipApArr x₁ x₂ x₃ d x₄) = {!!}
-    act-weak-synth apt f f' (SAZipApAna x₁ x₂ x₃) = {!!}
-    act-weak-synth apt f f' (SAZipPlus1 x₁) = {!!}
-    act-weak-synth apt f f' (SAZipPlus2 x₁) = {!!}
-    act-weak-synth apt f f' (SAZipHole x₁ x₂ d) = {!!}
+    act-weak-synth apt f f' (SAZipAsc2 x₁ x₂ x₃ x₄) = SAZipAsc2 x₁ x₂ x₃ (wt-weak-ana apt x₄ f')
+    act-weak-synth apt f f' (SAZipApArr x₁ x₂ x₃ d x₄) = SAZipApArr x₁ x₂ (wt-weak-synth apt x₃ (fresh-er-lem x₂ (π1 f)))
+                                                                          (act-weak-synth apt (π1 f) (π1 f') d)
+                                                                          (wt-weak-ana apt x₄ (π2 f'))
+    act-weak-synth apt f f' (SAZipApAna x₁ x₂ x₃) = SAZipApAna x₁ (wt-weak-synth apt x₂ (π1 f'))
+                                                                  (act-weak-ana apt (π2 f) (π2 f') x₃)
+    act-weak-synth apt f f' (SAZipPlus1 x₁) = SAZipPlus1 (act-weak-ana apt (π1 f) (π1 f') x₁)
+    act-weak-synth apt f f' (SAZipPlus2 x₁) = SAZipPlus2 (act-weak-ana apt (π2 f) (π2 f') x₁)
+    act-weak-synth apt f f' (SAZipHole x₁ x₂ d) = SAZipHole x₁ (wt-weak-synth apt x₂ (fresh-er-lem x₁ f))
+                                                               (act-weak-synth apt f f' d)
 
     act-weak-ana : ∀{ Γ x t t' e e' α } →
                          x # Γ →
@@ -206,13 +215,21 @@ module structural where
                          fresh x (e' ◆e) →
                          (d : Γ ⊢ e ~ α ~> e' ⇐ t) →
                          (Γ ,, (x , t')) ⊢ e ~ α ~> e' ⇐ t
-    act-weak-ana apt f f' (AASubsume x₁ x₂ x₃ x₄) = {!!}
+    act-weak-ana apt f f' (AASubsume x₁ x₂ x₃ x₄) = AASubsume x₁ (wt-weak-synth apt x₂ (fresh-er-lem x₁ f)) (act-weak-synth apt f f' x₃) x₄
     act-weak-ana apt f f' (AAMove x₁) = AAMove x₁
     act-weak-ana apt f f' AADel = AADel
     act-weak-ana apt f f' AAConAsc = AAConAsc
-    act-weak-ana apt f f' (AAConVar x₂ p) = AAConVar x₂ {!lem-extend!}
-    act-weak-ana apt f f' (AAConLam1 x₂ x₃) = {!!}
-    act-weak-ana apt f f' (AAConLam2 x₂ x₃) = {!!}
-    act-weak-ana apt f f' (AAConNumlit x₁) = {!!}
+    act-weak-ana {x = x} apt f f' (AAConVar {x = y} x₂ p) with natEQ x y
+    act-weak-ana apt f f' (AAConVar x₃ p) | Inl refl = abort (somenotnone (! p · apt))
+    act-weak-ana apt f f' (AAConVar x₃ p) | Inr x₂ = AAConVar x₃ (lem-extend (flip x₂) p)
+    act-weak-ana {x = x} apt f f' (AAConLam1 {x = y} x₂ x₃) with natEQ x y
+    act-weak-ana apt f f' (AAConLam1 x₃ x₄) | Inl refl = abort (π1 f')
+    act-weak-ana apt f f' (AAConLam1 x₃ x₄) | Inr x₂ = AAConLam1 (lem-extend (flip x₂) x₃) x₄
+    act-weak-ana {x = x} apt f f' (AAConLam2 {x = y} x₂ x₃) with natEQ x y
+    act-weak-ana apt f f' (AAConLam2 x₃ x₄) | Inl refl = abort (π1 f')
+    act-weak-ana apt f f' (AAConLam2 x₃ x₄) | Inr x₂ = AAConLam2 (lem-extend (flip x₂) x₃) x₄
+    act-weak-ana apt f f' (AAConNumlit x₁) = AAConNumlit x₁
     act-weak-ana apt f f' (AAFinish x₁) = AAFinish (wt-weak-ana apt x₁ f')
-    act-weak-ana apt f f' (AAZipLam x₂ x₃ d) = {!!}
+    act-weak-ana {x = x} apt f f' (AAZipLam {x = y} x₂ x₃ d) with natEQ x y
+    act-weak-ana apt f f' (AAZipLam x₃ x₄ d) | Inl refl = abort (π1 f')
+    act-weak-ana apt f f' (AAZipLam x₃ x₄ d) | Inr x₂ = AAZipLam (lem-extend (flip x₂) x₃) x₄ (act-exchange-ana (flip x₂) (act-weak-ana (lem-extend x₂ apt) (π2 f) (π2 f') d))
