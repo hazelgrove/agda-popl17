@@ -50,9 +50,9 @@ module structural where
   fresh x <||> = ⊤
   fresh x <| e |> = fresh x e
   fresh x (e1 ∘ e2) = fresh x e1 × fresh x e2
-  fresh x (inl e) = {!!}
-  fresh x (inr e) = {!!}
-  fresh z (case e x e1 y e2) = {!!}
+  fresh x (inl e) = fresh x e
+  fresh x (inr e) = fresh x e
+  fresh x (case e y e1 z e2) = natEQp x y × natEQp x z × fresh x e × fresh x e1 × fresh x e2
 
   ---- lemmas
 
@@ -151,9 +151,20 @@ module structural where
     wt-weak-ana {x = x} apt (ALam {x = x₁} x₂ x₃ wt) f with natEQ x x₁
     wt-weak-ana apt (ALam x₃ x₄ wt) (f1 , _) | Inl refl = abort f1
     wt-weak-ana apt (ALam x₃ m wt) (f1 , f2) | Inr x₂ = ALam (lem-extend (flip x₂) x₃) m (wt-exchange-ana (flip x₂) (wt-weak-ana (lem-extend x₂ apt) wt f2))
-    wt-weak-ana A F (AInl a b) = {!!}
-    wt-weak-ana A F (AInr a b) = {!!}
-    wt-weak-ana A F (ACase a b c d e f) = {!!}
+    wt-weak-ana apt (AInl a b) f = AInl a (wt-weak-ana apt b f)
+    wt-weak-ana apt (AInr a b) f = AInr a (wt-weak-ana apt b f)
+    wt-weak-ana {x = x} apt (ACase {x = y} {y = z} a b c d e g) (f1 , f2 , f3 , f4 , f5) with natEQ x z | natEQ x y
+    wt-weak-ana apt (ACase a b c d e₁ g) (f1 , f2 , f3 , f4 , f5) | Inl refl | Inl refl = abort f2
+    wt-weak-ana apt (ACase a b c d e₁ g) (f1 , f2 , f3 , f4 , f5) | Inl refl | Inr x₃   = abort f2
+    wt-weak-ana apt (ACase a b c d e₁ g) (f1 , f2 , f3 , f4 , f5) | Inr x₂   | Inl refl = abort f1
+    wt-weak-ana {x = x} apt (ACase {x = y} {y = z}  a b c d e₁ g) (f1 , f2 , f3 , f4 , f5) | Inr x₂   | Inr x₃  with natEQ y z
+    wt-weak-ana apt (ACase a b c d e₁ g) (f1 , f2 , f3 , f4 , f5) | Inr x₃ | Inr x₄ | Inl refl = {!!}
+    wt-weak-ana {x = x} apt (ACase {x = y} {y = z} a b c d e₁ g) (f1 , f2 , f3 , f4 , f5) | Inr x₃ | Inr x₄ | Inr x₁ = ACase (lem-extend (flip x₄) a)
+                                                                                                     (lem-extend (flip x₃) b)
+                                                                                                     c
+                                                                                                     (wt-weak-synth apt d f3)
+                                                                                                     {!!}
+                                                                                                     {!x₁!}
 
 
   ---- structural properties for the action jugements
@@ -215,6 +226,18 @@ module structural where
     act-weak-synth apt f f' (SAZipPlus2 x₁) = SAZipPlus2 (act-weak-ana apt (π2 f) (π2 f') x₁)
     act-weak-synth apt f f' (SAZipHole x₁ x₂ d) = SAZipHole x₁ (wt-weak-synth apt x₂ (fresh-er-lem x₁ f))
                                                                (act-weak-synth apt f f' d)
+    act-weak-synth apt f f' SAConInl = SAConInl
+    act-weak-synth apt f f' SAConInr = SAConInr
+    act-weak-synth {x = x} apt f f' (SAConCase1 {x = y} {y = z} x₂ x₃ x₄) with natEQ x y | natEQ x z
+    act-weak-synth apt f f' (SAConCase1 x₄ x₅ x₆) | Inl refl | Inl refl = abort (π1 f')
+    act-weak-synth apt f f' (SAConCase1 x₄ x₅ x₆) | Inl refl | Inr x₃ = abort (π1 f')
+    act-weak-synth apt f f' (SAConCase1 x₄ x₅ x₆) | Inr x₂ | Inl refl = abort (π1 (π2 f'))
+    act-weak-synth apt f f' (SAConCase1 x₄ x₅ x₆) | Inr x₂ | Inr x₃ = SAConCase1 (lem-extend (flip x₂) x₄) (lem-extend (flip x₃) x₅) x₆
+    act-weak-synth {x = x} apt f f' (SAConCase2 {x = y} {y = z} x₂ x₃ x₄) with natEQ x y | natEQ x z
+    act-weak-synth apt f f' (SAConCase2 x₄ x₅ x₆) | Inl refl | Inl refl = abort (π1 f')
+    act-weak-synth apt f f' (SAConCase2 x₄ x₅ x₆) | Inl refl | Inr x₃ = abort (π1 f')
+    act-weak-synth apt f f' (SAConCase2 x₄ x₅ x₆) | Inr x₂ | Inl refl = abort (π1 (π2 f'))
+    act-weak-synth apt f f' (SAConCase2 x₄ x₅ x₆) | Inr x₂ | Inr x₃ = SAConCase2 (lem-extend (flip x₂) x₄) (lem-extend (flip x₃) x₅) x₆
 
     act-weak-ana : ∀{ Γ x t t' e e' α } →
                          x # Γ →
@@ -240,3 +263,26 @@ module structural where
     act-weak-ana {x = x} apt f f' (AAZipLam {x = y} x₂ x₃ d) with natEQ x y
     act-weak-ana apt f f' (AAZipLam x₃ x₄ d) | Inl refl = abort (π1 f')
     act-weak-ana apt f f' (AAZipLam x₃ x₄ d) | Inr x₂ = AAZipLam (lem-extend (flip x₂) x₃) x₄ (act-exchange-ana (flip x₂) (act-weak-ana (lem-extend x₂ apt) (π2 f) (π2 f') d))
+    act-weak-ana apt f f' (AAConInl1 x₁) = AAConInl1 x₁
+    act-weak-ana apt f f' (AAConInl2 x₁) = AAConInl2 x₁
+    act-weak-ana apt f f' (AAConInr1 x₁) = AAConInr1 x₁
+    act-weak-ana apt f f' (AAConInr2 x₁) = AAConInr2 x₁
+    act-weak-ana {x = x} apt f f' (AAConCase {x = y} {y = z} x₂ x₃) with natEQ x y | natEQ x z
+    act-weak-ana apt f f' (AAConCase x₄ x₅) | Inl refl | Inl refl = abort (π1 f')
+    act-weak-ana apt f f' (AAConCase x₄ x₅) | Inl refl | Inr x₃ = abort (π1 f')
+    act-weak-ana apt f f' (AAConCase x₄ x₅) | Inr x₂   | Inl refl = abort (π1 (π2 f'))
+    act-weak-ana apt f f' (AAConCase x₄ x₅) | Inr x₂   | Inr x₃ = AAConCase (lem-extend (flip x₂) x₄) (lem-extend (flip x₃) x₅)
+    act-weak-ana apt f f' (AAZipInl x₁ d) = AAZipInl x₁ (act-weak-ana apt f f' d)
+    act-weak-ana apt f f' (AAZipInr x₁ d) = AAZipInr x₁ (act-weak-ana apt f f' d)
+    act-weak-ana {x = x} apt f f' (AAZipCase1 {x = y} {y = z} x₂ x₃ x₄ x₅ x₆ x₇ x₈ x₉) with natEQ x y | natEQ x z
+    act-weak-ana apt f f' (AAZipCase1 x₄ x₅ x₆ x₇ x₈ x₉ x₁₀ x₁₁) | Inl refl | Inl refl = abort (π1 f')
+    act-weak-ana apt f f' (AAZipCase1 x₄ x₅ x₆ x₇ x₈ x₉ x₁₀ x₁₁) | Inl refl | Inr x₃ = abort (π1 f')
+    act-weak-ana apt f f' (AAZipCase1 x₄ x₅ x₆ x₇ x₈ x₉ x₁₀ x₁₁) | Inr x₂ | Inl refl = abort (π1 (π2 f'))
+    act-weak-ana apt f f' (AAZipCase1 x₄ x₅ x₆ x₇ x₈ x₉ x₁₀ x₁₁) | Inr x₂ | Inr x₃ = AAZipCase1 (lem-extend (flip x₂) x₄) (lem-extend (flip x₃) x₅) x₆
+                                                                                                (wt-weak-synth apt x₇ (fresh-er-lem x₆ (π1 (π2 (π2 f)))))
+                                                                                                (act-weak-synth apt ((π1 (π2 (π2 f)))) (π1 (π2 (π2 f'))) x₈)
+                                                                                                x₉
+                                                                                                {!wt-weak-ana!}
+                                                                                                (wt-weak-ana {!!} x₁₁ {!!})
+    act-weak-ana apt f f' (AAZipCase2 x₂ x₃ x₄ x₅ d) = {!!}
+    act-weak-ana apt f f' (AAZipCase3 x₂ x₃ x₄ x₅ d) = {!!}
