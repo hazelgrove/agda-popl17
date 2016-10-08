@@ -179,17 +179,20 @@ module structural where
     act-weak-synth apt f f' (SAMove x₁) = SAMove x₁
     act-weak-synth apt f f' SADel = SADel
     act-weak-synth apt f f' SAConAsc = SAConAsc
-    act-weak-synth apt f f' (SAConVar p) = {!!}
-    act-weak-synth apt f f' (SAConLam x₂) = {!!}
-    act-weak-synth apt f f' (SAConApArr x₁) = {!!}
-    act-weak-synth apt f f' (SAConApOtw x₁) = {!!}
-    act-weak-synth apt f f' SAConArg = {!!}
-    act-weak-synth apt f f' SAConNumlit = {!!}
-    act-weak-synth apt f f' (SAConPlus1 x₁) = {!!}
-    act-weak-synth apt f f' (SAConPlus2 x₁) = {!!}
-    act-weak-synth apt f f' SAConNEHole = {!!}
+    act-weak-synth {x = x} apt f f' (SAConVar {x = y} p) with natEQ x y
+    act-weak-synth apt f f' (SAConVar p) | Inl refl = abort (somenotnone (! p · apt))
+    act-weak-synth apt f f' (SAConVar p) | Inr x₂ = SAConVar (lem-extend (flip x₂) p)
+    act-weak-synth {x = x} apt f f' (SAConLam {x = y} x₂) with natEQ x y
+    act-weak-synth apt f f' (SAConLam x₃) | Inl refl = abort (π1 f')
+    act-weak-synth apt f f' (SAConLam x₃) | Inr x₂ = SAConLam (lem-extend (flip x₂) x₃)
+    act-weak-synth apt f f' (SAConApArr x₁) = SAConApArr x₁
+    act-weak-synth apt f f' (SAConApOtw x₁) = SAConApOtw x₁
+    act-weak-synth apt f f' SAConNumlit = SAConNumlit
+    act-weak-synth apt f f' (SAConPlus1 x₁) = SAConPlus1 x₁
+    act-weak-synth apt f f' (SAConPlus2 x₁) = SAConPlus2 x₁
+    act-weak-synth apt f f' SAConNEHole = SAConNEHole
     act-weak-synth apt f f' (SAFinish x₁) = SAFinish (wt-weak-synth apt x₁ f')
-    act-weak-synth apt f f' (SAZipAsc1 x₁) = {!!}
+    act-weak-synth apt f f' (SAZipAsc1 x₁) = SAZipAsc1 (act-weak-ana apt f f' x₁)
     act-weak-synth apt f f' (SAZipAsc2 x₁ x₂ x₃ x₄) = {!!}
     act-weak-synth apt f f' (SAZipApArr x₁ x₂ x₃ d x₄) = {!!}
     act-weak-synth apt f f' (SAZipApAna x₁ x₂ x₃) = {!!}
