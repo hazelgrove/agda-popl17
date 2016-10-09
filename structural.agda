@@ -279,7 +279,23 @@ module structural where
                                                                                                 (wt-weak-synth apt x₇ (fresh-er-lem x₆ (π1 (π2 (π2 f)))))
                                                                                                 (act-weak-synth apt ((π1 (π2 (π2 f)))) (π1 (π2 (π2 f'))) x₈)
                                                                                                 x₉
-                                                                                                {!wt-weak-ana!}
-                                                                                                ?
-    act-weak-ana apt f f' (AAZipCase2 x₂ x₃ x₄ x₅ d) = {!!}
-    act-weak-ana apt f f' (AAZipCase3 x₂ x₃ x₄ x₅ d) = {!!}
+                                                                                                (wt-exchange-ana (flip x₂) (wt-weak-ana (lem-extend x₂ apt) x₁₀ (π1 (π2 (π2 (π2 f'))))))
+                                                                                                (wt-exchange-ana (flip x₃) (wt-weak-ana (lem-extend x₃ apt) x₁₁ (π2 (π2 (π2 (π2 f'))))))
+    act-weak-ana {x = x} apt f f' (AAZipCase2 {x = y} {y = z} x₂ x₃ x₄ x₅ d) with natEQ x y | natEQ x z
+    act-weak-ana apt f f' (AAZipCase2 x₄ x₅ x₆ x₇ d) | Inl refl | Inl refl = abort (π1 f')
+    act-weak-ana apt f f' (AAZipCase2 x₄ x₅ x₆ x₇ d) | Inl refl | Inr x₃ = abort (π1 f')
+    act-weak-ana apt f f' (AAZipCase2 x₄ x₅ x₆ x₇ d) | Inr x₂ | Inl refl = abort (π1 (π2 f'))
+    act-weak-ana {x = x} apt f f' (AAZipCase2 {x = y} {y = z} x₄ x₅ x₆ x₇ d) | Inr x₂ | Inr x₃ = AAZipCase2 (lem-extend (flip x₂) x₄)
+                                                                                    (lem-extend (flip x₃) x₅)
+                                                                                    (wt-weak-synth apt x₆ (π1 (π2 (π2 f'))))
+                                                                                    x₇
+                                                                                    (act-exchange-ana (flip x₂) (act-weak-ana (lem-extend x₂ apt) (π1 (π2 (π2 (π2 f)))) (π1 (π2 (π2 (π2 f')))) d))
+    act-weak-ana {x = x} apt f f' (AAZipCase3 {x = y} {y = z} x₂ x₃ x₄ x₅ d) with natEQ x y | natEQ x z
+    act-weak-ana apt f f' (AAZipCase3 x₄ x₅ x₆ x₇ d) | Inl refl | Inl refl = abort (π1 f')
+    act-weak-ana apt f f' (AAZipCase3 x₄ x₅ x₆ x₇ d) | Inl refl | Inr x₃ = abort (π1 f')
+    act-weak-ana apt f f' (AAZipCase3 x₄ x₅ x₆ x₇ d) | Inr x₂ | Inl refl = abort (π1 (π2 f'))
+    act-weak-ana {x = x} apt f f' (AAZipCase3 {x = y} {y = z} x₄ x₅ x₆ x₇ d) | Inr x₂ | Inr x₃ = AAZipCase3 (lem-extend (flip x₂) x₄)
+                                                                                    (lem-extend (flip x₃) x₅)
+                                                                                    (wt-weak-synth apt x₆ (π1 (π2 (π2 f'))))
+                                                                                    x₇
+                                                                                    (act-exchange-ana (flip x₃) (act-weak-ana (lem-extend x₃ apt) (π2 (π2 (π2 (π2 f)))) (π2 (π2 (π2 (π2 f')))) d))
