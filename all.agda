@@ -24,6 +24,3 @@ open import determinism
 -- second wave theorems (checksums)
 open import reachability
 open import constructability
-
--- third wave theorems (and future work)
---open import future-work
