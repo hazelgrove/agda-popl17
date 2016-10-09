@@ -213,6 +213,10 @@ module aasubsume-min where
     min-fixed-synth (SAZipHole x x₁ d) min with min-fixed-synth d min
     ... | qq with min-synth d
     ... | (e'' , _ , _) = ap1 <|_|> qq
+    min-fixed-synth SAConInl min = refl
+    min-fixed-synth SAConInr min = refl
+    min-fixed-synth (SAConCase1 x₁ x₂ x₃) min = refl
+    min-fixed-synth (SAConCase2 x₁ x₂ x₃) min = refl
 
     min-fixed-ana : ∀ {Γ e t α e' } →
                          (d : Γ ⊢ e ~ α ~> e' ⇐ t) →
@@ -260,6 +264,36 @@ module aasubsume-min where
     min-fixed-ana (AAZipLam x₁ x₂ d) min with min-fixed-ana d min
     ... | qq with min-ana d
     ... | (e'' , _ , _) = ap1 (λ q → ·λ _ q) qq
+    min-fixed-ana (AASubsume x x₁ SAConInl x₃) min = abort min
+    min-fixed-ana (AASubsume x x₁ SAConInr x₃) min = abort min
+    min-fixed-ana (AASubsume EETop (SAsc x₁) (SAConCase1 x₃ x₄ x₅) x₆) min = refl
+    min-fixed-ana (AASubsume EETop (SVar x₁) (SAConCase1 x₃ x₄ x₅) x₆) min = refl
+    min-fixed-ana (AASubsume EETop (SAp x₂ x₁ x₃) (SAConCase1 x₄ x₅ x₆) x₇) min = refl
+    min-fixed-ana (AASubsume EETop SNum (SAConCase1 x₃ x₄ x₅) x₆) min = refl
+    min-fixed-ana (AASubsume EETop (SPlus x₁ x₂) (SAConCase1 x₃ x₄ x₅) x₆) min = refl
+    min-fixed-ana (AASubsume EETop SEHole (SAConCase1 x₃ x₄ x₅) x₆) min = abort min
+    min-fixed-ana (AASubsume EETop (SNEHole x₂) (SAConCase1 x₃ x₄ x₅) x₆) min = refl
+    min-fixed-ana (AASubsume x₁ x₂ (SAConCase2 x₃ x₄ x₅) x₆) min = refl
+    min-fixed-ana (AAConInl1 x) min = refl
+    min-fixed-ana (AAConInl2 x) min = refl
+    min-fixed-ana (AAConInr1 x) min = refl
+    min-fixed-ana (AAConInr2 x) min = refl
+    min-fixed-ana (AAConCase x₁ x₂) min = refl
+    min-fixed-ana (AAZipInl x d) min with min-fixed-ana d min
+    ... | qq with min-ana d
+    ... | (e'' , _ , _) = ap1 inl qq
+    min-fixed-ana (AAZipInr x d) min with min-fixed-ana d min
+    ... | qq with min-ana d
+    ... | (e'' , _ , _) = ap1 inr qq
+    min-fixed-ana (AAZipCase1 x₁ x₂ x₃ x₄ x₅ x₆ x₇ x₈) min with min-fixed-synth x₅ min
+    ... | qq with min-synth x₅
+    ... | (e'' , _ , _) = ap1 (λ q → case₁ q _ _ _ _) qq
+    min-fixed-ana (AAZipCase2 x₁ x₂ x₃ x₄ d) min with min-fixed-ana d min
+    ... | qq with min-ana d
+    ... | (e'' , _ , _) = ap1 (λ q → case₂ _ _ q _ _) qq
+    min-fixed-ana (AAZipCase3 x₁ x₂ x₃ x₄ d) min with min-fixed-ana d min
+    ... | qq with min-ana d
+    ... | (e'' , _ , _) = ap1 (λ q → case₃ _ _ _ _ q) qq
 
   tr-arg : ∀ {Γ e t α e' e''} →
              (Γ ⊢ e ~ α ~> e' ⇐ t × Γ ⊢ e ~ α ~> e'' ⇐ t × e' == e'') → Set
