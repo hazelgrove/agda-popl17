@@ -123,63 +123,93 @@ module aasubsume-min where
 
   -- if a derivation is already subsumption minimal, the minimizer doesn't
   -- change it.
-  data JMeq (A : Set) : (B : Set) → A → B → Set where
-        JMrefl : (a : A) → JMeq A A a a
 
-  reflect : (A : Set)(x y : A) → JMeq A A x y → x == y
-  reflect A x .x (JMrefl .x) = refl
-
-
-  -- these look tempting but are not actually the JM ap because they force
-  -- the types to be the same, which is the whole point. but how could you not?
-  JMap : {α : Set} {β : Set} {x y : α} (F : α → β)
-          → JMeq α α x y → JMeq β β (F x) (F y)
-  JMap f eq with reflect _ _ _ eq
-  ... | refl = JMrefl _
-
-  JMtr : {α : Set} {x y : α}
-                    (B : α → Set)
-                    → JMeq α α x y
-                    → B x
-                    → B y
-  JMtr = {!!}
-
+  -- these theorems argue that if a derication is already subsumption
+  -- minimal than the minimzer does not change the resultant expression.
   mutual
-    min-idempote-synth : ∀ {Γ e t α e' t'} →
+    min-fixed-synth : ∀ {Γ e t α e' t'} →
                          (d : Γ ⊢ e => t ~ α ~> e' => t') →
-                         aasubmin-synth d → JMeq _ _ (π1 (π2 (min-synth d))) d
-    min-idempote-synth (SAMove x) min = JMrefl (SAMove x)
-    min-idempote-synth SADel min = JMrefl SADel
-    min-idempote-synth SAConAsc min = JMrefl SAConAsc
-    min-idempote-synth (SAConVar p) min = JMrefl (SAConVar p)
-    min-idempote-synth (SAConLam x₁) min = JMrefl (SAConLam x₁)
-    min-idempote-synth (SAConApArr x) min = JMrefl (SAConApArr x)
-    min-idempote-synth (SAConApOtw x) min = JMrefl (SAConApOtw x)
-    min-idempote-synth SAConNumlit min = JMrefl SAConNumlit
-    min-idempote-synth (SAConPlus1 x) min = JMrefl (SAConPlus1 x)
-    min-idempote-synth (SAConPlus2 x) min = JMrefl (SAConPlus2 x)
-    min-idempote-synth SAConNEHole min = JMrefl SAConNEHole
-    min-idempote-synth (SAFinish x) min = JMrefl (SAFinish x)
-    min-idempote-synth (SAZipAsc1 x) min with (min-idempote-ana x min)
-    ... | qq = {!JMap !}
-    min-idempote-synth (SAZipAsc2 x x₁ x₂ x₃) min = JMrefl (SAZipAsc2 x x₁ x₂ x₃)
-    min-idempote-synth (SAZipApArr x x₁ x₂ d x₃) min = {!!}
-    min-idempote-synth (SAZipApAna x x₁ x₂) min = {!!}
-    min-idempote-synth (SAZipPlus1 x) min = {!!}
-    min-idempote-synth (SAZipPlus2 x) min = {!!}
-    min-idempote-synth (SAZipHole x x₁ d) min = {!!}
+                         aasubmin-synth d →
+                         e' == π1 (min-synth d)
+    min-fixed-synth (SAMove x) min = refl
+    min-fixed-synth SADel min = refl
+    min-fixed-synth SAConAsc min = refl
+    min-fixed-synth (SAConVar p) min = refl
+    min-fixed-synth (SAConLam x₁) min = refl
+    min-fixed-synth (SAConApArr x) min = refl
+    min-fixed-synth (SAConApOtw x) min = refl
+    min-fixed-synth SAConNumlit min = refl
+    min-fixed-synth (SAConPlus1 x) min = refl
+    min-fixed-synth (SAConPlus2 x) min = refl
+    min-fixed-synth SAConNEHole min = refl
+    min-fixed-synth (SAFinish x) min = refl
+    min-fixed-synth (SAZipAsc1 x) min with min-fixed-ana x min
+    ... | qq with min-ana x
+    ... | (e'' , d' , min') = ap1 (λ q → q ·:₁ _) qq
+    min-fixed-synth (SAZipAsc2 x x₁ x₂ x₃) min = refl
+    min-fixed-synth (SAZipApArr x x₁ x₂ d x₃) min with min-fixed-synth d min
+    ... | qq with min-synth d
+    ... | (e'' , d' , min') = ap1 (λ q → q ∘₁ _) qq
+    min-fixed-synth (SAZipApAna x x₁ x₂) min with min-fixed-ana x₂ min
+    ... | qq with min-ana x₂
+    ... | (e'' , _ , _) = ap1 (λ q → _ ∘₂ q) qq
+    min-fixed-synth (SAZipPlus1 x) min with min-fixed-ana x min
+    ... | qq with min-ana x
+    ... | (e'' , _ , _) = ap1 (λ q → q ·+₁ _) qq
+    min-fixed-synth (SAZipPlus2 x) min with min-fixed-ana x min
+    ... | qq with min-ana x
+    ... | (e'' , _ , _) = ap1 (λ q → _ ·+₂ q) qq
+    min-fixed-synth (SAZipHole x x₁ d) min with min-fixed-synth d min
+    ... | qq with min-synth d
+    ... | (e'' , _ , _) = ap1 <|_|> qq
 
-    min-idempote-ana :  ∀ {Γ e t α e' } →
+    min-fixed-ana : ∀ {Γ e t α e' } →
                          (d : Γ ⊢ e ~ α ~> e' ⇐ t) →
                          aasubmin-ana d →
-                         JMeq _ _ (π1 (π2 (min-ana d))) d
-    min-idempote-ana (AASubsume x x₁ x₂ x₃) min = {!!}
-    min-idempote-ana (AAMove x) min = JMrefl (AAMove x)
-    min-idempote-ana AADel min = JMrefl AADel
-    min-idempote-ana AAConAsc min = JMrefl AAConAsc
-    min-idempote-ana (AAConVar x₁ p) min = JMrefl (AAConVar x₁ p)
-    min-idempote-ana (AAConLam1 x₁ x₂) min = JMrefl (AAConLam1 x₁ x₂)
-    min-idempote-ana (AAConLam2 x₁ x₂) min = JMrefl (AAConLam2 x₁ x₂)
-    min-idempote-ana (AAConNumlit x) min = JMrefl (AAConNumlit x)
-    min-idempote-ana (AAFinish x) min = JMrefl (AAFinish x)
-    min-idempote-ana (AAZipLam x₁ x₂ d) min = {!!}
+                         e' == π1 (min-ana d)
+    min-fixed-ana (AASubsume x x₁ (SAMove x₂) x₃) min = refl
+    min-fixed-ana (AASubsume x x₁ SADel x₃) min = refl
+    min-fixed-ana (AASubsume x x₁ SAConAsc x₃) min = abort min
+    min-fixed-ana (AASubsume x₁ x₂ (SAConVar p) x₃) min = refl
+    min-fixed-ana (AASubsume x₁ x₂ (SAConLam x₃) x₄) min = abort min
+    min-fixed-ana (AASubsume x x₁ (SAConApArr x₂) x₃) min = refl
+    min-fixed-ana (AASubsume x x₁ (SAConApOtw x₂) x₃) min = refl
+    min-fixed-ana (AASubsume x x₁ SAConNumlit x₃) min = refl
+    min-fixed-ana (AASubsume x x₁ (SAConPlus1 x₂) x₃) min = refl
+    min-fixed-ana (AASubsume x x₁ (SAConPlus2 x₂) x₃) min = refl
+    min-fixed-ana (AASubsume x x₁ SAConNEHole x₃) min = refl
+    min-fixed-ana (AASubsume x x₁ (SAFinish x₂) x₃) min = refl
+    min-fixed-ana (AASubsume x x₁ (SAZipAsc1 x₂) x₃) min with min-fixed-ana x₂ min
+    ... | qq with min-ana x₂
+    ... | (e'' , _ , _) = ap1 (λ q → q ·:₁ _) qq
+    min-fixed-ana (AASubsume x x₁ (SAZipAsc2 x₂ x₃ x₄ x₅) x₆) min = refl
+    min-fixed-ana (AASubsume x x₁ (SAZipApArr x₂ x₃ x₄ x₅ x₆) x₇) min with min-fixed-synth x₅ min
+    ... | qq with min-synth x₅
+    ... | (e'' , d' , min') = ap1 (λ q → q ∘₁ _) qq
+    min-fixed-ana (AASubsume x x₁ (SAZipApAna x₂ x₃ x₄) x₅) min with min-fixed-ana x₄ min
+    ... | qq with min-ana x₄
+    ... | (e'' , _ , _) = ap1 (λ q → _ ∘₂ q) qq
+    min-fixed-ana (AASubsume x x₁ (SAZipPlus1 x₂) x₃) min with min-fixed-ana x₂ min
+    ... | qq with min-ana x₂
+    ... | (e'' , _ , _) = ap1 (λ q → q ·+₁ _) qq
+    min-fixed-ana (AASubsume x x₁ (SAZipPlus2 x₂) x₃) min with min-fixed-ana x₂ min
+    ... | qq with min-ana x₂
+    ... | (e'' , _ , _) = ap1 (λ q → _ ·+₂ q) qq
+    min-fixed-ana (AASubsume x x₁ (SAZipHole x₂ x₃ x₄) x₅) min with min-fixed-synth x₄ min
+    ... | qq with min-synth x₄
+    ... | (e'' , _ , _) = ap1 <|_|> qq
+    min-fixed-ana (AAMove x) min = refl
+    min-fixed-ana AADel min = refl
+    min-fixed-ana AAConAsc min = refl
+    min-fixed-ana (AAConVar x₁ p) min = refl
+    min-fixed-ana (AAConLam1 x₁ x₂) min = refl
+    min-fixed-ana (AAConLam2 x₁ x₂) min = refl
+    min-fixed-ana (AAConNumlit x) min = refl
+    min-fixed-ana (AAFinish x) min = refl
+    min-fixed-ana (AAZipLam x₁ x₂ d) min with min-fixed-ana d min
+    ... | qq with min-ana d
+    ... | (e'' , _ , _) = ap1 (λ q → ·λ _ q) qq
+
+  tr-arg : ∀ {Γ e t α e' e''} →
+             (Γ ⊢ e ~ α ~> e' ⇐ t × Γ ⊢ e ~ α ~> e'' ⇐ t × e' == e'') → Set
+  tr-arg (d1 , d2 , refl) = d1 == d2
