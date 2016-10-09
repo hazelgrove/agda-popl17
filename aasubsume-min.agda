@@ -174,23 +174,63 @@ module aasubsume-min where
 
   -- if a derivation is already subsumption minimal, the minimizer doesn't
   -- change it.
+  data JMeq (A : Set) : (B : Set) → A → B → Set where
+        JMrefl : (a : A) → JMeq A A a a
 
-  same-synth :  ∀ {Γ e t α e'1 t' e'2 } →
-              (d1 : Γ ⊢ e => t ~ α ~> e'1 => t') →
-              (d2 : Γ ⊢ e => t ~ α ~> e'2 => t') → Set
-  same-synth {e'1 = e'1} {e'2 = e'2} d1 d2 = e'1 == e'2
+  reflect : (A : Set)(x y : A) → JMeq A A x y → x == y
+  reflect A x .x (JMrefl .x) = refl
 
-  -- same-synth :  ∀ {Γ1 e1 t1 α1 e'1 t'1 Γ2 e2 t2 α2 e'2 t'2} →
-  --             (d1 : Γ1 ⊢ e1 => t1 ~ α1 ~> e'1 => t'1) →
-  --             (d2 : Γ2 ⊢ e2 => t2 ~ α2 ~> e'2 => t'2) → Set
-  -- same-synth = {!!}
 
---  mutual
-    -- min-idempote-synth : ∀ {Γ e t α e' t'} →
-    --                      (d : Γ ⊢ e => t ~ α ~> e' => t') →
-    --                      aasubmin-synth d →
-    --                      d == (π1 (π2 (min-synth d)))
-    -- min-idempote-synth = {!!}
+  -- these look tempting but are not actually the JM ap because they force
+  -- the types to be the same, which is the whole point. but how could you not?
+  JMap : {α : Set} {β : Set} {x y : α} (F : α → β)
+          → JMeq α α x y → JMeq β β (F x) (F y)
+  JMap f eq with reflect _ _ _ eq
+  ... | refl = JMrefl _
 
-    -- min-idempote-ana : {!!}
-    -- min-idempote-ana = {!!}
+  JMtr : {α : Set} {x y : α}
+                    (B : α → Set)
+                    → JMeq α α x y
+                    → B x
+                    → B y
+  JMtr = {!!}
+
+  mutual
+    min-idempote-synth : ∀ {Γ e t α e' t'} →
+                         (d : Γ ⊢ e => t ~ α ~> e' => t') →
+                         aasubmin-synth d → JMeq _ _ (π1 (π2 (min-synth d))) d
+    min-idempote-synth (SAMove x) min = JMrefl (SAMove x)
+    min-idempote-synth SADel min = JMrefl SADel
+    min-idempote-synth SAConAsc min = JMrefl SAConAsc
+    min-idempote-synth (SAConVar p) min = JMrefl (SAConVar p)
+    min-idempote-synth (SAConLam x₁) min = JMrefl (SAConLam x₁)
+    min-idempote-synth (SAConApArr x) min = JMrefl (SAConApArr x)
+    min-idempote-synth (SAConApOtw x) min = JMrefl (SAConApOtw x)
+    min-idempote-synth SAConNumlit min = JMrefl SAConNumlit
+    min-idempote-synth (SAConPlus1 x) min = JMrefl (SAConPlus1 x)
+    min-idempote-synth (SAConPlus2 x) min = JMrefl (SAConPlus2 x)
+    min-idempote-synth SAConNEHole min = JMrefl SAConNEHole
+    min-idempote-synth (SAFinish x) min = JMrefl (SAFinish x)
+    min-idempote-synth (SAZipAsc1 x) min with (min-idempote-ana x min)
+    ... | qq = {!JMap !}
+    min-idempote-synth (SAZipAsc2 x x₁ x₂ x₃) min = JMrefl (SAZipAsc2 x x₁ x₂ x₃)
+    min-idempote-synth (SAZipApArr x x₁ x₂ d x₃) min = {!!}
+    min-idempote-synth (SAZipApAna x x₁ x₂) min = {!!}
+    min-idempote-synth (SAZipPlus1 x) min = {!!}
+    min-idempote-synth (SAZipPlus2 x) min = {!!}
+    min-idempote-synth (SAZipHole x x₁ d) min = {!!}
+
+    min-idempote-ana :  ∀ {Γ e t α e' } →
+                         (d : Γ ⊢ e ~ α ~> e' ⇐ t) →
+                         aasubmin-ana d →
+                         JMeq _ _ (π1 (π2 (min-ana d))) d
+    min-idempote-ana (AASubsume x x₁ x₂ x₃) min = {!!}
+    min-idempote-ana (AAMove x) min = JMrefl (AAMove x)
+    min-idempote-ana AADel min = JMrefl AADel
+    min-idempote-ana AAConAsc min = JMrefl AAConAsc
+    min-idempote-ana (AAConVar x₁ p) min = JMrefl (AAConVar x₁ p)
+    min-idempote-ana (AAConLam1 x₁ x₂) min = JMrefl (AAConLam1 x₁ x₂)
+    min-idempote-ana (AAConLam2 x₁ x₂) min = JMrefl (AAConLam2 x₁ x₂)
+    min-idempote-ana (AAConNumlit x) min = JMrefl (AAConNumlit x)
+    min-idempote-ana (AAFinish x) min = JMrefl (AAFinish x)
+    min-idempote-ana (AAZipLam x₁ x₂ d) min = {!!}
