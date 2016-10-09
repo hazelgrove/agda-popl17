@@ -35,33 +35,37 @@ shows over its definition.
 There are also several places where we refer the reader to the
 mechanization for more details. Here is where to look for each of these:
 
-- Theorem 1, Action Sensibility, is in `sensibility.agda`. The clauses are
-  implemented by `actsense-synth` and `actsense-ana`.
+- Theorem 1, _Action Sensibility_, is in
+  [sensibility.agda](sensibility.agda). The clauses are implemented by
+  `actsense-synth` and `actsense-ana`.
 
-- Theorem 2, Movement Erasure Invariance, is in `moveerase.agda`. The
-  clauses are implemented by `moveeraset`, `moveerase-synth`, and
-  `moveerase-ana`.
+- Theorem 2, _Movement Erasure Invariance_, is in
+  [moveerase.agda](moveerase.agda). The clauses are implemented by
+  `moveeraset`, `moveerase-synth`, and `moveerase-ana`.
 
-- Theorem 3, Reachability, is in `reachability.agda`. The clauses are
-  implemented by `reachability-types`, `reachability-synth`, and
-  `reachability-ana`.
+- Theorem 3, _Reachability_, is in
+  [reachability.agda](reachability.agda). The clauses are implemented by
+  `reachability-types`, `reachability-synth`, and `reachability-ana`.
 
-- Theorem 4, Reach Up, is in `reachability.agda`. The clauses are
-  implemented by `reachup-types`, `reachup-synth`, and `reachup-ana`.
+- Theorem 4, _Reach Up_, is also in
+  [reachability.agda](reachability.agda). The clauses are implemented by
+  `reachup-types`, `reachup-synth`, and `reachup-ana`.
 
-- Theorem 5, Reach Down, is in `reachability.agda`. The clauses are
-  implemented by `reachdown-types`, `reachdown-synth`, and `reachdown-ana`.
+- Theorem 5, _Reach Down_, is also in
+  [reachability.agda](reachability.agda). The clauses are implemented by
+  `reachdown-types`, `reachdown-synth`, and `reachdown-ana`.
 
-- Theorem 6, Constructability, is in `constructability.agda`. The clauses
-  are implemented by `construct-type`, `construct-synth` and
-  `construct-ana`.
+- Theorem 6, _Constructability_, is in
+  [constructability.agda](constructability.agda). The clauses are
+  implemented by `construct-type`, `construct-synth` and `construct-ana`.
 
-- Theorem 7, Type Action Determinism, is in `determinism.agda`. It is
-  implemented by `actdet-type`.
+- Theorem 7, _Type Action Determinism_, is in
+  [determinism.agda](determinism.agda). It is implemented by `actdet-type`.
 
-- Theorem 8, Expression Action Determinism, is in `determinism.agda`. The
-  clauses are implemented by `actdet-synth` and `actdet-ana`. The predicate
-  on derivations is given in `aasubsume-min.agda` by `aasubmin-synth` and
+- Theorem 8, Expression Action Determinism, is also in
+  [determinism.agda](determinism.agda). The clauses are implemented by
+  `actdet-synth` and `actdet-ana`. The predicate on derivations is given in
+  [aasubsume-min.agda](aasubsume-min.agda) by `aasubmin-synth` and
   `aasubmin-ana`.
 
 
