@@ -123,23 +123,12 @@ module aasubsume-min where
 
   -- if a derivation is already subsumption minimal, the minimizer doesn't
   -- change it.
+  mutual
+    min-idempote-synth : ∀ {Γ e t α e' t'} →
+                         (d : Γ ⊢ e => t ~ α ~> e' => t') →
+                         aasubmin-synth d →
+                         d == (π1 (π2 (min-synth d)))
+    min-idempote-synth = {!!}
 
-  same-synth :  ∀ {Γ e t α e'1 t' e'2 } →
-              (d1 : Γ ⊢ e => t ~ α ~> e'1 => t') →
-              (d2 : Γ ⊢ e => t ~ α ~> e'2 => t') → Set
-  same-synth {e'1 = e'1} {e'2 = e'2} d1 d2 = e'1 == e'2
-
-  -- same-synth :  ∀ {Γ1 e1 t1 α1 e'1 t'1 Γ2 e2 t2 α2 e'2 t'2} →
-  --             (d1 : Γ1 ⊢ e1 => t1 ~ α1 ~> e'1 => t'1) →
-  --             (d2 : Γ2 ⊢ e2 => t2 ~ α2 ~> e'2 => t'2) → Set
-  -- same-synth = {!!}
-
---  mutual
-    -- min-idempote-synth : ∀ {Γ e t α e' t'} →
-    --                      (d : Γ ⊢ e => t ~ α ~> e' => t') →
-    --                      aasubmin-synth d →
-    --                      d == (π1 (π2 (min-synth d)))
-    -- min-idempote-synth = {!!}
-
-    -- min-idempote-ana : {!!}
-    -- min-idempote-ana = {!!}
+    min-idempote-ana : {!!}
+    min-idempote-ana = {!!}
