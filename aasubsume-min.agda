@@ -121,7 +121,6 @@ module aasubsume-min where
     min-ana (AAZipLam x₁ x₂ d) with min-ana d
     ... | a , b , c = _ , AAZipLam x₁ x₂ b , c
 
-
   -- if a derivation is already subsumption minimal, the minimizer doesn't
   -- change it.
 

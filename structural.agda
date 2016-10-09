@@ -149,8 +149,6 @@ module structural where
     wt-weak-ana apt (ALam x₃ x₄ wt) (f1 , _) | Inl refl = abort f1
     wt-weak-ana apt (ALam x₃ m wt) (f1 , f2) | Inr x₂ = ALam (lem-extend (flip x₂) x₃) m (wt-exchange-ana (flip x₂) (wt-weak-ana (lem-extend x₂ apt) wt f2))
 
-
-
   ---- structural properties for the action jugements
   mutual
     act-exchange-synth : ∀{ Γ x y t1 t2 t t' e e' α } →
