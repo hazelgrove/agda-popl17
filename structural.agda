@@ -157,15 +157,12 @@ module structural where
     wt-weak-ana apt (ACase a b c d e₁ g) (f1 , f2 , f3 , f4 , f5) | Inl refl | Inl refl = abort f2
     wt-weak-ana apt (ACase a b c d e₁ g) (f1 , f2 , f3 , f4 , f5) | Inl refl | Inr x₃   = abort f2
     wt-weak-ana apt (ACase a b c d e₁ g) (f1 , f2 , f3 , f4 , f5) | Inr x₂   | Inl refl = abort f1
-    wt-weak-ana {x = x} apt (ACase {x = y} {y = z}  a b c d e₁ g) (f1 , f2 , f3 , f4 , f5) | Inr x₂   | Inr x₃  with natEQ y z
-    wt-weak-ana apt (ACase a b c d e₁ g) (f1 , f2 , f3 , f4 , f5) | Inr x₃ | Inr x₄ | Inl refl = {!!}
-    wt-weak-ana {x = x} apt (ACase {x = y} {y = z} a b c d e₁ g) (f1 , f2 , f3 , f4 , f5) | Inr x₃ | Inr x₄ | Inr x₁ = ACase (lem-extend (flip x₄) a)
+    wt-weak-ana {x = x} apt (ACase {x = y} {y = z}  a b c d e₁ g) (f1 , f2 , f3 , f4 , f5) | Inr x₃ | Inr x₄ = ACase (lem-extend (flip x₄) a)
                                                                                                      (lem-extend (flip x₃) b)
                                                                                                      c
                                                                                                      (wt-weak-synth apt d f3)
-                                                                                                     {!!}
-                                                                                                     {!x₁!}
-
+                                                                                                     (wt-exchange-ana (flip x₄) (wt-weak-ana (lem-extend x₄ apt) e₁ f4))
+                                                                                                     (wt-exchange-ana (flip x₃) (wt-weak-ana (lem-extend x₃ apt) g f5))
 
   ---- structural properties for the action jugements
   mutual
@@ -283,6 +280,6 @@ module structural where
                                                                                                 (act-weak-synth apt ((π1 (π2 (π2 f)))) (π1 (π2 (π2 f'))) x₈)
                                                                                                 x₉
                                                                                                 {!wt-weak-ana!}
-                                                                                                (wt-weak-ana {!!} x₁₁ {!!})
+                                                                                                ?
     act-weak-ana apt f f' (AAZipCase2 x₂ x₃ x₄ x₅ d) = {!!}
     act-weak-ana apt f f' (AAZipCase3 x₂ x₃ x₄ x₅ d) = {!!}
