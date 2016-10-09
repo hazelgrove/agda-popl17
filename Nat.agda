@@ -23,6 +23,7 @@ module Nat where
   natEQ (1+ x) (1+ .x) | Inl refl = Inl refl
   ... | Inr b = Inr (λ x₁ → b (1+inj x y x₁))
 
+  -- nat equality as a predicate. this saves some very repetative casing.
   natEQp : (x y : Nat) → Set
   natEQp x y with natEQ x y
   natEQp x .x | Inl refl = ⊥

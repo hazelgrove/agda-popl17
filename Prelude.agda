@@ -26,6 +26,7 @@ module Prelude where
       π2 : B π1
   open Σ public
 
+  -- Sigma types, or dependent pairs, with nice notation.
   syntax Σ A (\ x -> B) = Σ[ x ∈ A ] B
 
   _×_ : {l1 : Level} {l2 : Level} → (Set l1) → (Set l2) → Set (lmax l1 l2)
@@ -42,40 +43,28 @@ module Prelude where
   {-# BUILTIN EQUALITY _==_ #-}
   {-# BUILTIN REFL refl #-}
 
+  -- transitivity of equality
   _·_ : {l : Level} {α : Set l} {x y z : α} → x == y → y == z → x == z
   refl · refl = refl
 
-  -- β: ! (refl m)  == refl m
+  -- symmetry of equality
   ! : {l : Level} {α : Set l} {x y : α} → x == y → y == x
   ! refl = refl
 
-  -- β: (ap f (refl m)) == refl (f m)
+  -- ap, in the sense of HoTT, that all functions respect equality in their
+  -- arguments. named in a slightly non-standard way to avoid naming
+  -- clashes with hazelnut constructors.
   ap1 : {l1 l2 : Level} {α : Set l1} {β : Set l2} {x y : α} (F : α → β)
           → x == y → F x == F y
   ap1 F refl = refl
 
-  -- β? : tr β (refl x) y == y
+  -- transport, in the sense of HoTT, that fibrations respect equality
   tr : {l1 l2 : Level} {α : Set l1} {x y : α}
                     (B : α → Set l2)
                     → x == y
                     → B x
                     → B y
   tr B refl x₁ = x₁
-
-  ap2 : {l1 l2 l3 : Level}
-        {A : Set l1} {B : Set l2} {C : Set l3}
-        {M N : A} {M' N' : B}
-        (f : A -> B -> C) -> M == N -> M' == N' -> (f M M') == (f N N')
-  ap2 f refl refl = refl
-
-  infix  2 _■
-  infixr 2 _=<_>_
-
-  _=<_>_ : {l : Level} {A : Set l} (x : A) {y z : A} → x == y → y == z → x == z
-  _ =< p1 > p2 = p1 · p2
-
-  _■ : {l : Level} {A : Set l} (x : A) → x == x
-  _■ _ = refl
 
   -- options
   data Maybe (A : Set) : Set where
@@ -86,19 +75,16 @@ module Prelude where
   someinj : {A : Set} {x y : A} → Some x == Some y → x == y
   someinj refl = refl
 
+  --  some isn't none.
   somenotnone : {A : Set} {x : A} → Some x == None → ⊥
   somenotnone ()
 
-  -- order
-  data Order : Set where
-    Less : Order
-    Equal : Order
-    Greater : Order
-
-  -- function extensionality
+  -- function extensionality, used to reason about contexts as finite
+  -- functions.
   postulate
      funext : {A : Set} {B : A → Set} {f g : (x : A) → (B x)} →
               ((x : A) → f x == g x) → f == g
 
+  -- non-equality is commutative
   flip : {A : Set} {x y : A} → (x == y → ⊥) → (y == x → ⊥)
   flip neq eq = neq (! eq)

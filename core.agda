@@ -291,8 +291,8 @@ module core where
 
   data action : Set where
     move : direction → action
-    del : action
     construct : shape → action
+    del : action
     finish : action
 
   -- type actions
@@ -382,8 +382,6 @@ module core where
       SAConApOtw : {Γ : ·ctx} {t : τ̇} {e : ė} →
                 (t ~̸ (<||> ==> <||>)) →
                 Γ ⊢ ▹ e ◃ => t ~ construct ap ~> <| e |> ∘₂ ▹ <||> ◃ => <||>
-      -- SAConArg : {Γ : ·ctx} {e : ė} {t : τ̇} →
-      --           Γ ⊢ ▹ e ◃ => t ~ construct arg ~> ▹ <||> ◃ ∘₁ e => <||>
       SAConNumlit : {Γ : ·ctx} {n : Nat} →
                 Γ ⊢ ▹ <||> ◃ => <||> ~ construct (numlit n) ~> ▹ N n ◃ => num
       SAConPlus1 : {Γ : ·ctx} {e : ė} {t : τ̇} →

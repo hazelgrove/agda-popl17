@@ -7,6 +7,8 @@ open import checks
 open import moveerase
 
 module aasubsume-min where
+  -- this predicate on derivations of actions bans the cases that induce
+  -- non-determinism.
   mutual
     aasubmin-synth : ∀{Γ e t α e' t'} → (Γ ⊢ e => t ~ α ~> e' => t') → Set
     aasubmin-synth (SAZipAsc1 x) = aasubmin-ana x
@@ -121,11 +123,11 @@ module aasubsume-min where
     min-ana (AAZipLam x₁ x₂ d) with min-ana d
     ... | a , b , c = _ , AAZipLam x₁ x₂ b , c
 
-  -- if a derivation is already subsumption minimal, the minimizer doesn't
-  -- change it.
-
-  -- these theorems argue that if a derication is already subsumption
-  -- minimal than the minimzer does not change the resultant expression.
+  -- these theorems argue that if a derivation is already subsumption
+  -- minimal than the minimzer does not change the resultant
+  -- expression--that it's conservative in this sense. they do not argue
+  -- that the derivation that's computer is itself the same as the input
+  -- derivation.
   mutual
     min-fixed-synth : ∀ {Γ e t α e' t'} →
                          (d : Γ ⊢ e => t ~ α ~> e' => t') →
@@ -209,7 +211,3 @@ module aasubsume-min where
     min-fixed-ana (AAZipLam x₁ x₂ d) min with min-fixed-ana d min
     ... | qq with min-ana d
     ... | (e'' , _ , _) = ap1 (λ q → ·λ _ q) qq
-
-  tr-arg : ∀ {Γ e t α e' e''} →
-             (Γ ⊢ e ~ α ~> e' ⇐ t × Γ ⊢ e ~ α ~> e'' ⇐ t × e' == e'') → Set
-  tr-arg (d1 , d2 , refl) = d1 == d2
