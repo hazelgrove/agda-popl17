@@ -7,24 +7,7 @@ open import checks
 open import moveerase
 
 module future-work where
-  -- there is no list of actions that can be preformed in sequence that
-  -- renders a complete term from (3 : <||>) 4.
-  ex5 : ∀{Γ e' t'} →
-          Σ[ L ∈ List action ]
-             ((runsynth Γ (((N 3) ·:₂ ▹ <||> ◃) ∘₁ (N 4)) <||> L e' t')
-               × ecomplete (e' ◆e))
-          → ⊥
-  ex5 (.[] , DoRefl , com) = π2 (π1 com)
-  ex5 (._ , DoSynth (SAMove ()) rs , com)
-  ex5 (._ , DoSynth (SAZipApArr x x₁ x₂ x₃ (ASubsume SNum x₅)) DoRefl , com) = {!!}
-  ex5 (._ , DoSynth (SAZipApArr x x₁ x₂ x₃ (ASubsume SNum x₅)) (DoSynth x₄ DoRefl) , com) = {!!}
-  ex5 (._ , DoSynth (SAZipApArr x x₁ x₂ x₃ (ASubsume SNum x₅)) (DoSynth x₄ (DoSynth x₆ rs)) , com) = {!rs!}
-
-  cy : ∅ ⊢ ((·λ 0 <||>) ·: ((num ==> num) ==> num)) =>  ((num ==> num) ==> num)
-  cy = SAsc (ALam refl MAArr (ASubsume SEHole TCHole1))
-
   -- TODO: the shower thoughts theorem
-
   lem-comp~det : ∀{ t t1 t2 } → tcomplete t → t ~ t1 → t ~ t2 → t1 ~ t2
   lem-comp~det tc TCRefl TCRefl = TCRefl
   lem-comp~det tc TCRefl TCHole1 = TCHole1
