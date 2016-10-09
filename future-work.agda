@@ -47,11 +47,11 @@ module future-work where
 
   -- analysis and type consistency work together in the expected way
   anaconsis : ∀{Γ e t t'} → tcomplete t → Γ ⊢ e <= t → t ~ t' → Γ ⊢ e <= t'
-  anaconsis tc (ASubsume x x₁) c = ASubsume x (lem-comp~det tc c x₁)
-  anaconsis tc (ALam x₁ MAHole wt) c = abort tc
-  anaconsis (π1 , π2) (ALam x₁ MAArr wt) TCRefl = ALam x₁ MAArr wt
-  anaconsis (π1 , π2) (ALam x₁ MAArr wt) TCHole1 with anaconsis π2 wt TCHole1
-  ... | ih = all-hole (π1 , π2) (ALam x₁ MAArr wt)
-  anaconsis (π1 , π2) (ALam x₁ MAArr wt) (TCArr c1 c2) = ALam x₁ MAArr {!!}
-  -- c with lem-comp-match (π1 , π2) MAArr c
-  -- ... | (t2' , m' , c') = ALam x₁ m' (anaconsis π2 wt c')
+  anaconsis tc (ASubsume x x₁) TCRefl = ASubsume x x₁
+  anaconsis tc (ASubsume x x₁) TCHole1 = ASubsume x TCHole2
+  anaconsis tc (ASubsume x x₁) TCHole2 = {!!}
+  anaconsis (tc , tc2) (ASubsume x x₁) (TCArr con con₁) = {!!}
+  anaconsis tc (ALam x₁ x₂ wt) TCRefl = ALam x₁ x₂ wt
+  anaconsis tc (ALam x₁ x₂ wt) TCHole1 = ALam x₁ MAHole {!anaconsis ? wt!}
+  anaconsis tc (ALam x₁ x₂ wt) TCHole2 = {!!}
+  anaconsis tc (ALam x₁ x₂ wt) (TCArr con con₁) = {!!}
