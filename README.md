@@ -222,12 +222,11 @@ Assumptions and Representation Decisions
   maximum-name-used-so-far. We have not needed to do that yet, but it is an
   easy refactoring if we do in the future.
 
-- Type consistency is a judgement all its own, rather than encoded into the
-  agda internal notion of equality. This is because the notion of
-  compatibility that we inherit from the work on gradual typing is
-  deliberately not transitive, so it can't be gracefully encoded with
+- The notion of consistency that we inherit from the work on gradual typing
+  is deliberately not transitive, so it can't be gracefully encoded with
   equality using any of the common techniques involving the module system
-  or dependent types.
+  or dependent types. Therefore it is given by a type, like all the other
+  judgements.
 
   It's possible that there is a more elegant way to encode compatibility
   with the homotopy type theoretic notion of a higher inductive type (HIT)
