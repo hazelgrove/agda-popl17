@@ -71,4 +71,4 @@ arrows
 
 holes
 -----
- - "⦇" "⦈" are `C-x 8 Z NOTATION LEFT IMAGE BRACKET` and `Z NOTATION RIGHT IMAGE BRACKET` respectively
+ - "⦇" "⦈" are `C-x 8 Z NOTATION LEFT IMAGE BRACKET` and `Z NOTATION RIGHT IMAGE BRACKET` respectively, per http://www.fileformat.info/info/unicode/char/2988/index.htm
