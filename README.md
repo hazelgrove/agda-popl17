@@ -83,7 +83,7 @@ Here is where to find each theorem:
 - Theorem 7, _Type Action Determinism_, is in
   [determinism.agda](determinism.agda), given by `actdet-type`.
 
-- Theorem 8, Expression Action Determinism, is also in
+- Theorem 8, _Expression Action Determinism_, is also in
   [determinism.agda](determinism.agda), given by `actdet-synth` and
   `actdet-ana`. The predicate on derivations is given in
   [aasubsume-min.agda](aasubsume-min.agda) by `aasubmin-synth` and
