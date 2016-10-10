@@ -14,18 +14,17 @@ diff master sums FILE` for a particular file name, or in a slightly
 prettier way at http://github.com/hazelgrove/agda-popl17/compare/sums under
 the "Files Changed" tab.
 
-Installing And Running The Artifact
-===================================
+Inspecting The Artifact
+=======================
 
-In order to install the artifact, all you need to do is download the code
-in this repository. You can either clone the repository and switch between
-branches, or download zip files of both branches through the github web
-interface.
+In order to inspect the artifact, the first thing you need to do is
+download the code in this repository. You can either clone the repository
+and switch between branches, or download zip files of both branches through
+the github web interface.
 
-In order to run the artifact and actually check the proofs, you need two
-tools: the Haskell Platform and Agda. Both are available for most modern
-operating systems and have extensive documentation for installation at
-their home sites:
+In order to actually check the proofs, you need two tools: the Haskell
+Platform and Agda. Both are available for most modern operating systems and
+have extensive documentation for installation at their home sites:
 
 - https://www.haskell.org/platform/
 
