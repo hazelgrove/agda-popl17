@@ -56,8 +56,7 @@ them near where they're used, but it's the nature of such things to end up
 a little bit spread out. Each lemma has a quick slogan of what it roughly
 shows over its definition.
 
-There are also several places where we refer the reader to the
-mechanization for more details. Here is where to look for each of these:
+Here is where to find each theorem:
 
 - Theorem 1, _Action Sensibility_, is in
   [sensibility.agda](sensibility.agda), given by `actsense-synth` and
@@ -91,6 +90,26 @@ mechanization for more details. Here is where to look for each of these:
   [aasubsume-min.agda](aasubsume-min.agda) by `aasubmin-synth` and
   `aasubmin-ana`.
 
+There are also several places where we refer the reader to the
+mechanization for more details. Here is where to look for each of these:
+
+- The missing rules for z-expression cursor movement mentioned on page 2
+  are present in the version of Figure 1 and Figure 2 in
+  [examples.agda](examples.agda).
+
+- The proof that the judgements that mention contexts obey weakening,
+  exchange, and contraction mentioned on page 3 is in
+  [structural.agda](structural.agda).
+
+- The proof that the judgemental inconsistency is indeed the negation of
+  consistency mentioned on page 5 is in
+  [judgemental-inconsistency.agda](judgemental-inconsistency.agda).
+
+- The predicate on derivations mentioned on page 8 is in
+  [aasubsume-min.agda](aasubsume-min.agda).
+
+- The extension to the language mentioned on page 8 is in the `sums` branch
+  of this repository.
 
 File Descriptions
 =================
@@ -169,8 +188,11 @@ Assumptions and Representation Decisions
 
   That is, we represent variables with just natural numbers, and assume
   that all terms are in something like a de Bruijn normal form with respect
-  to these. That is to say: if a variable with name n ever appears
-  anywhere, it's always the same variable.
+  to these: if a variable with name `n` ever appears anywhere, it's always
+  the same variable.
+
+  This is reflected in the mechanization mostly by a few apartness premises
+  in the rules that are omitted in the on-paper notation.
 
   The problem with this is that it's not true about arbitrary well-typed
   terms of a language. There is an injection from arbitrary terms to
