@@ -83,7 +83,7 @@ Here is where to find each theorem:
 - Theorem 7, _Type Action Determinism_, is in
   [determinism.agda](determinism.agda), given by `actdet-type`.
 
-- Theorem 8, Expression Action Determinism, is also in
+- Theorem 8, _Expression Action Determinism_, is also in
   [determinism.agda](determinism.agda), given by `actdet-synth` and
   `actdet-ana`. The predicate on derivations is given in
   [aasubsume-min.agda](aasubsume-min.agda) by `aasubmin-synth` and
@@ -261,3 +261,14 @@ Assumptions and Representation Decisions
   y x` as a default case, but this doesn't pass the termination checker for
   obvious reasons. The cases that are particularly verbose are diked out
   into a lemma; the rest are just repeated in place.
+
+- The paper text does not specify exactly what the base type `num` is. In
+  the mechanization we unary natural numbers, specifically the type
+  `Nat`. The only property that we require of `num` is that equality be
+  decidable, so another choice would have been to abstract the rules over
+  anything that happens to have decidable equality--and maybe anything that
+  has enough algebraic structure to support addition.
+
+  While Agda does provide tools to take this other approach, we chose to
+  use natural numbers as a surrogate instead to keep the proofs smaller and
+  more focused on the properties we're interested in proving.
