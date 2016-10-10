@@ -18,7 +18,22 @@ Installation
 ============
 
 In order to run the proofs in this repository through a type checker, you
-need two tools: the Haskell Platform and Agda. We
+need two tools: the Haskell Platform and Agda. Both are available for most
+modern operating systems and have extensive documentation for installation
+at their main sites:
+
+- https://www.haskell.org/platform/
+
+- http://wiki.portal.chalmers.se/agda/pmwiki.php?n=Main.Download
+
+We know the Agda in this artifact to load cleanly under the most recent
+version of Agda, `2.5.1.1`. As research software, Agda frequently breaks
+backwards and forwards compatibility, so it may or may not load under other
+versions.
+
+Once Agda has been installed, the command `agda all.agda` will cause Agda
+to typecheck our entire artifact. For syntax hilighting and other support,
+Agda files can be viewed in `emacs`, `vim`, or here on github.
 
 Where To Find Each Theorem and Claim
 ====================================
