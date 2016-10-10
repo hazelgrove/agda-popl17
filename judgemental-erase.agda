@@ -42,7 +42,7 @@ module judgemental-erase where
   (e1 ∘₂ e2) ◆e  = e1      ∘ (e2 ◆e)
   (e1 ·+₁ e2) ◆e = (e1 ◆e) ·+ e2
   (e1 ·+₂ e2) ◆e = e1      ·+ (e2 ◆e)
-  <| e |> ◆e     = <| e ◆e |>
+  ⦇ e ⦈ ◆e     = ⦇ e ◆e ⦈
   (inl e) ◆e     = inl (e ◆e)
   (inr e) ◆e     = inr (e ◆e)
   (case₁ e x e1 y e2) ◆e = case (e ◆e) x e1 y e2
@@ -66,7 +66,7 @@ module judgemental-erase where
   erase-e◆ (EEApR p)   = ap1 (λ x → _ ∘ x)   (erase-e◆ p)
   erase-e◆ (EEPlusL p) = ap1 (λ x → x ·+ _)  (erase-e◆ p)
   erase-e◆ (EEPlusR p) = ap1 (λ x → _ ·+ x)  (erase-e◆ p)
-  erase-e◆ (EENEHole p) = ap1 (λ x → <| x |>) (erase-e◆ p)
+  erase-e◆ (EENEHole p) = ap1 (λ x → ⦇ x ⦈) (erase-e◆ p)
   erase-e◆ (EEInl p)    = ap1 inl (erase-e◆ p)
   erase-e◆ (EEInr p)    = ap1 inr (erase-e◆ p)
   erase-e◆ (EECase1 p)  = ap1 (λ x → case x _ _ _ _) (erase-e◆ p)
@@ -76,7 +76,7 @@ module judgemental-erase where
   -- this pair of theorems moves back from judgmental form to the function form
   ◆erase-t : (t : τ̂) (tr : τ̇) → (t ◆t == tr) → (erase-t t tr)
   ◆erase-t ▹ .num ◃ num refl = ETTop
-  ◆erase-t ▹ .<||> ◃ <||> refl = ETTop
+  ◆erase-t ▹ .⦇⦈ ◃ ⦇⦈ refl = ETTop
   ◆erase-t ▹ .(tr ==> tr₁) ◃ (tr ==> tr₁) refl = ETTop
   ◆erase-t ▹ .(t1 ⊕ t2) ◃ (t1 ⊕ t2) refl = ETTop
   ◆erase-t (t ==>₁ x) (.(t ◆t) ==> .x) refl = ETArrL (◆erase-t t (t ◆t) refl)
@@ -93,7 +93,7 @@ module judgemental-erase where
   ◆erase-e (x ∘₂ e) .(x ∘ (e ◆e)) refl = EEApR (◆erase-e e (e ◆e) refl)
   ◆erase-e (e ·+₁ x) .((e ◆e) ·+ x) refl = EEPlusL (◆erase-e e (e ◆e) refl)
   ◆erase-e (x ·+₂ e) .(x ·+ (e ◆e)) refl = EEPlusR (◆erase-e e (e ◆e) refl)
-  ◆erase-e <| e |> .(<| e ◆e |>) refl = EENEHole (◆erase-e e (e ◆e) refl)
+  ◆erase-e ⦇ e ⦈ .(⦇ e ◆e ⦈) refl = EENEHole (◆erase-e e (e ◆e) refl)
   ◆erase-e (inl e) ._ refl = EEInl (◆erase-e e (e ◆e) refl)
   ◆erase-e (inr e) ._ refl = EEInr (◆erase-e e (e ◆e) refl)
   ◆erase-e (case₁ e _ _ _ _) ._ refl = EECase1 (◆erase-e e (e ◆e) refl)
@@ -106,7 +106,7 @@ module judgemental-erase where
   -- sufficient to show that the whole thing is an isomorphism.
   erase-trt : (t : τ̂) (tr : τ̇) → (x : t ◆t == tr)  → (erase-t◆ (◆erase-t t tr x)) == x
   erase-trt ▹ .num ◃ num refl = refl
-  erase-trt ▹ .<||> ◃ <||> refl = refl
+  erase-trt ▹ .⦇⦈ ◃ ⦇⦈ refl = refl
   erase-trt ▹ .(tr ==> tr₁) ◃ (tr ==> tr₁) refl = refl
   erase-trt ▹ .(tr ⊕ tr₁) ◃ (tr ⊕ tr₁) refl = refl
   erase-trt (t ==>₁ x) (.(t ◆t) ==> .x) refl = ap1 (λ a → ap1 (λ x₁ → x₁ ==> x) a) (erase-trt t _ refl)
@@ -123,7 +123,7 @@ module judgemental-erase where
   erase-ert (x ∘₂ e) .(x ∘ (e ◆e)) refl = ap1 (λ a → ap1 (_∘_ x) a) (erase-ert e _ refl)
   erase-ert (e ·+₁ x) .((e ◆e) ·+ x) refl = ap1 (λ a → ap1 (λ x₁ → x₁ ·+ x) a) (erase-ert e _ refl)
   erase-ert (x ·+₂ e) .(x ·+ (e ◆e)) refl = ap1 (λ a → ap1 (_·+_ x) a) (erase-ert e _ refl)
-  erase-ert <| e |> .(<| e ◆e |>) refl = ap1 (λ a → ap1 <|_|> a) (erase-ert e _ refl)
+  erase-ert ⦇ e ⦈ .(⦇ e ◆e ⦈) refl = ap1 (λ a → ap1 ⦇_⦈ a) (erase-ert e _ refl)
   erase-ert (inl e) ._ refl = ap1 (ap1 inl) (erase-ert e (e ◆e) refl)
   erase-ert (inr e) ._ refl = ap1 (ap1 inr) (erase-ert e (e ◆e) refl)
   erase-ert (case₁ e _ _ _ _) ._ refl = ap1 (ap1 (λ x → case x _ _ _ _)) (erase-ert e (e ◆e) refl)
@@ -165,7 +165,7 @@ module judgemental-erase where
   erasee-det e1 e2 with erase-e◆ e1
   ... | refl = erase-e◆ e2
 
-  erase-in-hole : ∀ {e e'} → erase-e e e' → erase-e <| e |> <| e' |>
+  erase-in-hole : ∀ {e e'} → erase-e e e' → erase-e ⦇ e ⦈ ⦇ e' ⦈
   erase-in-hole (EENEHole er) = EENEHole (erase-in-hole er)
   erase-in-hole x = EENEHole x
 

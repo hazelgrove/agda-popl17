@@ -152,12 +152,12 @@ module aasubsume-min where
     min-ana (AAFinish x) = _ , AAFinish x , <>
     min-ana (AAZipLam x₁ x₂ d) with min-ana d
     ... | a , b , c = _ , AAZipLam x₁ x₂ b , c
-    min-ana (AASubsume x x₁ SAConInl TCRefl) = inl ▹ <||> ◃ , AAConInl1 MPPlus , <>
-    min-ana (AASubsume x x₁ SAConInl TCHole2) = inl ▹ <||> ◃ , AAConInl1 MPHole , <>
-    min-ana (AASubsume x x₁ SAConInl (TCPlus x₃ x₄)) = inl ▹ <||> ◃ , AAConInl1 MPPlus , <>
-    min-ana (AASubsume x x₁ SAConInr TCRefl) = inr ▹ <||> ◃ , AAConInr1 MPPlus , <>
-    min-ana (AASubsume x x₁ SAConInr TCHole2) = inr ▹ <||> ◃ , AAConInr1 MPHole , <>
-    min-ana (AASubsume x x₁ SAConInr (TCPlus x₃ x₄)) = inr ▹ <||> ◃ , AAConInr1 MPPlus , <>
+    min-ana (AASubsume x x₁ SAConInl TCRefl) = inl ▹ ⦇⦈ ◃ , AAConInl1 MPPlus , <>
+    min-ana (AASubsume x x₁ SAConInl TCHole2) = inl ▹ ⦇⦈ ◃ , AAConInl1 MPHole , <>
+    min-ana (AASubsume x x₁ SAConInl (TCPlus x₃ x₄)) = inl ▹ ⦇⦈ ◃ , AAConInl1 MPPlus , <>
+    min-ana (AASubsume x x₁ SAConInr TCRefl) = inr ▹ ⦇⦈ ◃ , AAConInr1 MPPlus , <>
+    min-ana (AASubsume x x₁ SAConInr TCHole2) = inr ▹ ⦇⦈ ◃ , AAConInr1 MPHole , <>
+    min-ana (AASubsume x x₁ SAConInr (TCPlus x₃ x₄)) = inr ▹ ⦇⦈ ◃ , AAConInr1 MPPlus , <>
     min-ana (AAConInl1 x) = _ , AAConInl1 x , <>
     min-ana (AAConInl2 x) = _ , AAConInl2 x , <>
     min-ana (AAConInr1 x) = _ , AAConInr1 x , <>
@@ -214,7 +214,7 @@ module aasubsume-min where
     ... | (e'' , _ , _) = ap1 (λ q → _ ·+₂ q) qq
     min-fixed-synth (SAZipHole x x₁ d) min with min-fixed-synth d min
     ... | qq with min-synth d
-    ... | (e'' , _ , _) = ap1 <|_|> qq
+    ... | (e'' , _ , _) = ap1 ⦇_⦈ qq
     min-fixed-synth SAConInl min = refl
     min-fixed-synth SAConInr min = refl
     min-fixed-synth (SAConCase1 x₁ x₂ x₃) min = refl
@@ -254,7 +254,7 @@ module aasubsume-min where
     ... | (e'' , _ , _) = ap1 (λ q → _ ·+₂ q) qq
     min-fixed-ana (AASubsume x x₁ (SAZipHole x₂ x₃ x₄) x₅) min with min-fixed-synth x₄ min
     ... | qq with min-synth x₄
-    ... | (e'' , _ , _) = ap1 <|_|> qq
+    ... | (e'' , _ , _) = ap1 ⦇_⦈ qq
     min-fixed-ana (AAMove x) min = refl
     min-fixed-ana AADel min = refl
     min-fixed-ana AAConAsc min = refl

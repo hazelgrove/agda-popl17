@@ -111,7 +111,7 @@ module determinism where
   anamovedet (AAZipCase2 x₁ x₂ x₃ x₄ d) EMCaseParent2 = abort (lem-nomove-para d)
   anamovedet (AAZipCase3 x₁ x₂ x₃ x₄ d) EMCaseParent3 = abort (lem-nomove-para d)
 
-  lem-holematch : ∀ {t t1 t2} → t ~̸ (<||> ⊕ <||>) → t ~ <||> → t ▸plus (t1 ⊕ t2) → ⊥
+  lem-holematch : ∀ {t t1 t2} → t ~̸ (⦇⦈ ⊕ ⦇⦈) → t ~ ⦇⦈ → t ▸plus (t1 ⊕ t2) → ⊥
   lem-holematch a TCRefl MPHole = a TCHole2
   lem-holematch a TCHole1 MPHole = a TCHole2
   lem-holematch a TCHole1 MPPlus = a (TCPlus TCHole1 TCHole1)

@@ -95,7 +95,7 @@ module moveerase where
     ... | refl = ap1 (λ q → _ ∘ q)  (moveerase-ana er x₁ x₄ ) , refl
     moveerase-synth (EEPlusL er) (SPlus x x₁) (SAZipPlus1 x₂) = ap1 (λ q → q ·+ _) (moveerase-ana er x x₂)  , refl
     moveerase-synth (EEPlusR er) (SPlus x x₁) (SAZipPlus2 x₂) = ap1 (λ q → _ ·+ q) (moveerase-ana er x₁ x₂) , refl
-    moveerase-synth er wt (SAZipHole x x₁ d) = ap1 <|_|> (π1 (moveerase-synth x x₁ d)) , refl
+    moveerase-synth er wt (SAZipHole x x₁ d) = ap1 ⦇_⦈ (π1 (moveerase-synth x x₁ d)) , refl
 
     moveerase-ana : ∀{Γ e e' e◆ t δ } →
                       (er : erase-e e e◆) →

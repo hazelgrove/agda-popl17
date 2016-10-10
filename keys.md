@@ -10,6 +10,9 @@ This file describes how to use the emacs agda input mode to enter each of
 those special characters, in roughly the order that they appear in
 `core.agda` broken into categories that aren't quite disjoint.
 
+http://wiki.portal.chalmers.se/agda/pmwiki.php?n=Docs.UnicodeInput is a
+good resource for wrangling this sort of thing.
+
 
 Agda built-ins or prelude-defined types
 ------------------------------
@@ -65,3 +68,7 @@ arrows
  - "▸" is `\t 5`
 
  - "◆" is `\di`
+
+holes
+-----
+ - "⦇" "⦈" are `C-x 8 Z NOTATION LEFT IMAGE BRACKET` and `Z NOTATION RIGHT IMAGE BRACKET` respectively
