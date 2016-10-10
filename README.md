@@ -14,28 +14,35 @@ diff master sums FILE` for a particular file name, or in a slightly
 prettier way at http://github.com/hazelgrove/agda-popl17/compare/sums under
 the "Files Changed" tab.
 
-Installation
-============
+Installing And Running The Artifact
+===================================
 
-In order to run the proofs in this repository through a type checker, you
-need two tools: the Haskell Platform and Agda. Both are available for most
-modern operating systems and have extensive documentation for installation
-at their home sites:
+In order to install the artifact, all you need to do is download the code
+in this repository. You can either clone the repository and switch between
+branches, or download zip files of both branches through the github web
+interface.
+
+In order to run the artifact and actually check the proofs, you need two
+tools: the Haskell Platform and Agda. Both are available for most modern
+operating systems and have extensive documentation for installation at
+their home sites:
 
 - https://www.haskell.org/platform/
 
 - http://wiki.portal.chalmers.se/agda/pmwiki.php?n=Main.Download
 
 We know the Agda in this artifact to load cleanly under `Agda version
-2.5.1.1`, which is the most recent version at the time of submission. As
-research software, Agda frequently breaks backwards and forwards
-compatibility, so it may or may not load under other versions.
+2.5.1.1`, which is the most recent stable version at the time of
+submission. As research software, Agda frequently breaks backwards and
+forwards compatibility, so it may or may not load under other versions.
 
 Once Agda has been installed, the command `agda all.agda` run in the
-appropriate directory will cause Agda to typecheck our entire artifact. On
-a modern machine, this takes about 10 seconds for the master branch and
-about 14 for the extension with sums. For syntax hilighting and other
-support, Agda files can be viewed in `emacs`, `vim`, or here on github.
+appropriate directory will cause Agda to typecheck our artifact. On a
+modern machine, this takes about 10 seconds for the master branch and about
+14 for the extension with sums.
+
+For syntax hilighting and other support, Agda files can be viewed in
+`emacs`, `vim`, or here on github.
 
 Where To Find Each Theorem and Claim
 ====================================
