@@ -263,7 +263,7 @@ Assumptions and Representation Decisions
   into a lemma; the rest are just repeated in place.
 
 - The paper text does not specify exactly what the base type `num` is. In
-  the mechanization we unary natural numbers, specifically the type
+  the mechanization we use unary natural numbers, specifically the type
   `Nat`. The only property that we require of `num` is that equality be
   decidable, so another choice would have been to abstract the rules over
   anything that happens to have decidable equality--and maybe anything that
