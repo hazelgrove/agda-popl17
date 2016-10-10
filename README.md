@@ -1,7 +1,7 @@
 # agda-popl17
 
 This repository contains the mechanization of Hazelnut and the associated
-metatheory as submitted to POPL 2017.
+metatheory as submitted to POPL 2017 for artifact evaluation.
 
 The branch `sums` is the mechanization of the core calculus extended with
 sum types as described in section 4 of the paper. It's a conservative
@@ -10,9 +10,9 @@ code for the new constructs: nothing is removed. All theorems are proven
 for both branches.
 
 The exact additions can be seen easily with `git diff master sums`, `git
-diff master sums FILE` for a particualr file name, or in a slightly
-prettier way at [https://github.com/hazelgrove/agda-popl17/compare/sums]
-under the "Files Changed" tab.
+diff master sums FILE` for a particular file name, or in a slightly
+prettier way at http://github.com/hazelgrove/agda-popl17/compare/sums under
+the "Files Changed" tab.
 
 Installation
 ============
@@ -27,7 +27,7 @@ Every theorem in the paper is proven in the mechanization.
 
 In most cases this entails proving a few lemmas about the particular
 representations defined in [core.agda](core.agda) or how they interact. We
-have tried to name these lemmas in sugguestive ways and tried to locate
+have tried to name these lemmas in suggestive ways and tried to locate
 them near where they're used, but it's the nature of such things to end up
 a little bit spread out. Each lemma has a quick slogan of what it roughly
 shows over its definition.
@@ -114,14 +114,14 @@ Here is a break down of what is in each file, listed in `ls` order.
   a full version of both Figure 1 and Figure 2 from the paper text.
 
 - [judgemental-erase.agda](judgemental-erase.agda) defines the function
-  form of cursor erasure given in the paper and proves it isomorpic to the
+  form of cursor erasure given in the paper and proves it isomorphic to the
   judgemental form given in [core.agda](core.agda). It also defines lemmas
   to move between them. Since we prove them to be isomorphic, we use both
   forms throughout, choosing whichever one is more convenient in a given
   situation.
 
 - [judgemental-inconsistency.agda](judgemental-inconsistency.agda) defines
-  a jugemental form of type inconsistency and proves it isomorphic to the
+  a judgemental form of type inconsistency and proves it isomorphic to the
   functional form given in [core.agda](core.agda).
 
 - [keys.md](keys.md) is a list of emacs agda-mode key chords to enter the
@@ -139,7 +139,7 @@ Here is a break down of what is in each file, listed in `ls` order.
   context-sensitive judgements.
 
 
-Assumptions and Represenatation Decisions
+Assumptions and Representation Decisions
 =========================================
 
 - To keep the mechanization tidy, we make a pretty strong assumption about
@@ -148,7 +148,7 @@ Assumptions and Represenatation Decisions
   That is, we represent variables with just natural numbers, and assume
   that all terms are in something like a de Bruijn normal form with respect
   to these. That is to say: if a variable with name n ever appears
-  anywhere, it's always the same varaible.
+  anywhere, it's always the same variable.
 
   The problem with this is that it's not true about arbitrary well-typed
   terms of a language. There is an injection from arbitrary terms to
@@ -183,7 +183,7 @@ Assumptions and Represenatation Decisions
   compatibility that we inherit from the work on gradual typing is
   deliberately not transitive, so it can't be easily encoded as equality.
 
-  It's possible that there is a more elegant way to encode compatability
+  It's possible that there is a more elegant way to encode compatibility
   with the homotopy type theoretic notion of a higher inductive type (HIT)
   but we haven't explored that at all.
 
