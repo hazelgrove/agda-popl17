@@ -153,3 +153,16 @@ module examples where
                                                                                                                            (ASubsume SNum TCRefl)) TCRefl))
             (DoSynth (SAZipApAna MAArr (SVar refl) (AAMove EMApParent1))
             ( DoRefl))))))))
+
+
+  -- these motivates why actions aren't deterministic, and why it's
+  -- reasonable to ban the derivations that we do. the things that differ
+  -- in the term as a result of the appeal to subsumption in the second
+  -- derivation aren't needed -- the ascription is redundant because the
+  -- type is already pinned to num ==> num, so that's the only thing that
+  -- could fill the holes produced.
+  notdet1 : ∅ ⊢ ▹ ⦇⦈ ◃ ~ construct (lam 0) ~> ·λ 0 ▹ ⦇⦈ ◃ ⇐ (num ==> num)
+  notdet1 = AAConLam1 refl MAArr
+
+  notdet2 : ∅ ⊢ ▹ ⦇⦈ ◃ ~ construct (lam 0) ~> ·λ 0 ⦇⦈ ·:₂ (▹ ⦇⦈ ◃ ==>₁ ⦇⦈) ⇐ (num ==> num)
+  notdet2 = AASubsume EETop SEHole (SAConLam refl) (TCArr TCHole1 TCHole1)
