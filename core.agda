@@ -359,7 +359,6 @@ module core where
     var   : Nat → shape
     lam   : Nat → shape
     ap    : shape
-    arg   : shape
     numlit : Nat → shape
     plus  : shape
     nehole : shape
