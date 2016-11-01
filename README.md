@@ -1,7 +1,10 @@
 # agda-popl17
 
 This repository contains the mechanization of Hazelnut and the associated
-metatheory as submitted to POPL 2017 for artifact evaluation.
+metatheory as submitted to POPL 2017 for artifact evaluation. This artifact
+passed evaluation with high marks. The
+[reviews](https://github.com/hazelgrove/hazelnut-popl17/blob/master/hazelnut-popl17-aec-reviews.txt)
+from the AEC can be found on the repo for the paper text.
 
 The branch `sums` is the mechanization of the core calculus extended with
 sum types as described in Section 4 of the paper. It's a conservative
