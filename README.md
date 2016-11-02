@@ -210,16 +210,16 @@ Assumptions and Representation Decisions
   obfuscating the proof text.
 
   One concern with this representation is whether or not it's really
-  constructive: there are some theorems about contexts that are only about
-  this representation if you have function extensionality, which amounts to
-  the Axiom of Choice.
+  constructive: there are some theorems about contexts that are only
+  provably about this representation if you have function extensionality,
+  which is independent from the logic of Agda.
 
   In this case, however, the functions that we build as contexts always
-  have a finite domain and codomain, so that concern is not as bad as it
-  might be. That fact is not reflected in the type of contexts. It could be
-  made explicit by using mappings from `Fin n → τ̇` or paired with a
-  maximum-name-used-so-far. We have not needed to do that yet, but it is an
-  easy refactoring if we do in the future.
+  have a finite domain and codomain. Function extensionality is provable
+  under that restriction, but the restriction is not reflected in the type
+  of contexts. It could be made explicit by using mappings from `Fin n → τ̇`
+  or paired with a maximum-name-used-so-far. We have not needed to do that
+  yet, but it is an easy refactoring if we do in the future.
 
 - The notion of consistency that we inherit from the work on gradual typing
   is deliberately not transitive, so it can't be gracefully encoded with
