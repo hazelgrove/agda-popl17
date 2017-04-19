@@ -61,13 +61,41 @@ module judgemental-inconsistency where
 
   -- need to display that at least one of the round-trips above is stable
   -- for this to be structure preserving and really an iso.
-  rt : (t1 t2 : τ̇) → (x : t1 ~̸ t2) → (to~̸ t1 t2 (from~̸ t1 t2 x)) == x
-  rt num (t2 ==> t3) x         = funext (λ x₁ → abort (x x₁))
-  rt (t1 ==> t2) num x         = funext (λ x₁ → abort (x x₁))
-  rt (t1 ==> t2) (t3 ==> t4) x = funext (λ x₁ → abort (x x₁))
-  rt num num x                 = abort (x TCRefl)
-  rt num ⦇⦈ x                = abort (x TCHole1)
-  rt ⦇⦈ num x                = abort (x TCHole2)
-  rt ⦇⦈ ⦇⦈ x               = abort (x TCRefl)
-  rt ⦇⦈ (t2 ==> t3) x        = abort (x TCHole2)
-  rt (t1 ==> t2) ⦇⦈ x        = abort (x TCHole1)
+  rt1 : (t1 t2 : τ̇) → (x : t1 ~̸ t2) → (to~̸ t1 t2 (from~̸ t1 t2 x)) == x
+  rt1 num (t2 ==> t3) x         = funext (λ x₁ → abort (x x₁))
+  rt1 (t1 ==> t2) num x         = funext (λ x₁ → abort (x x₁))
+  rt1 (t1 ==> t2) (t3 ==> t4) x = funext (λ x₁ → abort (x x₁))
+  rt1 num num x                 = abort (x TCRefl)
+  rt1 num ⦇⦈ x                  = abort (x TCHole1)
+  rt1 ⦇⦈ num x                  = abort (x TCHole2)
+  rt1 ⦇⦈ ⦇⦈ x                   = abort (x TCRefl)
+  rt1 ⦇⦈ (t2 ==> t3) x          = abort (x TCHole2)
+  rt1 (t1 ==> t2) ⦇⦈ x          = abort (x TCHole1)
+
+  lemma : (t1 t2 : τ̇) → (x  : t1 ~̸ t2) → (y : incon t1 t2) → from~̸ t1 t2 x == y
+  lemma .num _ x ICNumArr1 = refl
+  lemma _ .num x ICNumArr2 = refl
+  lemma _ _ x (ICArr1 y) with lem==> x
+  lemma _ _ x (ICArr1 y) | Inl x₁ = ap1 ICArr1 (lemma _ _ x₁ y)
+  lemma _ _ x (ICArr1 y) | Inr x₁ = {!!}
+  lemma _ _ x (ICArr2 y) with lem==> x
+  lemma _ _ x (ICArr2 y) | Inl x₁ = {!!}
+  lemma _ _ x (ICArr2 y) | Inr x₁ = ap1 ICArr2 (lemma _ _ x₁ y)
+
+  rt2 : (t1 t2 : τ̇) → (x : incon t1 t2) → (from~̸ t1 t2 (to~̸ t1 t2 x)) == x
+  rt2 num num ()
+  rt2 num ⦇⦈ ()
+  rt2 num (t2 ==> t3) ICNumArr1 = refl
+  rt2 ⦇⦈ num ()
+  rt2 ⦇⦈ ⦇⦈ ()
+  rt2 ⦇⦈ (t2 ==> t3) ()
+  rt2 (t1 ==> t2) num ICNumArr2 = refl
+  rt2 (t1 ==> t2) ⦇⦈ ()
+  rt2 (t1 ==> t2) (t3 ==> t4) x with ~dec t1 t3
+  rt2 (t1 ==> t2) (t3 ==> t4) (ICArr1 x₁) | Inl x = abort (to~̸ t1 t3 x₁ x)
+  rt2 (t1 ==> t2) (t3 ==> t4) (ICArr2 x₁) | Inl x = ap1 ICArr2 (rt2 t2 t4 x₁)
+  rt2 (t1 ==> t2) (t3 ==> t4) (ICArr1 y)  | Inr x = ap1 ICArr1 {!!}
+  rt2 (t1 ==> t2) (t3 ==> t4) (ICArr2 y)  | Inr x = {!!}
+
+  incon-iso : (t1 t2 : τ̇) → (incon t1 t2) ≃ (t1 ~̸ t2)
+  incon-iso t1 t2 = (to~̸ t1 t2) , (from~̸ t1 t2) , (rt2 t1 t2) , (rt1 t1 t2)
