@@ -32,15 +32,24 @@ module judgemental-inconsistency where
   to~̸ ._ ._ (ICArr1 incon) TCRefl = abort (incon-nrefl incon)
   to~̸ ._ ._ (ICArr1 incon) (TCArr x x₁) = to~̸ _ _ incon x
   to~̸ ._ ._ (ICArr2 incon) TCRefl = abort (incon-nrefl incon)
-  to~̸ ._ ._ (ICArr2 incon) (TCArr x x₁) = to~̸ _ _ incon x₁
+  to~̸ ._ ._ (ICArr2 incon) (TCArr x x₁) = (to~̸ _ _ incon x₁)
 
   -- second half of iso
   from~̸ : (t1 t2 : τ̇) → t1 ~̸ t2 → incon t1 t2
   from~̸ num (t2 ==> t3) ncon = ICNumArr1
   from~̸ (t1 ==> t2) num ncon = ICNumArr2
-  from~̸ (t1 ==> t2) (t3 ==> t4) ncon with ~dec t1 t3
-  ... | Inl qq = ICArr2 (from~̸ _ _ (λ x → ncon (TCArr qq x)))
-  ... | Inr qq = ICArr1 (from~̸ _ _ qq)
+  from~̸ (t1 ==> t2) (t3 ==> t4) ncon with ~dec t1 t3 | ~dec t2 t4
+  from~̸ (t1 ==> t2) (t3 ==> t4) ncon | Inl x | qq = ICArr2 (from~̸ _ _ (λ a → ncon (TCArr x a)))
+  from~̸ (t1 ==> t2) (t3 ==> t4) ncon | Inr x | Inl x₁ = ICArr1 (from~̸ _ _ (λ a → ncon (TCArr a x₁)))
+  from~̸ (t1 ==> t2) (t3 ==> t4) ncon | Inr x | Inr x₁ = {!!}
+
+  -- from~̸ (t1 ==> t2) (t3 ==> t4) ncon | Inl x | Inl y = abort (ncon (TCArr x y))
+  -- from~̸ (t1 ==> t2) (t3 ==> t4) ncon | Inl x | Inr y = ICArr2 (from~̸ t2 t4 y)
+  -- from~̸ (t1 ==> t2) (t3 ==> t4) ncon | Inr x | Inl y = ICArr1 (from~̸ t1 t3 x)
+  -- from~̸ (t1 ==> t2) (t3 ==> t4) ncon | Inr x | Inr y = {!!}
+
+  -- ... | Inl qq = ICArr2 (from~̸ _ _ (λ x → ncon (TCArr qq x)))
+  -- ... | Inr qq = ICArr1 (from~̸ _ _ qq)
   -- the remaining consistent types all lead to absurdities
   from~̸ num num ncon = abort (ncon TCRefl)
   from~̸ num ⦇⦈ ncon = abort (ncon TCHole1)
@@ -71,11 +80,20 @@ module judgemental-inconsistency where
   rt2 ⦇⦈ (t2 ==> t3) ()
   rt2 (t1 ==> t2) num ICNumArr2 = refl
   rt2 (t1 ==> t2) ⦇⦈ ()
-  rt2 (t1 ==> t2) (t3 ==> t4) x with ~dec t1 t3
-  rt2 (t1 ==> t2) (t3 ==> t4) (ICArr1 x₁) | Inl x = abort (to~̸ t1 t3 x₁ x)
-  rt2 (t1 ==> t2) (t3 ==> t4) (ICArr2 x₁) | Inl x = ap1 ICArr2 (rt2 t2 t4 x₁)
-  rt2 (t1 ==> t2) (t3 ==> t4) (ICArr1 y)  | Inr x = ap1 ICArr1 (rt2 t1 t3 y)
-  rt2 (t1 ==> t2) (t3 ==> t4) (ICArr2 y)  | Inr x = {!!}
+  rt2 (t1 ==> t2) (t3 ==> t4) x with ~dec t1 t3 | ~dec t2 t4
+  rt2 (t1 ==> t2) (t3 ==> t4) x₂ | Inl x | Inl y = abort (to~̸ _ _ x₂ (TCArr x y))
+  rt2 (t1 ==> t2) (t3 ==> t4) (ICArr1 x₂) | Inl x | Inr y = abort (to~̸ _ _ x₂ x)
+  rt2 (t1 ==> t2) (t3 ==> t4) (ICArr2 x₂) | Inl x | Inr y = ap1 ICArr2 (rt2 t2 t4 x₂)
+  rt2 (t1 ==> t2) (t3 ==> t4) (ICArr1 x₂) | Inr x | Inl y = ap1 ICArr1 (rt2 t1 t3 x₂)
+  rt2 (t1 ==> t2) (t3 ==> t4) (ICArr2 x₂) | Inr x | Inl y = abort (to~̸ _ _ x₂ y)
+  rt2 (t1 ==> t2) (t3 ==> t4) (ICArr1 x₂) | Inr x | Inr y = {!!}
+  rt2 (t1 ==> t2) (t3 ==> t4) (ICArr2 x₂) | Inr x | Inr y = {!!}
+
+  -- ~dec t1 t3
+  -- rt2 (t1 ==> t2) (t3 ==> t4) (ICArr1 x₁) | Inl x = abort (to~̸ t1 t3 x₁ x)
+  -- rt2 (t1 ==> t2) (t3 ==> t4) (ICArr2 x₁) | Inl x = ap1 ICArr2 (rt2 t2 t4 x₁)
+  -- rt2 (t1 ==> t2) (t3 ==> t4) (ICArr1 y)  | Inr x = ap1 ICArr1 (rt2 t1 t3 y)
+  -- rt2 (t1 ==> t2) (t3 ==> t4) (ICArr2 y)  | Inr x = {!!}
 
   incon-iso : (t1 t2 : τ̇) → (incon t1 t2) ≃ (t1 ~̸ t2)
   incon-iso t1 t2 = (to~̸ t1 t2) , (from~̸ t1 t2) , (rt2 t1 t2) , (rt1 t1 t2)
