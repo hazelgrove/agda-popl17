@@ -20,16 +20,6 @@ module judgemental-inconsistency where
   inconsym (ICArr1 x) = ICArr1 (inconsym x)
   inconsym (ICArr2 x) = ICArr2 (inconsym x)
 
-  -- if an arrow type is ~̸, either the domain or the range must be ~̸. this
-  -- is aggressively classical in flavor BUT happens to be true
-  -- constructively, if only because ~ is deciable.
-  lem==> : ∀{t1 t2 t3 t4} →
-        (t1 ==> t2) ~̸ (t3 ==> t4) →
-        (t1 ~̸ t3) + (t2 ~̸ t4)
-  lem==> {t1} {t2} {t3} {t4} ncon with ~dec t1 t3
-  ... | Inl x = Inr (λ x₁ → ncon (TCArr x x₁))
-  ... | Inr x = Inl x
-
   --inconsistency isn't reflexive
   incon-nrefl : ∀{t} → incon t t → ⊥
   incon-nrefl (ICArr1 x) = incon-nrefl x
@@ -48,9 +38,9 @@ module judgemental-inconsistency where
   from~̸ : (t1 t2 : τ̇) → t1 ~̸ t2 → incon t1 t2
   from~̸ num (t2 ==> t3) ncon = ICNumArr1
   from~̸ (t1 ==> t2) num ncon = ICNumArr2
-  from~̸ (t1 ==> t2) (t3 ==> t4) ncon with lem==> ncon
-  ... | Inl qq = ICArr1 (from~̸ _ _ qq)
-  ... | Inr qq = ICArr2 (from~̸ _ _ qq)
+  from~̸ (t1 ==> t2) (t3 ==> t4) ncon with ~dec t1 t3
+  ... | Inl qq = ICArr2 (from~̸ _ _ (λ x → ncon (TCArr qq x)))
+  ... | Inr qq = ICArr1 (from~̸ _ _ qq)
   -- the remaining consistent types all lead to absurdities
   from~̸ num num ncon = abort (ncon TCRefl)
   from~̸ num ⦇⦈ ncon = abort (ncon TCHole1)
@@ -72,16 +62,6 @@ module judgemental-inconsistency where
   rt1 ⦇⦈ (t2 ==> t3) x          = abort (x TCHole2)
   rt1 (t1 ==> t2) ⦇⦈ x          = abort (x TCHole1)
 
-  lemma : (t1 t2 : τ̇) → (x  : t1 ~̸ t2) → (y : incon t1 t2) → from~̸ t1 t2 x == y
-  lemma .num _ x ICNumArr1 = refl
-  lemma _ .num x ICNumArr2 = refl
-  lemma _ _ x (ICArr1 y) with lem==> x
-  lemma _ _ x (ICArr1 y) | Inl x₁ = ap1 ICArr1 (lemma _ _ x₁ y)
-  lemma _ _ x (ICArr1 y) | Inr x₁ = {!!}
-  lemma _ _ x (ICArr2 y) with lem==> x
-  lemma _ _ x (ICArr2 y) | Inl x₁ = {!!}
-  lemma _ _ x (ICArr2 y) | Inr x₁ = ap1 ICArr2 (lemma _ _ x₁ y)
-
   rt2 : (t1 t2 : τ̇) → (x : incon t1 t2) → (from~̸ t1 t2 (to~̸ t1 t2 x)) == x
   rt2 num num ()
   rt2 num ⦇⦈ ()
@@ -94,7 +74,7 @@ module judgemental-inconsistency where
   rt2 (t1 ==> t2) (t3 ==> t4) x with ~dec t1 t3
   rt2 (t1 ==> t2) (t3 ==> t4) (ICArr1 x₁) | Inl x = abort (to~̸ t1 t3 x₁ x)
   rt2 (t1 ==> t2) (t3 ==> t4) (ICArr2 x₁) | Inl x = ap1 ICArr2 (rt2 t2 t4 x₁)
-  rt2 (t1 ==> t2) (t3 ==> t4) (ICArr1 y)  | Inr x = ap1 ICArr1 {!!}
+  rt2 (t1 ==> t2) (t3 ==> t4) (ICArr1 y)  | Inr x = ap1 ICArr1 (rt2 t1 t3 y)
   rt2 (t1 ==> t2) (t3 ==> t4) (ICArr2 y)  | Inr x = {!!}
 
   incon-iso : (t1 t2 : τ̇) → (incon t1 t2) ≃ (t1 ~̸ t2)
