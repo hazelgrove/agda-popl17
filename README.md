@@ -161,8 +161,9 @@ Here is a break down of what is in each file, listed in `ls` order.
   situation.
 
 - [judgemental-inconsistency.agda](judgemental-inconsistency.agda) defines
-  a judgemental form of type inconsistency and proves it isomorphic to the
-  functional form given in [core.agda](core.agda).
+  a judgemental form of type inconsistency and characterizes its
+  relationship to the functional form used throughout the development, as
+  discussed in [core.agda](core.agda).
 
 - [keys.md](keys.md) is a list of emacs agda-mode key chords to enter the
   unicode characters we use throughout the development.
@@ -235,14 +236,13 @@ Assumptions and Representation Decisions
   `{t1 t2 : ·τ} → t1 ~ t2 → ⊥`, which is the standard way to represent
   negation.
 
-  This means the same thing as the judgement in the text, but saves us
-  proving some lemmas describing the coherence between two types that would
-  result from the direct translation into Agda.
+  For our purposes, this means the same thing as the judgement in the text,
+  but saves us proving some lemmas describing the coherence between two
+  types that would result from the direct translation into Agda.
 
-  The two views are shown isomorphic in
-  [judgemental-inconsistency.agda](judgemental-inconsistency.agda), so if
-  bad rules are added that isomorphism will break. This also jusitifes our
-  use of the much-easier-to-program-with negation form.
+  The two views are shown isomorphic assuming that proofs of inconsistency
+  at arrow types are proof-irrelevant in
+  [judgemental-inconsistency.agda](judgemental-inconsistency.agda).
 
 - Each of the clauses of the theorems in the text are broken off into
   separate functions in the mechanization. This is because the clauses are

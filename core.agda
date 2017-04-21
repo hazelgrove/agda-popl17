@@ -63,10 +63,14 @@ module core where
                t2 ~ t2' →
                (t1 ==> t2) ~ (t1' ==> t2')
 
-  -- type inconsistency. rather than enumerate the types which aren't
-  -- consistent, we encode this judgement immediately as the complement of
-  -- consistency. a proof that this is isomorphic to the judmental form is
-  -- in judgemental-inconsistency.agda
+  -- type inconsistency. a judgmental version and associated proofs are in
+  -- judgemental-inconsistency.agda. each definition implies the other, but
+  -- the two are isomorphic only if you treat proofs of inconsistency at
+  -- arrow types as being proof-irrelevant---that is, if you don't
+  -- distinguish between cases where the inconsistency between a pair of
+  -- function types stems from the domain, range, or both. we use the form
+  -- below throughout the rest of the development because we do not care to
+  -- make that distinction.
   _~̸_ : τ̇ → τ̇ → Set
   t1 ~̸ t2 = (t1 ~ t2) → ⊥
 
@@ -254,7 +258,7 @@ module core where
     ⦇_⦈ : ê → ê
 
   -- erasure of cursor for types and expressions, judgementally. see
-  -- jugemental-erase for an argument that this defines an isomorphic
+  -- jugemental-erase.agda for an argument that this defines an isomorphic
   -- object to the direct metafunction provided in the text of the paper
   data erase-t : τ̂ → τ̇ → Set where
     ETTop  : ∀{t} → erase-t (▹ t ◃) t
