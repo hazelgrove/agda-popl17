@@ -13,6 +13,22 @@ module judgemental-inconsistency where
                incon t2 t4 →
                incon (t1 ==> t2) (t3 ==> t4)
 
+  -- counter-ex : Σ[ t1 ∈ τ̇ ] Σ[ t2 ∈ τ̇ ] ((t1 ~̸ t2) × (incon t1 t2 → ⊥))
+  -- counter-ex = t1 , t2  , one , two
+  --     where
+  --       t1 : τ̇
+  --       t1 = num ==> (num ==> num)
+
+  --       t2 : τ̇
+  --       t2 = ((num ==> num) ==> ⦇⦈)
+
+  --       one : t1 ~̸ t2
+  --       one (TCArr () x₁)
+
+  --       two : incon t1 t2 → ⊥
+  --       two (ICArr1 ICNumArr1) = {!!}
+  --       two (ICArr2 ())
+
   -- inconsistency is symmetric
   inconsym : ∀ {t1 t2} → incon t1 t2 → incon t2 t1
   inconsym ICNumArr1 = ICNumArr2
@@ -38,18 +54,9 @@ module judgemental-inconsistency where
   from~̸ : (t1 t2 : τ̇) → t1 ~̸ t2 → incon t1 t2
   from~̸ num (t2 ==> t3) ncon = ICNumArr1
   from~̸ (t1 ==> t2) num ncon = ICNumArr2
-  from~̸ (t1 ==> t2) (t3 ==> t4) ncon with ~dec t1 t3 | ~dec t2 t4
-  from~̸ (t1 ==> t2) (t3 ==> t4) ncon | Inl x | qq = ICArr2 (from~̸ _ _ (λ a → ncon (TCArr x a)))
-  from~̸ (t1 ==> t2) (t3 ==> t4) ncon | Inr x | Inl x₁ = ICArr1 (from~̸ _ _ (λ a → ncon (TCArr a x₁)))
-  from~̸ (t1 ==> t2) (t3 ==> t4) ncon | Inr x | Inr x₁ = {!!}
-
-  -- from~̸ (t1 ==> t2) (t3 ==> t4) ncon | Inl x | Inl y = abort (ncon (TCArr x y))
-  -- from~̸ (t1 ==> t2) (t3 ==> t4) ncon | Inl x | Inr y = ICArr2 (from~̸ t2 t4 y)
-  -- from~̸ (t1 ==> t2) (t3 ==> t4) ncon | Inr x | Inl y = ICArr1 (from~̸ t1 t3 x)
-  -- from~̸ (t1 ==> t2) (t3 ==> t4) ncon | Inr x | Inr y = {!!}
-
-  -- ... | Inl qq = ICArr2 (from~̸ _ _ (λ x → ncon (TCArr qq x)))
-  -- ... | Inr qq = ICArr1 (from~̸ _ _ qq)
+  from~̸ (t1 ==> t2) (t3 ==> t4) ncon with ~dec t1 t3
+  ... | Inl qq = ICArr2 (from~̸ t2 t4 (λ x → ncon (TCArr qq x)))
+  ... | Inr qq = ICArr1 (from~̸ _ _ qq)
   -- the remaining consistent types all lead to absurdities
   from~̸ num num ncon = abort (ncon TCRefl)
   from~̸ num ⦇⦈ ncon = abort (ncon TCHole1)
@@ -71,29 +78,26 @@ module judgemental-inconsistency where
   rt1 ⦇⦈ (t2 ==> t3) x          = abort (x TCHole2)
   rt1 (t1 ==> t2) ⦇⦈ x          = abort (x TCHole1)
 
-  rt2 : (t1 t2 : τ̇) → (x : incon t1 t2) → (from~̸ t1 t2 (to~̸ t1 t2 x)) == x
-  rt2 num num ()
-  rt2 num ⦇⦈ ()
-  rt2 num (t2 ==> t3) ICNumArr1 = refl
-  rt2 ⦇⦈ num ()
-  rt2 ⦇⦈ ⦇⦈ ()
-  rt2 ⦇⦈ (t2 ==> t3) ()
-  rt2 (t1 ==> t2) num ICNumArr2 = refl
-  rt2 (t1 ==> t2) ⦇⦈ ()
-  rt2 (t1 ==> t2) (t3 ==> t4) x with ~dec t1 t3 | ~dec t2 t4
-  rt2 (t1 ==> t2) (t3 ==> t4) x₂ | Inl x | Inl y = abort (to~̸ _ _ x₂ (TCArr x y))
-  rt2 (t1 ==> t2) (t3 ==> t4) (ICArr1 x₂) | Inl x | Inr y = abort (to~̸ _ _ x₂ x)
-  rt2 (t1 ==> t2) (t3 ==> t4) (ICArr2 x₂) | Inl x | Inr y = ap1 ICArr2 (rt2 t2 t4 x₂)
-  rt2 (t1 ==> t2) (t3 ==> t4) (ICArr1 x₂) | Inr x | Inl y = ap1 ICArr1 (rt2 t1 t3 x₂)
-  rt2 (t1 ==> t2) (t3 ==> t4) (ICArr2 x₂) | Inr x | Inl y = abort (to~̸ _ _ x₂ y)
-  rt2 (t1 ==> t2) (t3 ==> t4) (ICArr1 x₂) | Inr x | Inr y = {!!}
-  rt2 (t1 ==> t2) (t3 ==> t4) (ICArr2 x₂) | Inr x | Inr y = {!!}
+  postulate
+    arr-incon-irrelev : {t1 t2 t3 t4 : τ̇} (x y : incon (t1 ==> t2) (t3 ==> t4)) → x == y
 
-  -- ~dec t1 t3
-  -- rt2 (t1 ==> t2) (t3 ==> t4) (ICArr1 x₁) | Inl x = abort (to~̸ t1 t3 x₁ x)
-  -- rt2 (t1 ==> t2) (t3 ==> t4) (ICArr2 x₁) | Inl x = ap1 ICArr2 (rt2 t2 t4 x₁)
-  -- rt2 (t1 ==> t2) (t3 ==> t4) (ICArr1 y)  | Inr x = ap1 ICArr1 (rt2 t1 t3 y)
-  -- rt2 (t1 ==> t2) (t3 ==> t4) (ICArr2 y)  | Inr x = {!!}
+  incon-irrelev : (t1 t2 : τ̇) (x y : incon t1 t2) → x == y
+  incon-irrelev .num _ ICNumArr1 ICNumArr1 = refl
+  incon-irrelev _ .num ICNumArr2 ICNumArr2 = refl
+  incon-irrelev _ _ (ICArr1 x) (ICArr1 y) = ap1 ICArr1 (incon-irrelev _ _ x y)
+  incon-irrelev _ _ (ICArr1 x) (ICArr2 y) = arr-incon-irrelev (ICArr1 x) (ICArr2 y)
+  incon-irrelev _ _ (ICArr2 x) (ICArr1 y) = arr-incon-irrelev (ICArr2 x) (ICArr1 y)
+  incon-irrelev _ _ (ICArr2 x) (ICArr2 y) = ap1 ICArr2 (incon-irrelev _ _ x y )
+
+  rt2 : (t1 t2 : τ̇) → (x : incon t1 t2) → (from~̸ t1 t2 (to~̸ t1 t2 x)) == x
+  rt2 .num _ ICNumArr1 = refl
+  rt2 _ .num ICNumArr2 = refl
+  rt2 (t1 ==> t2) (t3 ==> t4) (ICArr1 x) with ~dec t1 t3
+  rt2 (t1 ==> t2) (t3 ==> t4) (ICArr1 x₁) | Inl x = abort (to~̸ t1 t3 x₁ x)
+  rt2 (t1 ==> t2) (t3 ==> t4) (ICArr1 x₁) | Inr x = ap1 ICArr1 (incon-irrelev t1 t3 (from~̸ t1 t3 x) x₁)
+  rt2 (t1 ==> t2) (t3 ==> t4) (ICArr2 x) with ~dec t1 t3
+  rt2 (t1 ==> t2) (t3 ==> t4) (ICArr2 x₁) | Inl x = ap1 ICArr2 (incon-irrelev t2 t4 (from~̸ t2 t4 (to~̸ t2 t4 x₁)) x₁)
+  rt2 (t1 ==> t2) (t3 ==> t4) (ICArr2 x₁) | Inr x = incon-irrelev _ _ (ICArr1 (from~̸ t1 t3 x)) (ICArr2 x₁)
 
   incon-iso : (t1 t2 : τ̇) → (incon t1 t2) ≃ (t1 ~̸ t2)
   incon-iso t1 t2 = (to~̸ t1 t2) , (from~̸ t1 t2) , (rt2 t1 t2) , (rt1 t1 t2)
