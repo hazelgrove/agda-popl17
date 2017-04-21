@@ -13,22 +13,6 @@ module judgemental-inconsistency where
                incon t2 t4 →
                incon (t1 ==> t2) (t3 ==> t4)
 
-  -- counter-ex : Σ[ t1 ∈ τ̇ ] Σ[ t2 ∈ τ̇ ] ((t1 ~̸ t2) × (incon t1 t2 → ⊥))
-  -- counter-ex = t1 , t2  , one , two
-  --     where
-  --       t1 : τ̇
-  --       t1 = num ==> (num ==> num)
-
-  --       t2 : τ̇
-  --       t2 = ((num ==> num) ==> ⦇⦈)
-
-  --       one : t1 ~̸ t2
-  --       one (TCArr () x₁)
-
-  --       two : incon t1 t2 → ⊥
-  --       two (ICArr1 ICNumArr1) = {!!}
-  --       two (ICArr2 ())
-
   -- inconsistency is symmetric
   inconsym : ∀ {t1 t2} → incon t1 t2 → incon t2 t1
   inconsym ICNumArr1 = ICNumArr2
