@@ -71,8 +71,15 @@ module core where
   -- function types stems from the domain, range, or both. we use the form
   -- below throughout the rest of the development because we do not care to
   -- make that distinction.
-  _~̸_ : τ̇ → τ̇ → Set
-  t1 ~̸ t2 = (t1 ~ t2) → ⊥
+  data _~̸_ : τ̇ → τ̇ → Set where
+    ICNumArr1 : {t1 t2 : τ̇} → num ~̸ (t1 ==> t2)
+    ICNumArr2 : {t1 t2 : τ̇} → (t1 ==> t2) ~̸ num
+    ICArr1 : {t1 t2 t3 t4 : τ̇} →
+               t1 ~̸ t3 →
+               (t1 ==> t2) ~̸ (t3 ==> t4)
+    ICArr2 : {t1 t2 t3 t4 : τ̇} →
+               t2 ~̸ t4 →
+               (t1 ==> t2) ~̸ (t3 ==> t4)
 
   --- matching for arrows
   data _▸arr_ : τ̇ → τ̇ → Set where
@@ -165,16 +172,6 @@ module core where
   not-trans t with t (num ==> num) ⦇⦈ num TCHole1 TCHole2
   ... | ()
 
-  -- if the domain or codomain of a pair of arrows isn't consistent, the
-  -- whole arrow isn't consistent.
-  lemarr1 : {t1 t2 t3 t4 : τ̇} → (t1 ~ t3 → ⊥) → (t1 ==> t2) ~ (t3 ==> t4)  → ⊥
-  lemarr1 v TCRefl = v TCRefl
-  lemarr1 v (TCArr p _) = v p
-
-  lemarr2 : {t1 t2 t3 t4 : τ̇} → (t2 ~ t4 → ⊥) → (t1 ==> t2) ~ (t3 ==> t4) →  ⊥
-  lemarr2 v TCRefl = v TCRefl
-  lemarr2 v (TCArr _ p) = v p
-
   --  every pair of types is either consistent or not consistent
   ~dec : (t1 t2 : τ̇) → ((t1 ~ t2) + (t1 ~̸ t2))
     -- this takes care of all hole cases, so we don't consider them below
@@ -182,21 +179,25 @@ module core where
   ~dec ⦇⦈ _ = Inl TCHole2
     -- num cases
   ~dec num num = Inl TCRefl
-  ~dec num (t2 ==> t3) = Inr (λ ())
+  ~dec num (t2 ==> t3) = Inr ICNumArr1
     -- arrow cases
-  ~dec (t1 ==> t2) num = Inr (λ ())
+  ~dec (t1 ==> t2) num = Inr ICNumArr2
   ~dec (t1 ==> t2) (t3 ==> t4) with ~dec t1 t3 | ~dec t2 t4
   ... | Inl x | Inl y = Inl (TCArr x y)
-  ... | Inl _ | Inr y = Inr (lemarr2 y)
-  ... | Inr x | _     = Inr (lemarr1 x)
+  ... | Inl _ | Inr y = Inr (ICArr2 y)
+  ... | Inr x | _     = Inr (ICArr1 x)
 
   -- theorem: no pair of types is both consistent and not consistent. this
   -- is immediate from our encoding of the ~̸ judgement in the formalism
   -- here; in the exact mathematics presented in the paper, this would
   -- require induction to relate the two judgements.
   ~apart : {t1 t2 : τ̇} → (t1 ~̸ t2) → (t1 ~ t2) → ⊥
-  ~apart v p = v p
-
+  ~apart ICNumArr1 ()
+  ~apart ICNumArr2 ()
+  ~apart (ICArr1 v) TCRefl = ~apart v TCRefl
+  ~apart (ICArr1 v) (TCArr p p₁) = ~apart v p
+  ~apart (ICArr2 v) TCRefl = ~apart v TCRefl
+  ~apart (ICArr2 v) (TCArr p p₁) = ~apart v p₁
 
   -- synthesis only produces equal types. note that there is no need for an
   -- analagous theorem for analytic positions because we think of

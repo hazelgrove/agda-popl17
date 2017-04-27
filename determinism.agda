@@ -98,13 +98,13 @@ module determinism where
     actdet-synth EETop (SAsc x) SADel SADel = refl , refl
     actdet-synth EETop (SAsc x) SAConAsc SAConAsc = refl , refl
     actdet-synth EETop (SAsc x) (SAConPlus1 x₁) (SAConPlus1 x₂) = refl , refl
-    actdet-synth EETop (SAsc x) (SAConPlus1 x₁) (SAConPlus2 x₂) = abort (x₂ x₁)
-    actdet-synth EETop (SAsc x) (SAConPlus2 x₁) (SAConPlus1 x₂) = abort (x₁ x₂)
+    actdet-synth EETop (SAsc x) (SAConPlus1 x₁) (SAConPlus2 x₂) = abort (~apart x₂ x₁)
+    actdet-synth EETop (SAsc x) (SAConPlus2 x₁) (SAConPlus1 x₂) = abort (~apart x₁ x₂)
     actdet-synth EETop (SAsc x) (SAConPlus2 x₁) (SAConPlus2 x₂) = refl , refl
     actdet-synth EETop (SAsc x) (SAConApArr x₁) (SAConApArr x₂) with matcharrunicity x₁ x₂
     ... | refl = refl , refl
-    actdet-synth EETop (SAsc x) (SAConApArr x₁) (SAConApOtw x₂) = abort (x₂ (matchconsist x₁))
-    actdet-synth EETop (SAsc x) (SAConApOtw x₁) (SAConApArr x₂) = abort (x₁ (matchconsist x₂))
+    actdet-synth EETop (SAsc x) (SAConApArr p) (SAConApOtw q) = abort (~apart q (matchconsist p))
+    actdet-synth EETop (SAsc x) (SAConApOtw p) (SAConApArr q) = abort (~apart p (matchconsist q))
     actdet-synth EETop (SAsc x) (SAConApOtw x₁) (SAConApOtw x₂) = refl , refl
     actdet-synth EETop (SAsc x) SAConNEHole SAConNEHole = refl , refl
 
@@ -126,13 +126,13 @@ module determinism where
     actdet-synth EETop (SVar x) SADel SADel = refl , refl
     actdet-synth EETop (SVar x) SAConAsc SAConAsc = refl , refl
     actdet-synth EETop (SVar x) (SAConPlus1 x₁) (SAConPlus1 x₂) = refl , refl
-    actdet-synth EETop (SVar x) (SAConPlus1 x₁) (SAConPlus2 x₂) = abort (x₂ x₁)
-    actdet-synth EETop (SVar x) (SAConPlus2 x₁) (SAConPlus1 x₂) = abort (x₁ x₂)
+    actdet-synth EETop (SVar x) (SAConPlus1 x₁) (SAConPlus2 x₂) = abort (~apart x₂ x₁)
+    actdet-synth EETop (SVar x) (SAConPlus2 x₁) (SAConPlus1 x₂) = abort (~apart x₁ x₂)
     actdet-synth EETop (SVar x) (SAConPlus2 x₁) (SAConPlus2 x₂) = refl , refl
     actdet-synth EETop (SVar x) (SAConApArr x₁) (SAConApArr x₂) with matcharrunicity x₁ x₂
     ... | refl = refl , refl
-    actdet-synth EETop (SVar x) (SAConApArr x₁) (SAConApOtw x₂) = abort (x₂ (matchconsist x₁))
-    actdet-synth EETop (SVar x) (SAConApOtw x₁) (SAConApArr x₂) = abort (x₁ (matchconsist x₂))
+    actdet-synth EETop (SVar x) (SAConApArr x₁) (SAConApOtw x₂) = abort (~apart x₂ (matchconsist x₁))
+    actdet-synth EETop (SVar x) (SAConApOtw x₁) (SAConApArr x₂) = abort (~apart x₁ (matchconsist x₂))
     actdet-synth EETop (SVar x) (SAConApOtw x₁) (SAConApOtw x₂) = refl , refl
     actdet-synth EETop (SVar x) SAConNEHole SAConNEHole = refl , refl
 
@@ -140,13 +140,13 @@ module determinism where
     actdet-synth EETop (SAp m wt x) SADel SADel = refl , refl
     actdet-synth EETop (SAp m wt x) SAConAsc SAConAsc = refl , refl
     actdet-synth EETop (SAp m wt x) (SAConPlus1 x₁) (SAConPlus1 x₂) = refl , refl
-    actdet-synth EETop (SAp m wt x) (SAConPlus1 x₁) (SAConPlus2 x₂) = abort (x₂ x₁)
-    actdet-synth EETop (SAp m wt x) (SAConPlus2 x₁) (SAConPlus1 x₂) = abort (x₁ x₂)
+    actdet-synth EETop (SAp m wt x) (SAConPlus1 x₁) (SAConPlus2 x₂) = abort (~apart x₂ x₁)
+    actdet-synth EETop (SAp m wt x) (SAConPlus2 x₁) (SAConPlus1 x₂) = abort (~apart x₁ x₂)
     actdet-synth EETop (SAp m wt x) (SAConPlus2 x₁) (SAConPlus2 x₂) = refl , refl
     actdet-synth EETop (SAp m wt x) (SAConApArr x₁) (SAConApArr x₂) with matcharrunicity x₁ x₂
     ... | refl = refl , refl
-    actdet-synth EETop (SAp m wt x) (SAConApArr x₁) (SAConApOtw x₂) = abort (x₂ (matchconsist x₁))
-    actdet-synth EETop (SAp m wt x) (SAConApOtw x₁) (SAConApArr x₂) = abort (x₁ (matchconsist x₂))
+    actdet-synth EETop (SAp m wt x) (SAConApArr x₁) (SAConApOtw x₂) = abort (~apart x₂ (matchconsist x₁))
+    actdet-synth EETop (SAp m wt x) (SAConApOtw x₁) (SAConApArr x₂) = abort (~apart x₁ (matchconsist x₂))
     actdet-synth EETop (SAp m wt x) (SAConApOtw x₁) (SAConApOtw x₂) = refl , refl
     actdet-synth EETop (SAp m wt x) SAConNEHole SAConNEHole = refl , refl
 
@@ -176,13 +176,13 @@ module determinism where
     actdet-synth EETop SNum SADel SADel = refl , refl
     actdet-synth EETop SNum SAConAsc SAConAsc = refl , refl
     actdet-synth EETop SNum (SAConPlus1 x) (SAConPlus1 x₁) = refl , refl
-    actdet-synth EETop SNum (SAConPlus1 x) (SAConPlus2 x₁) = abort (x₁ x)
-    actdet-synth EETop SNum (SAConPlus2 x) (SAConPlus1 x₁) = abort (x x₁)
+    actdet-synth EETop SNum (SAConPlus1 x) (SAConPlus2 x₁) = abort (~apart x₁ x)
+    actdet-synth EETop SNum (SAConPlus2 x) (SAConPlus1 x₁) = abort (~apart x x₁)
     actdet-synth EETop SNum (SAConPlus2 x) (SAConPlus2 x₁) = refl , refl
     actdet-synth EETop SNum (SAConApArr x) (SAConApArr x₁) with matcharrunicity x x₁
     ... | refl = refl , refl
-    actdet-synth EETop SNum (SAConApArr x) (SAConApOtw x₁) = abort (x₁ (matchconsist x))
-    actdet-synth EETop SNum (SAConApOtw x) (SAConApArr x₁) = abort (x (matchconsist x₁))
+    actdet-synth EETop SNum (SAConApArr x) (SAConApOtw x₁) = abort (~apart x₁ (matchconsist x))
+    actdet-synth EETop SNum (SAConApOtw x) (SAConApArr x₁) = abort (~apart x (matchconsist x₁))
     actdet-synth EETop SNum (SAConApOtw x) (SAConApOtw x₁) = refl , refl
     actdet-synth EETop SNum SAConNEHole SAConNEHole = refl , refl
 
@@ -190,8 +190,8 @@ module determinism where
     actdet-synth EETop (SPlus x x₁) SADel SADel = refl , refl
     actdet-synth EETop (SPlus x x₁) SAConAsc SAConAsc = refl , refl
     actdet-synth EETop (SPlus x x₁) (SAConPlus1 x₂) (SAConPlus1 x₃) = refl , refl
-    actdet-synth EETop (SPlus x x₁) (SAConPlus1 x₂) (SAConPlus2 x₃) = abort (x₃ x₂)
-    actdet-synth EETop (SPlus x x₁) (SAConPlus2 x₂) (SAConPlus1 x₃) = abort (x₂ x₃)
+    actdet-synth EETop (SPlus x x₁) (SAConPlus1 x₂) (SAConPlus2 x₃) = abort (~apart x₃ x₂)
+    actdet-synth EETop (SPlus x x₁) (SAConPlus2 x₂) (SAConPlus1 x₃) = abort (~apart x₂ x₃)
     actdet-synth EETop (SPlus x x₁) (SAConPlus2 x₂) (SAConPlus2 x₃) = refl , refl
     actdet-synth EETop (SPlus x x₁) (SAConApArr x₂) (SAConApArr x₃) with matcharrunicity x₂ x₃
     ... | refl = refl , refl
@@ -219,13 +219,13 @@ module determinism where
     actdet-synth EETop SEHole (SAConLam x₁) (SAConLam x₂) = refl , refl
     actdet-synth EETop SEHole SAConNumlit SAConNumlit = refl , refl
     actdet-synth EETop SEHole (SAConPlus1 x) (SAConPlus1 x₁) = refl , refl
-    actdet-synth EETop SEHole (SAConPlus1 x) (SAConPlus2 x₁) = abort (x₁ x)
-    actdet-synth EETop SEHole (SAConPlus2 x) (SAConPlus1 x₁) = abort (x x₁)
+    actdet-synth EETop SEHole (SAConPlus1 x) (SAConPlus2 x₁) = abort (~apart x₁ x)
+    actdet-synth EETop SEHole (SAConPlus2 x) (SAConPlus1 x₁) = abort (~apart x x₁)
     actdet-synth EETop SEHole (SAConPlus2 x) (SAConPlus2 x₁) = refl , refl
     actdet-synth EETop SEHole (SAConApArr x) (SAConApArr x₁) with matcharrunicity x x₁
     ... | refl = refl , refl
-    actdet-synth EETop SEHole (SAConApArr x) (SAConApOtw x₁) = abort (x₁ TCHole2)
-    actdet-synth EETop SEHole (SAConApOtw x) (SAConApArr x₁) = abort (x TCHole2)
+    actdet-synth EETop SEHole (SAConApArr x) (SAConApOtw x₁) = abort (~apart x₁ TCHole2)
+    actdet-synth EETop SEHole (SAConApOtw x) (SAConApArr x₁) = abort (~apart x TCHole2)
     actdet-synth EETop SEHole (SAConApOtw x) (SAConApOtw x₁) = refl , refl
     actdet-synth EETop SEHole SAConNEHole SAConNEHole = refl , refl
 
@@ -233,14 +233,14 @@ module determinism where
     actdet-synth EETop (SNEHole wt) SADel SADel = refl , refl
     actdet-synth EETop (SNEHole wt) SAConAsc SAConAsc = refl , refl
     actdet-synth EETop (SNEHole wt) (SAConPlus1 x) (SAConPlus1 x₁) = refl , refl
-    actdet-synth EETop (SNEHole wt) (SAConPlus1 x) (SAConPlus2 x₁) = abort (x₁ x)
-    actdet-synth EETop (SNEHole wt) (SAConPlus2 x) (SAConPlus1 x₁) = abort (x x₁)
+    actdet-synth EETop (SNEHole wt) (SAConPlus1 x) (SAConPlus2 x₁) = abort (~apart x₁ x)
+    actdet-synth EETop (SNEHole wt) (SAConPlus2 x) (SAConPlus1 x₁) = abort (~apart x x₁)
     actdet-synth EETop (SNEHole wt) (SAConPlus2 x) (SAConPlus2 x₁) = refl , refl
     actdet-synth EETop (SNEHole wt) (SAFinish x) (SAFinish x₁) = refl , synthunicity x x₁
     actdet-synth EETop (SNEHole wt) (SAConApArr x) (SAConApArr x₁) with matcharrunicity x x₁
     ... | refl = refl , refl
-    actdet-synth EETop (SNEHole wt) (SAConApArr x) (SAConApOtw x₁) = abort (x₁ TCHole2)
-    actdet-synth EETop (SNEHole wt) (SAConApOtw x) (SAConApArr x₁) = abort (x TCHole2)
+    actdet-synth EETop (SNEHole wt) (SAConApArr x) (SAConApOtw x₁) = abort (~apart x₁ TCHole2)
+    actdet-synth EETop (SNEHole wt) (SAConApOtw x) (SAConApArr x₁) = abort (~apart x TCHole2)
     actdet-synth EETop (SNEHole wt) (SAConApOtw x) (SAConApOtw x₁) = refl , refl
     actdet-synth EETop (SNEHole wt) SAConNEHole SAConNEHole = refl , refl
 
@@ -302,10 +302,10 @@ module determinism where
     actdet-ana EETop (ASubsume a b) (AASubsume EETop x SAConAsc x₁) AAConAsc {p1} = abort p1
     actdet-ana EETop (ASubsume SEHole b) (AASubsume EETop SEHole (SAConVar {Γ = Γ} p) x₂) (AAConVar x₅ p₁)
       with ctxunicity {Γ = Γ} p p₁
-    ... | refl = abort (x₅ x₂)
+    ... | refl = abort (~apart x₅ x₂)
     actdet-ana EETop (ASubsume SEHole b) (AASubsume EETop SEHole (SAConLam x₄) x₂) (AAConLam1 x₅ m) {p1} = abort p1
-    actdet-ana EETop (ASubsume a b) (AASubsume EETop x₁ (SAConLam x₃) x₂) (AAConLam2 x₅ x₆) = abort (x₆ x₂)
-    actdet-ana EETop (ASubsume a b) (AASubsume EETop x₁ SAConNumlit x₂) (AAConNumlit x₄) = abort (x₄ x₂)
+    actdet-ana EETop (ASubsume a b) (AASubsume EETop x₁ (SAConLam x₃) x₂) (AAConLam2 x₅ x₆) {p1} = abort p1
+    actdet-ana EETop (ASubsume a b) (AASubsume EETop x₁ SAConNumlit x₂) (AAConNumlit x₄) = abort (~apart x₄ x₂)
     actdet-ana EETop (ASubsume a b) (AASubsume EETop x (SAFinish x₂) x₁) (AAFinish x₄) = refl
 
       -- subsume / del
@@ -319,25 +319,25 @@ module determinism where
       -- subsume / convar
     actdet-ana EETop (ASubsume SEHole b) (AAConVar x₁ p) (AASubsume EETop SEHole (SAConVar {Γ = Γ} p₁) x₅)
       with ctxunicity {Γ = Γ} p p₁
-    ... | refl = abort (x₁ x₅)
+    ... | refl = abort (~apart x₁ x₅)
     actdet-ana er (ASubsume a b) (AAConVar x₁ p) (AAConVar x₂ p₁) = refl
 
       -- subsume / conlam1
     actdet-ana EETop (ASubsume SEHole b) (AAConLam1 x₁ x₂) (AASubsume EETop SEHole (SAConLam x₃) x₆) {p2 = p2} = abort p2
-    actdet-ana er (ASubsume a b) (AAConLam1 x₁ MAHole) (AAConLam2 x₃ x₄) = abort (x₄ TCHole2)
-    actdet-ana er (ASubsume a b) (AAConLam1 x₁ MAArr) (AAConLam2 x₃ x₄) = abort (x₄ (TCArr TCHole1 TCHole1))
+    actdet-ana er (ASubsume a b) (AAConLam1 x₁ MAHole) (AAConLam2 x₃ x₄) = abort (~apart x₄ TCHole2)
+    actdet-ana er (ASubsume a b) (AAConLam1 x₁ MAArr) (AAConLam2 x₃ x₄) = abort (~apart x₄ (TCArr TCHole1 TCHole1))
     actdet-ana er (ASubsume a b) (AAConLam1 x₁ x₂) (AAConLam1 x₃ x₄) = refl
 
       -- subsume / conlam2
-    actdet-ana EETop (ASubsume SEHole TCRefl) (AAConLam2 x₁ x₂) (AASubsume EETop SEHole x₅ x₆) = abort (x₂ TCHole2)
-    actdet-ana EETop (ASubsume SEHole TCHole1) (AAConLam2 x₁ x₂) (AASubsume EETop SEHole (SAConLam x₃) x₆) = abort (x₂ x₆)
-    actdet-ana EETop (ASubsume SEHole TCHole2) (AAConLam2 x₁ x₂) (AASubsume EETop SEHole x₅ x₆) = abort (x₂ TCHole2)
-    actdet-ana EETop (ASubsume a b) (AAConLam2 x₂ x₁) (AAConLam1 x₃ MAHole) = abort (x₁ TCHole2)
-    actdet-ana EETop (ASubsume a b) (AAConLam2 x₂ x₁) (AAConLam1 x₃ MAArr) = abort (x₁ (TCArr TCHole1 TCHole1))
+    actdet-ana EETop (ASubsume SEHole TCRefl) (AAConLam2 x₁ x₂) (AASubsume EETop SEHole x₅ x₆) = abort (~apart x₂ TCHole2)
+    actdet-ana EETop (ASubsume SEHole TCHole1) (AAConLam2 x₁ x₂) (AASubsume EETop SEHole (SAConLam x₃) x₆) = abort (~apart x₂ x₆)
+    actdet-ana EETop (ASubsume SEHole TCHole2) (AAConLam2 x₁ x₂) (AASubsume EETop SEHole x₅ x₆) = abort (~apart x₂ TCHole2)
+    actdet-ana EETop (ASubsume a b) (AAConLam2 x₂ x₁) (AAConLam1 x₃ MAHole) = abort (~apart x₁ TCHole2)
+    actdet-ana EETop (ASubsume a b) (AAConLam2 x₂ x₁) (AAConLam1 x₃ MAArr) = abort (~apart x₁ (TCArr TCHole1 TCHole1))
     actdet-ana er (ASubsume a b) (AAConLam2 x₂ x) (AAConLam2 x₃ x₄) = refl
 
       -- subsume / numlit
-    actdet-ana er (ASubsume a b) (AAConNumlit x) (AASubsume x₁ x₂ SAConNumlit x₄) = abort (x x₄)
+    actdet-ana er (ASubsume a b) (AAConNumlit x) (AASubsume x₁ x₂ SAConNumlit x₄) = abort (~apart x x₄)
     actdet-ana er (ASubsume a b) (AAConNumlit x) (AAConNumlit x₁) = refl
 
       -- subsume / finish
