@@ -112,10 +112,11 @@ module determinism where
   anamovedet (AAZipCase3 x₁ x₂ x₃ x₄ d) EMCaseParent3 = abort (lem-nomove-para d)
 
   lem-holematch : ∀ {t t1 t2} → t ~̸ (⦇⦈ ⊕ ⦇⦈) → t ~ ⦇⦈ → t ▸plus (t1 ⊕ t2) → ⊥
-  lem-holematch a TCRefl MPHole = a TCHole2
-  lem-holematch a TCHole1 MPHole = a TCHole2
-  lem-holematch a TCHole1 MPPlus = a (TCPlus TCHole1 TCHole1)
-  lem-holematch a TCHole2 MPHole = a TCHole2
+  lem-holematch () TCRefl MPHole
+  lem-holematch () TCHole1 MPHole
+  lem-holematch (ICPlus1 ()) TCHole1 MPPlus
+  lem-holematch (ICPlus2 ()) TCHole1 MPPlus
+  lem-holematch () TCHole2 MPHole
 
   mutual
     -- an action on an expression in a synthetic position produces one
@@ -297,10 +298,10 @@ module determinism where
     actdet-synth (EECase2 er) () (SAMove x₁) (SAMove x₂)
     actdet-synth (EECase3 er) () (SAMove x₁) (SAMove x₂)
     actdet-synth er wt (SAConCase1 x₁ x₂ x₃) (SAConCase1 x₄ x₅ x₆) = refl , refl
-    actdet-synth er wt (SAConCase1 x₁ x₂ MPHole) (SAConCase2 x₄ x₅ x₆) = abort (x₆ TCHole2)
-    actdet-synth EETop wt (SAConCase1 x₁ x₂ MPPlus) (SAConCase2 x₄ x₅ x₆) = abort (x₆ (TCPlus TCHole1 TCHole1))
-    actdet-synth EETop wt (SAConCase2 x₁ x₂ x₃) (SAConCase1 x₄ x₅ MPHole) = abort (x₃ TCHole2)
-    actdet-synth EETop wt (SAConCase2 x₁ x₂ x₃) (SAConCase1 x₄ x₅ MPPlus) = abort (x₃ (TCPlus TCHole1 TCHole1))
+    actdet-synth er wt (SAConCase1 x₁ x₂ MPHole) (SAConCase2 x₄ x₅ x₆) = abort (~apart x₆ TCHole2)
+    actdet-synth EETop wt (SAConCase1 x₁ x₂ MPPlus) (SAConCase2 x₄ x₅ x₆) = abort (~apart x₆ (TCPlus TCHole1 TCHole1))
+    actdet-synth EETop wt (SAConCase2 x₁ x₂ x₃) (SAConCase1 x₄ x₅ MPHole) = abort (~apart x₃ TCHole2)
+    actdet-synth EETop wt (SAConCase2 x₁ x₂ x₃) (SAConCase1 x₄ x₅ MPPlus) = abort (~apart x₃ (TCPlus TCHole1 TCHole1))
     actdet-synth er wt (SAConCase2 x₁ x₂ x₃) (SAConCase2 x₄ x₅ x₆) = refl , refl
 
     -- an action on an expression in an analytic position produces one
@@ -425,9 +426,9 @@ module determinism where
     actdet-ana (EECase3 er) (ACase x₁ x₂ x₃ x₄ wt wt₁) (AASubsume (EECase3 x₉) () x₁₁ x₁₂) _
 
     actdet-ana EETop (ASubsume SEHole x₂) (AAConCase x₃ x₄) (AASubsume EETop SEHole (SAConCase1 x₁ x₅ MPHole) x₈) {p2 = p2} = abort p2
-    actdet-ana EETop (ASubsume SEHole x₂) (AAConCase x₃ x₄) (AASubsume EETop SEHole (SAConCase2 x₁ x₅ x₆) x₈) = abort (x₆ TCHole2)
+    actdet-ana EETop (ASubsume SEHole x₂) (AAConCase x₃ x₄) (AASubsume EETop SEHole (SAConCase2 x₁ x₅ x₆) x₈) = abort (~apart x₆ TCHole2)
     actdet-ana EETop (ASubsume SEHole x₂) (AASubsume EETop SEHole (SAConCase1 x₁ x₃ MPHole) x₆) (AAConCase x₇ x₈) {p1} = abort p1
-    actdet-ana EETop (ASubsume SEHole x₂) (AASubsume EETop SEHole (SAConCase2 x₁ x₃ x₄) x₆) (AAConCase x₇ x₈) = abort (x₄ TCHole2)
+    actdet-ana EETop (ASubsume SEHole x₂) (AASubsume EETop SEHole (SAConCase2 x₁ x₃ x₄) x₆) (AAConCase x₇ x₈) = abort (~apart x₄ TCHole2)
 
       -- the cases where the derivations match just go through
     actdet-ana er (ASubsume x x₁) (AAConInl1 x₂) (AAConInl1 x₃) = refl
@@ -479,16 +480,16 @@ module determinism where
     ... | refl = refl
 
     actdet-ana EETop (ASubsume SEHole x₁) (AASubsume EETop SEHole SAConInl x₅) (AAConInl1 x₆) {p1} = abort p1
-    actdet-ana EETop (ASubsume SEHole x₁) (AASubsume EETop SEHole SAConInl x₅) (AAConInl2 x₆) = abort (x₆ x₅)
+    actdet-ana EETop (ASubsume SEHole x₁) (AASubsume EETop SEHole SAConInl x₅) (AAConInl2 x₆) = abort (~apart x₆ x₅)
     actdet-ana EETop (ASubsume SEHole x₁) (AASubsume EETop SEHole SAConInr x₅) (AAConInr1 x₆) {p1} = abort p1
-    actdet-ana EETop (ASubsume SEHole x₁) (AASubsume EETop SEHole SAConInr x₅) (AAConInr2 x₆) = abort (x₆ x₅)
+    actdet-ana EETop (ASubsume SEHole x₁) (AASubsume EETop SEHole SAConInr x₅) (AAConInr2 x₆) = abort (~apart x₆ x₅)
 
     actdet-ana EETop (ASubsume SEHole x₁) (AAConInl1 x₂) (AASubsume EETop SEHole SAConInl x₆) {p2 = p2} = abort p2
     actdet-ana EETop (ASubsume SEHole x₁) (AAConInr1 x₂) (AASubsume EETop SEHole SAConInr c) {p2 = p2} = abort p2
 
     actdet-ana EETop (ASubsume SEHole x₁) (AAConInl1 q) (AAConInl2 x₃) = abort (lem-holematch x₃ x₁ q)
-    actdet-ana EETop (ASubsume SEHole x₁) (AAConInl2 x₂) (AASubsume EETop SEHole SAConInl x₆) = abort (x₂ x₆)
+    actdet-ana EETop (ASubsume SEHole x₁) (AAConInl2 x₂) (AASubsume EETop SEHole SAConInl x₆) = abort (~apart x₂ x₆)
     actdet-ana EETop (ASubsume SEHole x₁) (AAConInl2 x₂) (AAConInl1 q) = abort (lem-holematch x₂ x₁ q)
     actdet-ana EETop (ASubsume SEHole x₁) (AAConInr1 x₂) (AAConInr2 x₃) = abort (lem-holematch x₃ x₁ x₂)
-    actdet-ana EETop (ASubsume SEHole x₁) (AAConInr2 x₂) (AASubsume EETop x₄ SAConInr x₆) = abort (x₂ x₆)
+    actdet-ana EETop (ASubsume SEHole x₁) (AAConInr2 x₂) (AASubsume EETop x₄ SAConInr x₆) = abort (~apart x₂ x₆)
     actdet-ana EETop (ASubsume SEHole x₁) (AAConInr2 x₂) (AAConInr1 x₃) = abort (lem-holematch x₂ x₁ x₃)
