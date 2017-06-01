@@ -109,10 +109,6 @@ mechanization for more details. Here is where to look for each of these:
   exchange, and contraction mentioned on page 3 is in
   [structural.agda](structural.agda).
 
-- The proof that the judgemental inconsistency is indeed the negation of
-  consistency mentioned on page 5 is in
-  [judgemental-inconsistency.agda](judgemental-inconsistency.agda).
-
 - The predicate on derivations mentioned on page 8 is in
   [aasubsume-min.agda](aasubsume-min.agda).
 
@@ -168,11 +164,6 @@ Here is a break down of what is in each file, listed in `ls` order.
   to move between them. Since we prove them to be isomorphic, we use both
   forms throughout, choosing whichever one is more convenient in a given
   situation.
-
-- [judgemental-inconsistency.agda](judgemental-inconsistency.agda) defines
-  a judgemental form of type inconsistency and characterizes its
-  relationship to the functional form used throughout the development, as
-  discussed in [core.agda](core.agda).
 
 - [keys.md](keys.md) is a list of emacs agda-mode key chords to enter the
   unicode characters we use throughout the development.
@@ -240,18 +231,6 @@ Assumptions and Representation Decisions
   It's possible that there is a more elegant way to encode compatibility
   with the homotopy type theoretic notion of a higher inductive type (HIT)
   but we haven't explored that at all.
-
-- Type inconsistency is not its own judgement, but rather represented as
-  `{t1 t2 : ·τ} → t1 ~ t2 → ⊥`, which is the standard way to represent
-  negation.
-
-  For our purposes, this means the same thing as the judgement in the text,
-  but saves us proving some lemmas describing the coherence between two
-  types that would result from the direct translation into Agda.
-
-  The two views are shown isomorphic assuming that proofs of inconsistency
-  at arrow types are proof-irrelevant in
-  [judgemental-inconsistency.agda](judgemental-inconsistency.agda).
 
 - Each of the clauses of the theorems in the text are broken off into
   separate functions in the mechanization. This is because the clauses are
