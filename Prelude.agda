@@ -88,3 +88,9 @@ module Prelude where
   -- non-equality is commutative
   flip : {A : Set} {x y : A} → (x == y → ⊥) → (y == x → ⊥)
   flip neq eq = neq (! eq)
+
+  -- two types are said to be equivalent, or isomorphic, if there is a pair
+  -- of functions between them where both round-trips are stable up to ==
+  _≃_ : Set → Set → Set
+  _≃_ A B = Σ[ f ∈ (A → B) ] Σ[ g ∈ (B → A) ]
+             (((a : A) → g (f a) == a) × (((b : B) → f (g b) == b)))
