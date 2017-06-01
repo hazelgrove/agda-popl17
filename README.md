@@ -6,8 +6,17 @@ metatheory as submitted to POPL 2017 for artifact evaluation.
 The branch `sums` is the mechanization of the core calculus extended with
 sum types as described in Section 4 of the paper. It's a conservative
 extension in the sense that the difference between the branches only adds
-code for the new constructs: nothing is removed. All theorems are proven
-for both branches.
+code for the new constructs: nothing is removed.
+
+The branches `master-no-jincon` and `sums-no-jincon` are the same as their
+namesakes, but with only one definition of type inconsistency. These were
+not reviewed by the POPL AEC, but are included because they may be of
+interest. The benefit to this development is that we don't need to reason
+about proof irrelevance to establish the isomorphism between the two forms
+of inconsistency; the downside is that the relationship between consistency
+and inconsistency is less immediately obvious.
+
+All theorems are proven for all branches.
 
 The exact additions can be seen easily with `git diff master sums`, `git
 diff master sums FILE` for a particular file name, or in a slightly
