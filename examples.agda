@@ -116,7 +116,7 @@ module examples where
   figure2 : runsynth (∅ ,, (incr , num ==> num)) ▹ ⦇⦈ ◃ ⦇⦈ fig2-l (X incr ∘₂ ▹ X incr ∘ (N 3) ◃)  num
   figure2 =  DoSynth (SAConVar refl)
             (DoSynth (SAConApArr MAArr)
-            (DoSynth (SAZipApAna MAArr (SVar refl) (AAConVar (λ ()) refl))
+            (DoSynth (SAZipApAna MAArr (SVar refl) (AAConVar (ICNumArr1) refl))
             (DoSynth (SAZipApAna MAArr (SVar refl) (AASubsume (EENEHole EETop) (SNEHole (SVar refl)) (SAZipHole EETop (SVar refl) (SAConApArr MAArr)) TCHole1))
             (DoSynth (SAZipApAna MAArr (SVar refl) (AASubsume (EENEHole (EEApR EETop)) (SNEHole (SAp (SVar refl) MAArr (ASubsume SEHole TCHole1))) (SAZipHole (EEApR EETop) (SAp (SVar refl) MAArr (ASubsume SEHole TCHole1)) (SAZipApAna MAArr (SVar refl)
                                                                                                                     (AASubsume EETop SEHole SAConNumlit TCRefl))) TCHole1))
