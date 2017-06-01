@@ -107,6 +107,8 @@ module judgemental-erase where
   t-contr ▹ x ◃ ETTop ETTop = refl
   t-contr (t ==>₁ x) (ETArrL y) (ETArrL z) = ap1 ETArrL (t-contr t y z)
   t-contr (x ==>₂ t) (ETArrR y) (ETArrR z) = ap1 ETArrR (t-contr t y z)
+  t-contr (x ⊕₁ x₁) (ETPlusL y) (ETPlusL z) = ap1 ETPlusL (t-contr x y z)
+  t-contr (x₁ ⊕₂ x) (ETPlusR y) (ETPlusR z) = ap1 ETPlusR (t-contr x y z)
 
   e-contr : (e : ê) → (x y : erase-e e (e ◆e)) → x == y
   e-contr ▹ x ◃ EETop EETop = refl
@@ -118,6 +120,11 @@ module judgemental-erase where
   e-contr (e ·+₁ x) (EEPlusL x₁) (EEPlusL y) = ap1 EEPlusL (e-contr e x₁ y)
   e-contr (x ·+₂ e) (EEPlusR x₁) (EEPlusR y) = ap1 EEPlusR (e-contr e x₁ y)
   e-contr ⦇ e ⦈ (EENEHole x) (EENEHole y) = ap1 EENEHole (e-contr e x y)
+  e-contr (inl x) (EEInl y) (EEInl z) = ap1 EEInl (e-contr x y z)
+  e-contr (inr x) (EEInr y) (EEInr z) = ap1 EEInr (e-contr x y z)
+  e-contr (case₁ x x₁ x₂ x₃ x₄) (EECase1 y) (EECase1 z) = ap1 EECase1 (e-contr x y z)
+  e-contr (case₂ x₁ x₂ x x₃ x₄) (EECase2 y) (EECase2 z) = ap1 EECase2 (e-contr x y z)
+  e-contr (case₃ x₁ x₂ x₃ x₄ x) (EECase3 y) (EECase3 z) = ap1 EECase3 (e-contr x y z)
 
   -- taken together, these four theorems demonstrate that both round-trips
   -- of the above functions are stable up to ==
@@ -127,6 +134,10 @@ module judgemental-erase where
   erase-trt1 (t ==>₁ x) (.(t ◆t) ==> .x) refl | refl = refl
   erase-trt1 (x ==>₂ t) (.x ==> .(t ◆t)) refl with erase-t◆ (◆erase-t t (t ◆t) refl)
   erase-trt1 (x ==>₂ t) (.x ==> .(t ◆t)) refl | refl = refl
+  erase-trt1 (x ⊕₁ x₁) .((x ◆t) ⊕ x₁) refl with erase-t◆ (◆erase-t x (x ◆t) refl)
+  erase-trt1 (x ⊕₁ x₁) .((x ◆t) ⊕ x₁) refl | refl = refl
+  erase-trt1 (x ⊕₂ x₁) .(x ⊕ (x₁ ◆t)) refl with erase-t◆ (◆erase-t x₁ (x₁ ◆t) refl)
+  erase-trt1 (x ⊕₂ x₁) .(x ⊕ (x₁ ◆t)) refl | refl = refl
 
   erase-trt2 : (t : τ̂) (tr : τ̇) → (x : erase-t t tr) → ◆erase-t t tr (erase-t◆ x) == x
   erase-trt2 .(▹ tr ◃) tr ETTop = refl
@@ -135,6 +146,10 @@ module judgemental-erase where
   erase-trt2 (t1 ==>₁ t2) _ (ETArrL x) | refl = ap1 ETArrL (t-contr _ (◆erase-t t1 (t1 ◆t) refl) x)
   erase-trt2 (t1 ==>₂ t2) _ (ETArrR x) with erase-t◆ x
   erase-trt2 (t1 ==>₂ t2) _ (ETArrR x) | refl = ap1 ETArrR (t-contr _ (◆erase-t t2 (t2 ◆t) refl) x)
+  erase-trt2 (t1 ⊕₁ t2) _ (ETPlusL x) with erase-t◆ x
+  erase-trt2 (t1 ⊕₁ t2) _ (ETPlusL x) | refl = ap1 ETPlusL (t-contr _ (◆erase-t t1 (t1 ◆t) refl) x)
+  erase-trt2 (t1 ⊕₂ t2) _ (ETPlusR x) with erase-t◆ x
+  erase-trt2 (t1 ⊕₂ t2) _ (ETPlusR x) | refl = ap1 ETPlusR (t-contr _ (◆erase-t t2 (t2 ◆t) refl) x)
 
   erase-ert1 : (e : ê) (er : ė) → (x : e ◆e == er) → (erase-e◆ (◆erase-e e er x)) == x
   erase-ert1 ▹ x ◃ .x refl = refl
@@ -147,6 +162,11 @@ module judgemental-erase where
   erase-ert1 (e ·+₁ x) .((e ◆e) ·+ x) refl = ap1 (λ a → ap1 (λ x₁ → x₁ ·+ x) a) (erase-ert1 e _ refl)
   erase-ert1 (x ·+₂ e) .(x ·+ (e ◆e)) refl = ap1 (λ a → ap1 (_·+_ x) a) (erase-ert1 e _ refl)
   erase-ert1 ⦇ e ⦈ .(⦇ e ◆e ⦈) refl = ap1 (λ a → ap1 ⦇_⦈ a) (erase-ert1 e _ refl)
+  erase-ert1 (inl x) .(inl (x ◆e)) refl = ap1 (λ a → ap1 inl a) (erase-ert1 x _ refl)
+  erase-ert1 (inr x) .(inr (x ◆e)) refl = ap1 (λ a → ap1 inr a) (erase-ert1 x _ refl)
+  erase-ert1 (case₁ x x₁ x₂ x₃ x₄) .(case (x ◆e) x₁ x₂ x₃ x₄) refl = ap1 (ap1 (λ a → case a x₁ x₂ x₃ x₄)) (erase-ert1 x _ refl)
+  erase-ert1 (case₂ x x₁ x₂ x₃ x₄) .(case x x₁ (x₂ ◆e) x₃ x₄) refl = ap1 (ap1 (λ a → case x x₁ a x₃ x₄)) (erase-ert1 x₂ _ refl)
+  erase-ert1 (case₃ x x₁ x₂ x₃ x₄) .(case x x₁ x₂ x₃ (x₄ ◆e)) refl = ap1 (ap1 (λ a → case x x₁ x₂ x₃ a)) (erase-ert1 x₄ _ refl)
 
   erase-ert2 : (e : ê) (er : ė) → (b : erase-e e er) → ◆erase-e e er (erase-e◆ b) == b
   erase-ert2 .(▹ er ◃) er EETop = refl
@@ -166,6 +186,16 @@ module judgemental-erase where
   erase-ert2 (e1 ·+₂ e) .(e1 ·+ (e ◆e)) (EEPlusR b) | refl = ap1 EEPlusR (e-contr e (◆erase-e e (e ◆e) refl) b)
   erase-ert2 ⦇ e ⦈ _ (EENEHole b) with erase-e◆ b
   erase-ert2 ⦇ e ⦈ .(⦇ e ◆e ⦈) (EENEHole b) | refl = ap1 EENEHole (e-contr e (◆erase-e e (e ◆e) refl) b)
+  erase-ert2 (inl x) _ (EEInl z) with erase-e◆ z
+  erase-ert2 (inl x) .(inl (x ◆e)) (EEInl z) | refl = ap1 EEInl (e-contr x _ z)
+  erase-ert2 (inr x) _ (EEInr z) with erase-e◆ z
+  erase-ert2 (inr x) .(inr (x ◆e)) (EEInr z) | refl = ap1 EEInr (e-contr x _ z)
+  erase-ert2 (case₁ x x₁ x₂ x₃ x₄) _ (EECase1 z) with erase-e◆ z
+  erase-ert2 (case₁ x x₁ x₂ x₃ x₄) .(case (x ◆e) x₁ x₂ x₃ x₄) (EECase1 z) | refl = ap1 EECase1 (e-contr x _ z)
+  erase-ert2 (case₂ e x₁ x₂ x₃ x₄) _ (EECase2 z) with erase-e◆ z
+  erase-ert2 (case₂ e x₁ x₂ x₃ x₄) .(case e x₁ (x₂ ◆e) x₃ x₄) (EECase2 z) | refl = ap1 EECase2 (e-contr x₂ _ z)
+  erase-ert2 (case₃ e x₁ x₂ x₃ x₄) _ (EECase3 z) with erase-e◆ z
+  erase-ert2 (case₃ e x₁ x₂ x₃ x₄) .(case e x₁ x₂ x₃ (x₄ ◆e)) (EECase3 z) | refl = ap1 EECase3 (e-contr x₄ _ z)
 
   -- since both round trips are stable, these functions demonstrate
   -- isomorphisms between the jugemental and non-judgemental definitions of
