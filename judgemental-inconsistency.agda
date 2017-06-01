@@ -108,8 +108,8 @@ module judgemental-inconsistency where
   rt1 (t1 ⊕ t2) (t3 ⊕ t4) x     = funext (λ x₁ → abort (x x₁))
 
 
-  -- if inconsistency at arrows is proof-irrelevant, then all of
-  -- inconsistency is proof-irrelevant
+  -- if inconsistency at arrows and plusses is proof-irrelevant, then all
+  -- of inconsistency is proof-irrelevant
   incon-irrelev : (arr-incon-irrelev : {t1 t2 t3 t4 : τ̇} (x y : incon (t1 ==> t2) (t3 ==> t4)) → x == y) →
                   (plus-incon-irrelev : {t1 t2 t3 t4 : τ̇} (x y : incon (t1 ⊕ t2) (t3 ⊕ t4)) → x == y) →
                 (t1 t2 : τ̇) (x y : incon t1 t2) → x == y
@@ -128,8 +128,8 @@ module judgemental-inconsistency where
   incon-irrelev arr-incon-irrelev plus-incon-irrelev _ _ ICPlusArr1 ICPlusArr1 = refl
   incon-irrelev arr-incon-irrelev plus-incon-irrelev _ _ ICPlusArr2 ICPlusArr2 = refl
 
-  -- if inconsistency at arrows is proof-irrelevant, then the round trip is
-  -- stable up to equality
+  -- if inconsistency at arrows and plusses is proof-irrelevant, then the
+  -- round trip is stable up to equality
   rt2 : (arr-incon-irrelev : {t1 t2 t3 t4 : τ̇} (x y : incon (t1 ==> t2) (t3 ==> t4)) → x == y) →
         (plus-incon-irrelev : {t1 t2 t3 t4 : τ̇} (x y : incon (t1 ⊕ t2) (t3 ⊕ t4)) → x == y) →
         (t1 t2 : τ̇) → (x : incon t1 t2) → (from~̸ t1 t2 (to~̸ t1 t2 x)) == x
@@ -152,8 +152,8 @@ module judgemental-inconsistency where
   rt2 arr-incon-irrelev plus-incon-irrelev _ _ ICPlusArr1 = refl
   rt2 arr-incon-irrelev plus-incon-irrelev _ _ ICPlusArr2 = refl
 
-  -- if inconsistency at arrows is proof-irrelevant, then the two
-  -- defintions of inconsistency are isomorphic
+  -- if inconsistency at arrows and plusses is proof-irrelevant, then the
+  -- two defintions of inconsistency are isomorphic
   incon-iso : (arr-incon-irrelev : {t1 t2 t3 t4 : τ̇} (x y : incon (t1 ==> t2) (t3 ==> t4)) → x == y)
               (plus-incon-irrelev : {t1 t2 t3 t4 : τ̇} (x y : incon (t1 ⊕ t2) (t3 ⊕ t4)) → x == y)
                                    → (t1 t2 : τ̇) → (incon t1 t2) ≃ (t1 ~̸ t2)
