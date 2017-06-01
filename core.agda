@@ -88,6 +88,16 @@ module core where
     ICArr2 : {t1 t2 t3 t4 : τ̇} →
                t2 ~̸ t4 →
                (t1 ==> t2) ~̸ (t3 ==> t4)
+    ICNumPlus1 : {t1 t2 : τ̇} → num ~̸ (t1 ⊕ t2)
+    ICNumPlus2 : {t1 t2 : τ̇} → (t1 ⊕ t2) ~̸ num
+    ICPlus1 : {t1 t2 t3 t4 : τ̇} →
+               t1 ~̸ t3 →
+               (t1 ⊕ t2) ~̸ (t3 ⊕ t4)
+    ICPlus2 : {t1 t2 t3 t4 : τ̇} →
+               t2 ~̸ t4 →
+               (t1 ⊕ t2) ~̸ (t3 ⊕ t4)
+    ICPlusArr1 : {t1 t2 t3 t4 : τ̇} → (t1 ⊕ t2) ~̸ (t3 ==> t4)
+    ICPlusArr2 : {t1 t2 t3 t4 : τ̇} → (t1 ==> t2) ~̸ (t3 ⊕ t4)
 
   --- matching for arrows
   data _▸arr_ : τ̇ → τ̇ → Set where
@@ -223,13 +233,15 @@ module core where
   ... | Inl x | Inl y = Inl (TCArr x y)
   ... | Inl _ | Inr y = Inr (ICArr2 y)
   ... | Inr x | _     = Inr (ICArr1 x)
-    -- plus cases -- todo: what's up here?
-  ~dec (t1 ⊕ t2) num = Inr (λ ())
-  ~dec (t1 ⊕ t2) (t3 ==> t4) = Inr (λ ())
+    -- plus cases
+  ~dec (t1 ⊕ t2) num = Inr ICNumPlus2
+  ~dec (t1 ⊕ t2) (t3 ==> t4) = Inr ICPlusArr1
   ~dec (t1 ⊕ t2) (t3 ⊕ t4) with ~dec t1 t3 | ~dec t2 t4
   ... | Inl x | Inl y = Inl (TCPlus x y)
-  ... | _     | Inr x = Inr (lemplus2 x)
-  ... | Inr x | Inl _ = Inr (lemplus1 x)
+  ... | _     | Inr x = Inr (ICPlus2 x)
+  ... | Inr x | Inl _ = Inr (ICPlus1 x)
+  ~dec num (y ⊕ y₁) = Inr ICNumPlus1
+  ~dec (x ==> x₁) (y ⊕ y₁) = Inr ICPlusArr2
 
   -- theorem: no pair of types is both consistent and not consistent. this
   -- is immediate from our encoding of the ~̸ judgement in the formalism
@@ -242,6 +254,14 @@ module core where
   ~apart (ICArr1 v) (TCArr p p₁) = ~apart v p
   ~apart (ICArr2 v) TCRefl = ~apart v TCRefl
   ~apart (ICArr2 v) (TCArr p p₁) = ~apart v p₁
+  ~apart ICNumPlus1 ()
+  ~apart ICNumPlus2 ()
+  ~apart (ICPlus1 x) TCRefl = ~apart x TCRefl
+  ~apart (ICPlus1 x) (TCPlus y y₁) = ~apart x y
+  ~apart (ICPlus2 x) TCRefl = ~apart x TCRefl
+  ~apart (ICPlus2 x) (TCPlus y y₁) = ~apart x y₁
+  ~apart ICPlusArr1 ()
+  ~apart ICPlusArr2 ()
 
   -- synthesis only produces equal types. note that there is no need for an
   -- analagous theorem for analytic positions because we think of
