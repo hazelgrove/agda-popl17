@@ -84,7 +84,7 @@ module judgemental-inconsistency where
   rt2 arr-incon-irrelev (t1 ==> t2) (t3 ==> t4) (ICArr1 x₁) | Inr x = ap1 ICArr1 (incon-irrelev arr-incon-irrelev t1 t3 (from~̸ t1 t3 x) x₁)
   rt2 arr-incon-irrelev (t1 ==> t2) (t3 ==> t4) (ICArr2 x) with ~dec t1 t3
   rt2 arr-incon-irrelev (t1 ==> t2) (t3 ==> t4) (ICArr2 x₁) | Inl x = ap1 ICArr2 (incon-irrelev arr-incon-irrelev t2 t4 (from~̸ t2 t4 (to~̸ t2 t4 x₁)) x₁)
-  rt2 arr-incon-irrelev (t1 ==> t2) (t3 ==> t4) (ICArr2 x₁) | Inr x = incon-irrelev arr-incon-irrelev _ _ (ICArr1 (from~̸ t1 t3 x)) (ICArr2 x₁)
+  rt2 arr-incon-irrelev (t1 ==> t2) (t3 ==> t4) (ICArr2 x₁) | Inr x = arr-incon-irrelev (ICArr1 (from~̸ t1 t3 x)) (ICArr2 x₁)
 
   -- if inconsistency at arrows is proof-irrelevant, then the two
   -- defintions of inconsistency are isomorphic
