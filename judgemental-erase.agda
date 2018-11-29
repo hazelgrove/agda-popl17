@@ -42,7 +42,7 @@ module judgemental-erase where
   (e1 ∘₂ e2) ◆e  = e1      ∘ (e2 ◆e)
   (e1 ·+₁ e2) ◆e = (e1 ◆e) ·+ e2
   (e1 ·+₂ e2) ◆e = e1      ·+ (e2 ◆e)
-  ⦇ e ⦈ ◆e     = ⦇ e ◆e ⦈
+  ⦇⌜ e ⌟⦈ ◆e     = ⦇⌜ e ◆e ⌟⦈
   (inl e) ◆e     = inl (e ◆e)
   (inr e) ◆e     = inr (e ◆e)
   (case₁ e x e1 y e2) ◆e = case (e ◆e) x e1 y e2
@@ -67,7 +67,7 @@ module judgemental-erase where
   erase-e◆ (EEApR p)   = ap1 (λ x → _ ∘ x)   (erase-e◆ p)
   erase-e◆ (EEPlusL p) = ap1 (λ x → x ·+ _)  (erase-e◆ p)
   erase-e◆ (EEPlusR p) = ap1 (λ x → _ ·+ x)  (erase-e◆ p)
-  erase-e◆ (EENEHole p) = ap1 (λ x → ⦇ x ⦈) (erase-e◆ p)
+  erase-e◆ (EENEHole p) = ap1 (λ x → ⦇⌜ x ⌟⦈) (erase-e◆ p)
   erase-e◆ (EEInl p)    = ap1 inl (erase-e◆ p)
   erase-e◆ (EEInr p)    = ap1 inr (erase-e◆ p)
   erase-e◆ (EECase1 p)  = ap1 (λ x → case x _ _ _ _) (erase-e◆ p)
@@ -94,7 +94,7 @@ module judgemental-erase where
   ◆erase-e (x ∘₂ e) .(x ∘ (e ◆e)) refl = EEApR (◆erase-e e (e ◆e) refl)
   ◆erase-e (e ·+₁ x) .((e ◆e) ·+ x) refl = EEPlusL (◆erase-e e (e ◆e) refl)
   ◆erase-e (x ·+₂ e) .(x ·+ (e ◆e)) refl = EEPlusR (◆erase-e e (e ◆e) refl)
-  ◆erase-e ⦇ e ⦈ .(⦇ e ◆e ⦈) refl = EENEHole (◆erase-e e (e ◆e) refl)
+  ◆erase-e ⦇⌜ e ⌟⦈ .(⦇⌜ e ◆e ⌟⦈) refl = EENEHole (◆erase-e e (e ◆e) refl)
   ◆erase-e (inl e) ._ refl = EEInl (◆erase-e e (e ◆e) refl)
   ◆erase-e (inr e) ._ refl = EEInr (◆erase-e e (e ◆e) refl)
   ◆erase-e (case₁ e _ _ _ _) ._ refl = EECase1 (◆erase-e e (e ◆e) refl)
@@ -119,7 +119,7 @@ module judgemental-erase where
   e-contr (x ∘₂ e) (EEApR x₁) (EEApR y) = ap1 EEApR (e-contr e x₁ y)
   e-contr (e ·+₁ x) (EEPlusL x₁) (EEPlusL y) = ap1 EEPlusL (e-contr e x₁ y)
   e-contr (x ·+₂ e) (EEPlusR x₁) (EEPlusR y) = ap1 EEPlusR (e-contr e x₁ y)
-  e-contr ⦇ e ⦈ (EENEHole x) (EENEHole y) = ap1 EENEHole (e-contr e x y)
+  e-contr ⦇⌜ e ⌟⦈ (EENEHole x) (EENEHole y) = ap1 EENEHole (e-contr e x y)
   e-contr (inl x) (EEInl y) (EEInl z) = ap1 EEInl (e-contr x y z)
   e-contr (inr x) (EEInr y) (EEInr z) = ap1 EEInr (e-contr x y z)
   e-contr (case₁ x x₁ x₂ x₃ x₄) (EECase1 y) (EECase1 z) = ap1 EECase1 (e-contr x y z)
@@ -161,7 +161,7 @@ module judgemental-erase where
   erase-ert1 (x ∘₂ e) .(x ∘ (e ◆e)) refl = ap1 (λ a → ap1 (_∘_ x) a) (erase-ert1 e _ refl)
   erase-ert1 (e ·+₁ x) .((e ◆e) ·+ x) refl = ap1 (λ a → ap1 (λ x₁ → x₁ ·+ x) a) (erase-ert1 e _ refl)
   erase-ert1 (x ·+₂ e) .(x ·+ (e ◆e)) refl = ap1 (λ a → ap1 (_·+_ x) a) (erase-ert1 e _ refl)
-  erase-ert1 ⦇ e ⦈ .(⦇ e ◆e ⦈) refl = ap1 (λ a → ap1 ⦇_⦈ a) (erase-ert1 e _ refl)
+  erase-ert1 ⦇⌜ e ⌟⦈ .(⦇⌜ e ◆e ⌟⦈) refl = ap1 (λ a → ap1 ⦇⌜_⌟⦈ a) (erase-ert1 e _ refl)
   erase-ert1 (inl x) .(inl (x ◆e)) refl = ap1 (λ a → ap1 inl a) (erase-ert1 x _ refl)
   erase-ert1 (inr x) .(inr (x ◆e)) refl = ap1 (λ a → ap1 inr a) (erase-ert1 x _ refl)
   erase-ert1 (case₁ x x₁ x₂ x₃ x₄) .(case (x ◆e) x₁ x₂ x₃ x₄) refl = ap1 (ap1 (λ a → case a x₁ x₂ x₃ x₄)) (erase-ert1 x _ refl)
@@ -184,8 +184,8 @@ module judgemental-erase where
   erase-ert2 (e ·+₁ x) .((e ◆e) ·+ x) (EEPlusL b) | refl = ap1 EEPlusL (e-contr e (◆erase-e e (e ◆e) refl) b)
   erase-ert2 (e1 ·+₂ e) _ (EEPlusR b) with erase-e◆ b
   erase-ert2 (e1 ·+₂ e) .(e1 ·+ (e ◆e)) (EEPlusR b) | refl = ap1 EEPlusR (e-contr e (◆erase-e e (e ◆e) refl) b)
-  erase-ert2 ⦇ e ⦈ _ (EENEHole b) with erase-e◆ b
-  erase-ert2 ⦇ e ⦈ .(⦇ e ◆e ⦈) (EENEHole b) | refl = ap1 EENEHole (e-contr e (◆erase-e e (e ◆e) refl) b)
+  erase-ert2 ⦇⌜ e ⌟⦈ _ (EENEHole b) with erase-e◆ b
+  erase-ert2 ⦇⌜ e ⌟⦈ .(⦇⌜ e ◆e ⌟⦈) (EENEHole b) | refl = ap1 EENEHole (e-contr e (◆erase-e e (e ◆e) refl) b)
   erase-ert2 (inl x) _ (EEInl z) with erase-e◆ z
   erase-ert2 (inl x) .(inl (x ◆e)) (EEInl z) | refl = ap1 EEInl (e-contr x _ z)
   erase-ert2 (inr x) _ (EEInr z) with erase-e◆ z
@@ -241,7 +241,7 @@ module judgemental-erase where
   erasee-det e1 e2 with erase-e◆ e1
   ... | refl = erase-e◆ e2
 
-  erase-in-hole : ∀ {e e'} → erase-e e e' → erase-e ⦇ e ⦈ ⦇ e' ⦈
+  erase-in-hole : ∀ {e e'} → erase-e e e' → erase-e ⦇⌜ e ⌟⦈ ⦇⌜ e' ⌟⦈
   erase-in-hole (EENEHole er) = EENEHole (erase-in-hole er)
   erase-in-hole x = EENEHole x
 

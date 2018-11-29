@@ -40,9 +40,7 @@ have extensive documentation for installation at their home sites:
 - http://wiki.portal.chalmers.se/agda/pmwiki.php?n=Main.Download
 
 We know the Agda in this artifact to load cleanly under `Agda version
-2.5.1.1`, which is the most recent stable version at the time of
-submission. As research software, Agda frequently breaks backwards and
-forwards compatibility, so it may or may not load under other versions.
+2.5.4.2`.
 
 Once Agda has been installed, the command `agda all.agda` run in the
 appropriate directory will cause Agda to typecheck our artifact. On a
