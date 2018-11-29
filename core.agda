@@ -18,7 +18,7 @@ module core where
     N     : Nat → ė
     _·+_  : ė → ė → ė
     ⦇⦈  : ė
-    ⦇_⦈ : ė → ė
+    ⦇⌜_⌟⦈ : ė → ė
     _∘_   : ė → ė → ė
     inl  : ė → ė
     inr  : ė → ė
@@ -142,7 +142,7 @@ module core where
       SEHole  : {Γ : ·ctx} → Γ ⊢ ⦇⦈ => ⦇⦈
       SNEHole : {Γ : ·ctx} {e : ė} {t : τ̇} →
                  Γ ⊢ e => t →
-                 Γ ⊢ ⦇ e ⦈ => ⦇⦈
+                 Γ ⊢ ⦇⌜ e ⌟⦈ => ⦇⦈
 
     -- analysis
     data _⊢_<=_ : (Γ : ·ctx) → (e : ė) → (t : τ̇) → Set where
@@ -291,7 +291,7 @@ module core where
   ecomplete (N x)      = ⊤
   ecomplete (e1 ·+ e2) = ecomplete e1 × ecomplete e2
   ecomplete ⦇⦈       = ⊥
-  ecomplete ⦇ e1 ⦈   = ⊥
+  ecomplete ⦇⌜ e1 ⌟⦈   = ⊥
   ecomplete (e1 ∘ e2)  = ecomplete e1 × ecomplete e2
   ecomplete (inl e)    = ecomplete e
   ecomplete (inr e)    = ecomplete e
@@ -315,7 +315,7 @@ module core where
     _∘₂_  : ė → ê → ê
     _·+₁_ : ê → ė → ê
     _·+₂_ : ė → ê → ê
-    ⦇_⦈ : ê → ê
+    ⦇⌜_⌟⦈ : ê → ê
     inl : ê → ê
     inr : ê → ê
     case₁ : ê → Nat → ė → Nat → ė → ê
@@ -341,7 +341,7 @@ module core where
     EEApR   : ∀{e1 e2 e2'} → erase-e e2 e2' → erase-e (e1 ∘₂ e2) (e1 ∘ e2')
     EEPlusL : ∀{e1 e1' e2} → erase-e e1 e1' → erase-e (e1 ·+₁ e2) (e1' ·+ e2)
     EEPlusR : ∀{e1 e2 e2'} → erase-e e2 e2' → erase-e (e1 ·+₂ e2) (e1 ·+ e2')
-    EENEHole : ∀{e e'}     → erase-e e e'   → erase-e ⦇ e ⦈  ⦇ e' ⦈
+    EENEHole : ∀{e e'}     → erase-e e e'   → erase-e ⦇⌜ e ⌟⦈  ⦇⌜ e' ⌟⦈
     EEInl   : ∀{e e'}      → erase-e e e'   → erase-e (inl e) (inl e')
     EEInr   : ∀{e e'}      → erase-e e e'   → erase-e (inr e) (inr e')
     EECase1 : ∀{e e' x e1 y e2} → erase-e e e' →
@@ -452,9 +452,9 @@ module core where
 
     -- rules for non-empty holes
     EMNEHoleChild1 : {e : ė} →
-               (▹ ⦇ e ⦈ ◃) + move (child 1) +>e ⦇ ▹ e ◃ ⦈
+               (▹ ⦇⌜ e ⌟⦈ ◃) + move (child 1) +>e ⦇⌜ ▹ e ◃ ⌟⦈
     EMNEHoleParent : {e : ė} →
-                ⦇ ▹ e ◃ ⦈ + move parent +>e (▹ ⦇ e ⦈ ◃)
+                ⦇⌜ ▹ e ◃ ⌟⦈ + move parent +>e (▹ ⦇⌜ e ⌟⦈ ◃)
 
     -- rules for injections
     EMInlChild1 : {e : ė} →
@@ -503,7 +503,7 @@ module core where
                 Γ ⊢ ▹ e ◃ => t ~ construct ap ~>  e ∘₂ ▹ ⦇⦈ ◃ => t2
       SAConApOtw : {Γ : ·ctx} {t : τ̇} {e : ė} →
                 (t ~̸ (⦇⦈ ==> ⦇⦈)) →
-                Γ ⊢ ▹ e ◃ => t ~ construct ap ~> ⦇ e ⦈ ∘₂ ▹ ⦇⦈ ◃ => ⦇⦈
+                Γ ⊢ ▹ e ◃ => t ~ construct ap ~> ⦇⌜ e ⌟⦈ ∘₂ ▹ ⦇⦈ ◃ => ⦇⦈
       SAConNumlit : {Γ : ·ctx} {n : Nat} →
                 Γ ⊢ ▹ ⦇⦈ ◃ => ⦇⦈ ~ construct (numlit n) ~> ▹ N n ◃ => num
       SAConPlus1 : {Γ : ·ctx} {e : ė} {t : τ̇} →
@@ -511,12 +511,12 @@ module core where
                 Γ ⊢ ▹ e ◃ => t ~ construct plus ~> e ·+₂ ▹ ⦇⦈ ◃  => num
       SAConPlus2 : {Γ : ·ctx} {e : ė} {t : τ̇} →
                 (t ~̸ num) →
-                Γ ⊢ ▹ e ◃ => t ~ construct plus ~> ⦇ e ⦈ ·+₂ ▹ ⦇⦈ ◃  => num
+                Γ ⊢ ▹ e ◃ => t ~ construct plus ~> ⦇⌜ e ⌟⦈ ·+₂ ▹ ⦇⦈ ◃  => num
       SAConNEHole : {Γ : ·ctx} {e : ė} {t : τ̇} →
-                  Γ ⊢ ▹ e ◃ => t ~ construct nehole ~> ⦇ ▹ e ◃ ⦈ => ⦇⦈
+                  Γ ⊢ ▹ e ◃ => t ~ construct nehole ~> ⦇⌜ ▹ e ◃ ⌟⦈ => ⦇⦈
       SAFinish : {Γ : ·ctx} {e : ė} {t : τ̇} →
                  (Γ ⊢ e => t) →
-                 Γ ⊢ ▹ ⦇ e ⦈ ◃ => ⦇⦈ ~ finish ~> ▹ e ◃ => t
+                 Γ ⊢ ▹ ⦇⌜ e ⌟⦈ ◃ => ⦇⦈ ~ finish ~> ▹ e ◃ => t
       SAZipAsc1 : {Γ : ·ctx} {e e' : ê} {α : action} {t : τ̇} →
                   (Γ ⊢ e ~ α ~> e' ⇐ t) →
                   Γ ⊢ (e ·:₁ t) => t ~ α ~> (e' ·:₁ t) => t
@@ -548,7 +548,7 @@ module core where
                    (erase-e e e◆) →
                    (Γ ⊢ e◆ => t) →
                    (Γ ⊢ e => t ~ α ~> e' => t') →
-                   Γ ⊢ ⦇ e ⦈ => ⦇⦈ ~ α ~>  ⦇ e' ⦈ => ⦇⦈
+                   Γ ⊢ ⦇⌜ e ⌟⦈ => ⦇⦈ ~ α ~>  ⦇⌜ e' ⌟⦈ => ⦇⦈
       SAConInl : {Γ : ·ctx} {t : τ̇} →
                   Γ ⊢ ▹ ⦇⦈ ◃ => t ~ construct inl ~> inl ⦇⦈ ·:₂ (▹ ⦇⦈ ◃ ⊕₁ ⦇⦈) => (⦇⦈ ⊕ ⦇⦈)
       SAConInr : {Γ : ·ctx} {t : τ̇} →
@@ -562,7 +562,7 @@ module core where
                    x # Γ →
                    y # Γ →
                    t ~̸ (⦇⦈ ⊕ ⦇⦈) →
-                   Γ ⊢ ▹ e ◃ => t ~ construct (case x y) ~> (case₁ (⦇ ▹ e ◃ ⦈ ) x ⦇⦈ y ⦇⦈) ·:₁ ⦇⦈ => ⦇⦈
+                   Γ ⊢ ▹ e ◃ => t ~ construct (case x y) ~> (case₁ (⦇⌜ ▹ e ◃ ⌟⦈ ) x ⦇⦈ y ⦇⦈) ·:₁ ⦇⦈ => ⦇⦈
 
     -- analytic action expressions
     data _⊢_~_~>_⇐_ : (Γ : ·ctx) → (e : ê) → (α : action) →
@@ -583,7 +583,7 @@ module core where
       AAConVar : {Γ : ·ctx} {t t' : τ̇} {x : Nat} →
                  (t ~̸ t') →
                  (p : (x , t') ∈ Γ) →
-                 Γ ⊢ ▹ ⦇⦈ ◃ ~ construct (var x) ~> ⦇ ▹ X x ◃ ⦈ ⇐ t
+                 Γ ⊢ ▹ ⦇⦈ ◃ ~ construct (var x) ~> ⦇⌜ ▹ X x ◃ ⌟⦈ ⇐ t
       AAConLam1 : {Γ : ·ctx} {x : Nat} {t t1 t2 : τ̇} →
                   (x # Γ) →
                   (t ▸arr (t1 ==> t2)) →
@@ -593,13 +593,13 @@ module core where
                   (x # Γ) →
                   (t ~̸ (⦇⦈ ==> ⦇⦈)) →
                   Γ ⊢ ▹ ⦇⦈ ◃ ~ construct (lam x) ~>
-                      ⦇ ·λ x ⦇⦈ ·:₂ (▹ ⦇⦈ ◃ ==>₁ ⦇⦈) ⦈ ⇐ t
+                      ⦇⌜ ·λ x ⦇⦈ ·:₂ (▹ ⦇⦈ ◃ ==>₁ ⦇⦈) ⌟⦈ ⇐ t
       AAConNumlit : {Γ : ·ctx} {t : τ̇} {n : Nat} →
                     (t ~̸ num) →
-                    Γ ⊢ ▹ ⦇⦈ ◃ ~ construct (numlit n) ~> ⦇ ▹ (N n) ◃ ⦈ ⇐ t
+                    Γ ⊢ ▹ ⦇⦈ ◃ ~ construct (numlit n) ~> ⦇⌜ ▹ (N n) ◃ ⌟⦈ ⇐ t
       AAFinish : {Γ : ·ctx} {e : ė} {t : τ̇} →
                  (Γ ⊢ e <= t) →
-                 Γ ⊢ ▹ ⦇ e ⦈ ◃ ~ finish ~> ▹ e ◃ ⇐ t
+                 Γ ⊢ ▹ ⦇⌜ e ⌟⦈ ◃ ~ finish ~> ▹ e ◃ ⇐ t
       AAZipLam : {Γ : ·ctx} {x : Nat} {t t1 t2 : τ̇} {e e' : ê} {α : action} →
                  x # Γ →
                  (t ▸arr (t1 ==> t2)) →
@@ -610,13 +610,13 @@ module core where
                 Γ ⊢ ▹ ⦇⦈ ◃ ~ construct inl ~> inl ▹ ⦇⦈ ◃ ⇐ t+
       AAConInl2 : {Γ : ·ctx} {t : τ̇} →
                 t ~̸ (⦇⦈ ⊕ ⦇⦈) →
-                Γ ⊢ ▹ ⦇⦈ ◃ ~ construct inl ~> ⦇ inl ⦇⦈ ·:₂ (▹ ⦇⦈ ◃ ⊕₁ ⦇⦈) ⦈ ⇐ t
+                Γ ⊢ ▹ ⦇⦈ ◃ ~ construct inl ~> ⦇⌜ inl ⦇⦈ ·:₂ (▹ ⦇⦈ ◃ ⊕₁ ⦇⦈) ⌟⦈ ⇐ t
       AAConInr1 : {Γ : ·ctx} {t+ t1 t2 : τ̇} →
                 t+ ▸plus (t1 ⊕ t2) →
                 Γ ⊢ ▹ ⦇⦈ ◃ ~ construct inr ~> inr ▹ ⦇⦈ ◃ ⇐ t+
       AAConInr2 : {Γ : ·ctx} {t : τ̇} →
                 t ~̸  (⦇⦈ ⊕ ⦇⦈) →
-                Γ ⊢ ▹ ⦇⦈ ◃ ~ construct inr ~> ⦇ inr ⦇⦈ ·:₂ (▹ ⦇⦈ ◃ ⊕₁ ⦇⦈) ⦈ ⇐ t
+                Γ ⊢ ▹ ⦇⦈ ◃ ~ construct inr ~> ⦇⌜ inr ⦇⦈ ·:₂ (▹ ⦇⦈ ◃ ⊕₁ ⦇⦈) ⌟⦈ ⇐ t
       AAConCase : {Γ : ·ctx} {x y : Nat} {t : τ̇} →
                 x # Γ →
                 y # Γ →

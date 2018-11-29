@@ -41,7 +41,6 @@ module Prelude where
   infixr 9 _==_
 
   {-# BUILTIN EQUALITY _==_ #-}
-  {-# BUILTIN REFL refl #-}
 
   -- transitivity of equality
   _·_ : {l : Level} {α : Set l} {x y z : α} → x == y → y == z → x == z

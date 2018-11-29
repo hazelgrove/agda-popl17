@@ -214,7 +214,7 @@ module aasubsume-min where
     ... | (e'' , _ , _) = ap1 (λ q → _ ·+₂ q) qq
     min-fixed-synth (SAZipHole x x₁ d) min with min-fixed-synth d min
     ... | qq with min-synth d
-    ... | (e'' , _ , _) = ap1 ⦇_⦈ qq
+    ... | (e'' , _ , _) = ap1 ⦇⌜_⌟⦈ qq
     min-fixed-synth SAConInl min = refl
     min-fixed-synth SAConInr min = refl
     min-fixed-synth (SAConCase1 x₁ x₂ x₃) min = refl
@@ -254,7 +254,7 @@ module aasubsume-min where
     ... | (e'' , _ , _) = ap1 (λ q → _ ·+₂ q) qq
     min-fixed-ana (AASubsume x x₁ (SAZipHole x₂ x₃ x₄) x₅) min with min-fixed-synth x₄ min
     ... | qq with min-synth x₄
-    ... | (e'' , _ , _) = ap1 ⦇_⦈ qq
+    ... | (e'' , _ , _) = ap1 ⦇⌜_⌟⦈ qq
     min-fixed-ana (AAMove x) min = refl
     min-fixed-ana AADel min = refl
     min-fixed-ana AAConAsc min = refl
