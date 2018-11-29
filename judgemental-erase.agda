@@ -40,7 +40,7 @@ module judgemental-erase where
   (e1 ∘₂ e2) ◆e  = e1      ∘ (e2 ◆e)
   (e1 ·+₁ e2) ◆e = (e1 ◆e) ·+ e2
   (e1 ·+₂ e2) ◆e = e1      ·+ (e2 ◆e)
-  ⦇ e ⦈ ◆e     = ⦇ e ◆e ⦈
+  ⦇⌜ e ⌟⦈ ◆e     = ⦇⌜ e ◆e ⌟⦈
 
   -- this pair of theorems moves from the judgmental form to the function form
   erase-t◆ : {t : τ̂} {tr : τ̇} → (erase-t t tr) → (t ◆t == tr)
@@ -58,7 +58,7 @@ module judgemental-erase where
   erase-e◆ (EEApR p)   = ap1 (λ x → _ ∘ x)   (erase-e◆ p)
   erase-e◆ (EEPlusL p) = ap1 (λ x → x ·+ _)  (erase-e◆ p)
   erase-e◆ (EEPlusR p) = ap1 (λ x → _ ·+ x)  (erase-e◆ p)
-  erase-e◆ (EENEHole p) = ap1 (λ x → ⦇ x ⦈) (erase-e◆ p)
+  erase-e◆ (EENEHole p) = ap1 (λ x → ⦇⌜ x ⌟⦈) (erase-e◆ p)
 
   -- this pair of theorems moves back from judgmental form to the function form
   ◆erase-t : (t : τ̂) (tr : τ̇) → (t ◆t == tr) → (erase-t t tr)
@@ -78,7 +78,7 @@ module judgemental-erase where
   ◆erase-e (x ∘₂ e) .(x ∘ (e ◆e)) refl = EEApR (◆erase-e e (e ◆e) refl)
   ◆erase-e (e ·+₁ x) .((e ◆e) ·+ x) refl = EEPlusL (◆erase-e e (e ◆e) refl)
   ◆erase-e (x ·+₂ e) .(x ·+ (e ◆e)) refl = EEPlusR (◆erase-e e (e ◆e) refl)
-  ◆erase-e ⦇ e ⦈ .(⦇ e ◆e ⦈) refl = EENEHole (◆erase-e e (e ◆e) refl)
+  ◆erase-e ⦇⌜ e ⌟⦈ .(⦇⌜ e ◆e ⌟⦈) refl = EENEHole (◆erase-e e (e ◆e) refl)
 
   -- jugemental erasure for both types and terms only has one proof for
   -- relating the a term to its non-judgemental erasure
@@ -96,7 +96,7 @@ module judgemental-erase where
   e-contr (x ∘₂ e) (EEApR x₁) (EEApR y) = ap1 EEApR (e-contr e x₁ y)
   e-contr (e ·+₁ x) (EEPlusL x₁) (EEPlusL y) = ap1 EEPlusL (e-contr e x₁ y)
   e-contr (x ·+₂ e) (EEPlusR x₁) (EEPlusR y) = ap1 EEPlusR (e-contr e x₁ y)
-  e-contr ⦇ e ⦈ (EENEHole x) (EENEHole y) = ap1 EENEHole (e-contr e x y)
+  e-contr ⦇⌜ e ⌟⦈ (EENEHole x) (EENEHole y) = ap1 EENEHole (e-contr e x y)
 
   -- taken together, these four theorems demonstrate that both round-trips
   -- of the above functions are stable up to ==
@@ -125,7 +125,7 @@ module judgemental-erase where
   erase-ert1 (x ∘₂ e) .(x ∘ (e ◆e)) refl = ap1 (λ a → ap1 (_∘_ x) a) (erase-ert1 e _ refl)
   erase-ert1 (e ·+₁ x) .((e ◆e) ·+ x) refl = ap1 (λ a → ap1 (λ x₁ → x₁ ·+ x) a) (erase-ert1 e _ refl)
   erase-ert1 (x ·+₂ e) .(x ·+ (e ◆e)) refl = ap1 (λ a → ap1 (_·+_ x) a) (erase-ert1 e _ refl)
-  erase-ert1 ⦇ e ⦈ .(⦇ e ◆e ⦈) refl = ap1 (λ a → ap1 ⦇_⦈ a) (erase-ert1 e _ refl)
+  erase-ert1 ⦇⌜ e ⌟⦈ .(⦇⌜ e ◆e ⌟⦈) refl = ap1 (λ a → ap1 ⦇⌜_⌟⦈ a) (erase-ert1 e _ refl)
 
   erase-ert2 : (e : ê) (er : ė) → (b : erase-e e er) → ◆erase-e e er (erase-e◆ b) == b
   erase-ert2 .(▹ er ◃) er EETop = refl
@@ -143,8 +143,8 @@ module judgemental-erase where
   erase-ert2 (e ·+₁ x) .((e ◆e) ·+ x) (EEPlusL b) | refl = ap1 EEPlusL (e-contr e (◆erase-e e (e ◆e) refl) b)
   erase-ert2 (e1 ·+₂ e) _ (EEPlusR b) with erase-e◆ b
   erase-ert2 (e1 ·+₂ e) .(e1 ·+ (e ◆e)) (EEPlusR b) | refl = ap1 EEPlusR (e-contr e (◆erase-e e (e ◆e) refl) b)
-  erase-ert2 ⦇ e ⦈ _ (EENEHole b) with erase-e◆ b
-  erase-ert2 ⦇ e ⦈ .(⦇ e ◆e ⦈) (EENEHole b) | refl = ap1 EENEHole (e-contr e (◆erase-e e (e ◆e) refl) b)
+  erase-ert2 ⦇⌜ e ⌟⦈ _ (EENEHole b) with erase-e◆ b
+  erase-ert2 ⦇⌜ e ⌟⦈ .(⦇⌜ e ◆e ⌟⦈) (EENEHole b) | refl = ap1 EENEHole (e-contr e (◆erase-e e (e ◆e) refl) b)
 
   -- since both round trips are stable, these functions demonstrate
   -- isomorphisms between the jugemental and non-judgemental definitions of
@@ -190,7 +190,7 @@ module judgemental-erase where
   erasee-det e1 e2 with erase-e◆ e1
   ... | refl = erase-e◆ e2
 
-  erase-in-hole : ∀ {e e'} → erase-e e e' → erase-e ⦇ e ⦈ ⦇ e' ⦈
+  erase-in-hole : ∀ {e e'} → erase-e e e' → erase-e ⦇⌜ e ⌟⦈ ⦇⌜ e' ⌟⦈
   erase-in-hole (EENEHole er) = EENEHole (erase-in-hole er)
   erase-in-hole x = EENEHole x
 

@@ -48,7 +48,7 @@ module structural where
   fresh x (N n) = ⊤
   fresh x (e1 ·+ e2) = fresh x e1 × fresh x e2
   fresh x ⦇⦈ = ⊤
-  fresh x ⦇ e ⦈ = fresh x e
+  fresh x ⦇⌜ e ⌟⦈ = fresh x e
   fresh x (e1 ∘ e2) = fresh x e1 × fresh x e2
 
   ---- lemmas
