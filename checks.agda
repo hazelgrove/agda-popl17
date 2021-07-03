@@ -119,6 +119,18 @@ module checks where
   ziplem-tmplus2 DoRefl = DoRefl
   ziplem-tmplus2 (DoType x L') = DoType (TMPlusZip2 x) (ziplem-tmplus2 L')
 
+  ziplem-tmprod1 : ∀ {t1 t1' t2 L } →
+            runtype t1' L t1 →
+            runtype (t1' ⊠₁ t2) L (t1 ⊠₁ t2)
+  ziplem-tmprod1 DoRefl = DoRefl
+  ziplem-tmprod1 (DoType x L') = DoType (TMProdZip1 x) (ziplem-tmprod1 L')
+
+  ziplem-tmprod2 : ∀ {t1 t2 t2' L } →
+            runtype t2' L t2 →
+            runtype (t1 ⊠₂ t2') L (t1 ⊠₂ t2)
+  ziplem-tmprod2 DoRefl = DoRefl
+  ziplem-tmprod2 (DoType x L') = DoType (TMProdZip2 x) (ziplem-tmprod2 L')
+  
     -- expression zippers
   ziplem-asc1 : ∀{Γ t L e e'} →
         runana Γ e L e' t →
@@ -333,3 +345,19 @@ module checks where
   ziplem-case3 x# y# wt1 wt2 m (DoAna x₁ ra) =
                      DoAna  (AAZipCase3 x# y# wt1 m x₁)
                             (ziplem-case3 x# y# wt1 wt2 m ra)
+
+  -- zip lemma for products
+  ziplem-prodl : ∀{ t t1 t2 Γ e L e' e1 } →
+               t ▸prod (t1 ⊠ t2) →
+               runana Γ e L e' t1 →
+               runana Γ ⟨ e , e1 ⟩₁ L ⟨ e' , e1 ⟩₁ t
+  ziplem-prodl m DoRefl = DoRefl
+  ziplem-prodl m (DoAna x ra) = DoAna (AAZipProdL m x) (ziplem-prodl m ra)
+  
+  ziplem-prodr : ∀{ t t1 t2 Γ e L e' e1 } →
+               t ▸prod (t1 ⊠ t2) →
+               runana Γ e L e' t2 →
+               runana Γ ⟨ e1 , e ⟩₂ L ⟨ e1 , e' ⟩₂ t
+  ziplem-prodr m DoRefl = DoRefl
+  ziplem-prodr m (DoAna x ra) = DoAna (AAZipProdR m x) (ziplem-prodr m ra)
+  

@@ -37,7 +37,8 @@ module sensibility where
     actsense-synth EETop (EEAscR (ETPlusR ETTop)) SAConInr SEHole = SAsc (AInr MPPlus (ASubsume SEHole TCRefl))
     actsense-synth EETop (EEAscL (EECase2 EETop)) (SAConCase1 c d e₁) f = SAsc (ACase c d e₁ f (ASubsume SEHole TCRefl) (ASubsume SEHole TCRefl))
     actsense-synth EETop (EEAscL (EECase1 (EENEHole EETop))) (SAConCase2 c d e₁) f = SAsc (ACase c d MPHole (SNEHole f) (ASubsume SEHole TCRefl) (ASubsume SEHole TCRefl))
-
+    actsense-synth EETop (EEAscR (ETProdL ETTop)) SAConProd SEHole = SAsc (AProd MPrProd (ASubsume SEHole TCRefl) (ASubsume SEHole TCRefl))
+    
     --- zipper cases. in each, we recur on the smaller action derivation
     --- following the zipper structure, then reassemble the result
     actsense-synth (EEAscL er) (EEAscL er') (SAZipAsc1 x) (SAsc x₁)
@@ -67,6 +68,7 @@ module sensibility where
       with actsense-synth x er' act x₁
     ... | ih = SNEHole ih
 
+    
     -- if an action transforms an ê in an analytic posistion to another ê,
     -- they have the same type up erasure of the cursor.
     actsense-ana  : {Γ : ·ctx} {e e' : ê} {e◆ e'◆ : ė} {t : τ̇} {α : action} →
@@ -145,3 +147,21 @@ module sensibility where
     ... | refl with matchplusunicity x₉ x₄
     ... | refl with actsense-ana er1 er2 x₆ wt₁
     ... | ih = ACase x₇ x₈ x₉ s2 wt ih
+
+    -- again, ASubsume cases aren't possible
+    actsense-ana (EEProdL _) (EEProdL _) (AAZipProdL _ _) (ASubsume () _)
+    actsense-ana (EEProdR _) (EEProdR _) (AAZipProdR _ _) (ASubsume () _)
+
+    -- constructing product
+    actsense-ana EETop (EEProdL EETop) (AAConProd1 x) _ = AProd x (ASubsume SEHole TCHole1) (ASubsume SEHole TCHole1)
+    actsense-ana EETop (EENEHole (EEAscR (ETProdL ETTop))) (AAConProd2 x) _ = ASubsume (SNEHole (SAsc (AProd MPrProd (ASubsume SEHole TCRefl) (ASubsume SEHole TCRefl)))) TCHole1
+    
+    -- zipper cases for product types
+    actsense-ana (EEProdL er1) (EEProdL er2) (AAZipProdL x₁ x₂) (AProd x w w₁)
+      with matchprodunicity x x₁
+    ...| refl with actsense-ana er1 er2 x₂ w
+    ...| w' = AProd x w' w₁
+    actsense-ana (EEProdR er1) (EEProdR er2) (AAZipProdR x₁ x₂) (AProd x w w₁)
+      with matchprodunicity x x₁
+    ...| refl with actsense-ana er1 er2 x₂ w₁
+    ...| w' = AProd x w w'

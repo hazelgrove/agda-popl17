@@ -42,7 +42,14 @@ module reachability where
   ... | (l , ih , m ) = l ++ [ move parent ] ,
                         runtype++ (ziplem-tmplus2 ih) (DoType TMPlusParent2 DoRefl) ,
                         movements++ m (AM:: AM[])
-
+  reachup-type (ETProdL er) with reachup-type er
+  ... | (l , ih , m) =  l ++ [ move parent ] ,
+                        runtype++ (ziplem-tmprod1 ih) (DoType TMProdParent1 DoRefl) ,
+                        movements++ m (AM:: AM[])
+  reachup-type (ETProdR er) with reachup-type er
+  ... | (l , ih , m) =  l ++ [ move parent ] ,
+                        runtype++ (ziplem-tmprod2 ih) (DoType TMProdParent2 DoRefl) ,
+                        movements++ m (AM:: AM[])
 
   mutual
     reachup-synth : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
@@ -55,7 +62,9 @@ module reachability where
     reachup-synth (EECase1 er) ()
     reachup-synth (EECase2 er) ()
     reachup-synth (EECase3 er) ()
-
+    reachup-synth (EEProdL er) ()
+    reachup-synth (EEProdR er) ()
+    
     reachup-synth EETop _ = [] , DoRefl , AM[]
     reachup-synth (EEAscL er) (SAsc x) with reachup-ana er x
     ... | l , ih , m = l ++ [ move parent ] ,
@@ -120,7 +129,16 @@ module reachability where
                        runana++ (ziplem-case3 x₁ x₂ x₄ wt x₃ ih) (DoAna (AAMove EMCaseParent3) DoRefl) ,
                        movements++ m (AM:: AM[])
 
+    reachup-ana (EEProdL er) (AProd x wt₁ wt₂) with reachup-ana er wt₁
+    ... | l , ih , m = l ++ [ move parent ] ,
+                       runana++ (ziplem-prodl x ih) (DoAna (AAMove EMProdParent1) DoRefl) ,
+                       movements++ m (AM:: AM[])
 
+    reachup-ana (EEProdR er) (AProd x wt₁ wt₂) with reachup-ana er wt₂
+    ... | l , ih , m = l ++ [ move parent ] ,
+                       runana++ (ziplem-prodr x ih) (DoAna (AAMove EMProdParent2) DoRefl) ,
+                       movements++ m (AM:: AM[])
+                       
   --------------------------
 
   reachdown-type : {t : τ̇} {t' : τ̂} → (p : erase-t t' t) →
@@ -142,6 +160,14 @@ module reachability where
   ... | (l , ih , m ) = move (child 2) :: l ,
                         DoType TMPlusChild2 (ziplem-tmplus2 ih) ,
                         AM:: m
+  reachdown-type (ETProdL er) with reachdown-type er
+  ... | (l , ih , m ) = move (child 1) :: l ,
+                        DoType TMProdChild1 (ziplem-tmprod1 ih) ,
+                        AM:: m
+  reachdown-type (ETProdR er) with reachdown-type er
+  ... | (l , ih , m ) = move (child 2) :: l ,
+                        DoType TMProdChild2 (ziplem-tmprod2 ih) ,
+                        AM:: m
 
   mutual
     reachdown-synth : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
@@ -154,7 +180,9 @@ module reachability where
     reachdown-synth (EECase1 er) ()
     reachdown-synth (EECase2 er) ()
     reachdown-synth (EECase3 er) ()
-
+    reachdown-synth (EEProdL er) () 
+    reachdown-synth (EEProdR er) ()
+    
     reachdown-synth EETop _ = [] , DoRefl , AM[]
     reachdown-synth (EEAscL er) (SAsc x) with reachdown-ana er x
     ... | l , ih , m = move (child 1) :: l ,
@@ -218,7 +246,14 @@ module reachability where
     ... | l , ih , m = move (child 3)  :: l ,
                        DoAna (AAMove EMCaseChild3) (ziplem-case3 x₁ x₂ x₄ wt x₃ ih) ,
                        AM:: m
-
+    reachdown-ana (EEProdL er) (AProd x x₁ x₂) with reachdown-ana er x₁
+    ...| l , ih , m = move (child 1) :: l ,
+                      DoAna (AAMove EMProdChild1) (ziplem-prodl x ih) ,
+                      AM:: m
+    reachdown-ana (EEProdR er) (AProd x x₁ x₂) with reachdown-ana er x₂
+    ...| l , ih , m = move (child 2) :: l ,
+                      DoAna (AAMove EMProdChild2) (ziplem-prodr x ih) ,
+                      AM:: m
 
   --------------------------
 

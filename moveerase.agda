@@ -22,7 +22,13 @@ module moveerase where
   moveeraset TMPlusParent2 = refl
   moveeraset (TMPlusZip1 {t2 = t2} m) = ap1 (λ x → x ⊕ t2) (moveeraset m)
   moveeraset (TMPlusZip2 {t1 = t1} m) = ap1 (λ x → t1 ⊕ x) (moveeraset m)
-
+  moveeraset TMProdChild1 = refl
+  moveeraset TMProdChild2 = refl
+  moveeraset TMProdParent1 = refl
+  moveeraset TMProdParent2 = refl
+  moveeraset (TMProdZip1 {t2 = t2} m) = ap1 (λ x → x ⊠ t2) (moveeraset m)
+  moveeraset (TMProdZip2 {t1 = t1} m) = ap1 (λ x → t1 ⊠ x) (moveeraset m)
+  
   -- the actual movements don't change the erasure
   moveerase : {e e' : ê} {δ : direction} →
             (e + move δ +>e e') →
@@ -53,6 +59,10 @@ module moveerase where
   moveerase EMCaseChild1 = refl
   moveerase EMCaseChild2 = refl
   moveerase EMCaseChild3 = refl
+  moveerase EMProdChild1 = refl
+  moveerase EMProdChild2 = refl
+  moveerase EMProdParent1 = refl
+  moveerase EMProdParent2 = refl
 
   -- this form is essentially the same as above, but for judgemental
   -- erasure, which is sometimes more convenient.
@@ -124,3 +134,10 @@ module moveerase where
       with synthunicity x₄ x₇
     ... | refl with matchplusunicity x₃ x₈
     ... | refl = ap1 (λ q → case _ _ _ _ q) (moveerase-ana er wt₁ d)
+    moveerase-ana (EEProdL x) (ASubsume () x₂) (AAZipProdL x₃ z)
+    moveerase-ana (EEProdL x) (AProd x₁ y y₁) (AAZipProdL x₂ z) with matchprodunicity x₁ x₂
+    ... | refl = ap1 (λ q → ⟨ q , _ ⟩) (moveerase-ana x y z)
+    moveerase-ana (EEProdR x) (ASubsume () x₂) (AAZipProdR x₃ z)
+    moveerase-ana (EEProdR x) (AProd x₁ y y₁) (AAZipProdR x₂ z) with matchprodunicity x₁ x₂
+    ... | refl = ap1 (λ q → ⟨ _ , q ⟩) (moveerase-ana x y₁ z)
+  

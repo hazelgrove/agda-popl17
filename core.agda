@@ -8,6 +8,7 @@ module core where
     ⦇⦈ : τ̇
     _==>_ : τ̇ → τ̇ → τ̇
     _⊕_ : τ̇ → τ̇ → τ̇
+    _⊠_ : τ̇ → τ̇ → τ̇
 
   -- expressions, prefixed with a · to distinguish name clashes with agda
   -- built-ins
@@ -23,7 +24,7 @@ module core where
     inl  : ė → ė
     inr  : ė → ė
     case  : ė → Nat → ė → Nat → ė → ė
-
+    ⟨_,_⟩ : ė → ė → ė
   ---- contexts and some operations on them
 
   -- variables are named with naturals in ė. therefore we represent
@@ -70,6 +71,10 @@ module core where
                t1 ~ t1' →
                t2 ~ t2' →
                (t1 ⊕ t2) ~ (t1' ⊕ t2')
+    TCProd : {t1 t2 t1' t2' : τ̇} →
+               t1 ~ t1' →
+               t2 ~ t2' →
+               (t1 ⊠ t2) ~ (t1' ⊠ t2')
 
   -- type inconsistency. a judgmental version and associated proofs are in
   -- judgemental-inconsistency.agda. each definition implies the other, but
@@ -91,6 +96,10 @@ module core where
     MPHole  : ⦇⦈ ▸plus (⦇⦈ ⊕ ⦇⦈)
     MPPlus  : {t1 t2 : τ̇} → (t1 ⊕ t2) ▸plus (t1 ⊕ t2)
 
+  data _▸prod_ : τ̇ → τ̇ → Set where
+    MPrHole  : ⦇⦈ ▸prod (⦇⦈ ⊠ ⦇⦈)
+    MPrProd  : {t1 t2 : τ̇} → (t1 ⊠ t2) ▸prod (t1 ⊠ t2)
+    
   -- matching produces unique answers
   matcharrunicity : ∀{ t t2 t3 } →
                  t ▸arr t2 →
@@ -99,7 +108,7 @@ module core where
   matcharrunicity MAHole MAHole = refl
   matcharrunicity MAArr MAArr = refl
 
-  -- matching produces unique answers
+  -- matching sums produces unique answers
   matchplusunicity : ∀{ t t2 t3 } →
                  t ▸plus t2 →
                  t ▸plus t3 →
@@ -107,6 +116,14 @@ module core where
   matchplusunicity MPHole MPHole = refl
   matchplusunicity MPPlus MPPlus = refl
 
+  -- matching sproductd produces unique answers
+  matchprodunicity : ∀{ t t2 t3 } →
+                 t ▸prod t2 →
+                 t ▸prod t3 →
+                 t2 == t3
+  matchprodunicity MPrHole MPrHole = refl
+  matchprodunicity MPrProd MPrProd = refl
+  
   -- if a type matches, then it's consistent with the least restrictive
   -- function type
   matchconsist : ∀{t t'} →
@@ -171,6 +188,11 @@ module core where
                  (Γ ,, (x , t1)) ⊢ e1 <= t →
                  (Γ ,, (y , t2)) ⊢ e2 <= t →
                  Γ ⊢ case e x e1 y e2 <= t
+      AProd : {Γ : ·ctx} {e1 e2 : ė} {t t1 t2 : τ̇} →
+                 t ▸prod (t1 ⊠ t2) →
+                 Γ ⊢ e1 <= t1 →
+                 Γ ⊢ e2 <= t2 →
+                 Γ ⊢ ⟨ e1 , e2 ⟩ <= t
 
   ----- some theorems about the rules and judgement presented so far.
 
@@ -196,7 +218,8 @@ module core where
   ~sym TCHole2 = TCHole1
   ~sym (TCArr p1 p2) = TCArr (~sym p1) (~sym p2)
   ~sym (TCPlus p1 p2) = TCPlus (~sym p1) (~sym p2)
-
+  ~sym (TCProd p1 p2) = TCProd (~sym p1) (~sym p2)
+  
   -- type consistency isn't transitive
   not-trans : ((t1 t2 t3 : τ̇) → t1 ~ t2 → t2 ~ t3 → t1 ~ t3) → ⊥
   not-trans t with t (num ==> num) ⦇⦈ num TCHole1 TCHole2
@@ -220,6 +243,15 @@ module core where
   lemplus2 v TCRefl = v TCRefl
   lemplus2 v (TCPlus _ p) = v p
 
+  lemprod1 : {t1 t2 t3 t4 : τ̇} → (t1 ~ t3 → ⊥) → (t1 ⊠ t2) ~ (t3 ⊠ t4)  → ⊥
+  lemprod1 v TCRefl = v TCRefl
+  lemprod1 v (TCProd p _) = v p
+
+  lemprod2 : {t1 t2 t3 t4 : τ̇} → (t2 ~ t4 → ⊥) → (t1 ⊠ t2) ~ (t3 ⊠ t4) →  ⊥
+  lemprod2 v TCRefl = v TCRefl
+  lemprod2 v (TCProd _ p) = v p
+
+
   --  every pair of types is either consistent or not consistent
   ~dec : (t1 t2 : τ̇) → ((t1 ~ t2) + (t1 ~̸ t2))
     -- this takes care of all hole cases, so we don't consider them below
@@ -229,9 +261,11 @@ module core where
   ~dec num num = Inl TCRefl
   ~dec num (t2 ==> t3) = Inr (λ ())
   ~dec num (t1 ⊕ t2) = Inr (λ ())
+  ~dec num (t1 ⊠ t2) = Inr (λ ())
     -- arrow cases
   ~dec (t1 ==> t2) num = Inr (λ ())
-  ~dec (t3 ==> t4) (t1 ⊕ t2) = Inr (λ ())
+  ~dec (t1 ==> t2) (t3 ⊕ t4) = Inr (λ ())
+  ~dec (t1 ==> t2) (t3 ⊠ t4) = Inr (λ ())
   ~dec (t1 ==> t2) (t3 ==> t4) with ~dec t1 t3 | ~dec t2 t4
   ... | Inl x | Inl y = Inl (TCArr x y)
   ... | Inl _ | Inr y = Inr (lemarr2 y)
@@ -239,11 +273,20 @@ module core where
     -- plus cases
   ~dec (t1 ⊕ t2) num = Inr (λ ())
   ~dec (t1 ⊕ t2) (t3 ==> t4) = Inr (λ ())
+  ~dec (t1 ⊕ t2) (t3 ⊠ t4) = Inr (λ ())
   ~dec (t1 ⊕ t2) (t3 ⊕ t4) with ~dec t1 t3 | ~dec t2 t4
   ... | Inl x | Inl y = Inl (TCPlus x y)
   ... | _     | Inr x = Inr (lemplus2 x)
   ... | Inr x | Inl _ = Inr (lemplus1 x)
-
+    -- product cases
+  ~dec (t1 ⊠ t2) num = Inr (λ ())
+  ~dec (t1 ⊠ t2) (t3 ==> t4) = Inr (λ ())
+  ~dec (t1 ⊠ t2) (t3 ⊕ t4) = Inr (λ ())
+  ~dec (t1 ⊠ t2) (t3 ⊠ t4) with ~dec t1 t3 | ~dec t2 t4
+  ... | Inl x | Inl y = Inl (TCProd x y)
+  ... | _     | Inr x = Inr (lemprod2 x)
+  ... | Inr x | Inl _ = Inr (lemprod1 x)
+  
   -- theorem: no pair of types is both consistent and not consistent. this
   -- is immediate from our encoding of the ~̸ judgement in the formalism
   -- here; in the exact mathematics presented in the paper, this would
@@ -282,7 +325,8 @@ module core where
   tcomplete ⦇⦈        = ⊥
   tcomplete (t1 ==> t2) = (tcomplete t1) × (tcomplete t2)
   tcomplete (t1 ⊕ t2) = (tcomplete t1) × (tcomplete t2)
-
+  tcomplete (t1 ⊠ t2) = (tcomplete t1) × (tcomplete t2)
+  
   -- similarly to the complete types, the complete expressions
   ecomplete : ė → Set
   ecomplete (e1 ·: t)  = ecomplete e1 × tcomplete t
@@ -290,13 +334,14 @@ module core where
   ecomplete (·λ _ e1)  = ecomplete e1
   ecomplete (N x)      = ⊤
   ecomplete (e1 ·+ e2) = ecomplete e1 × ecomplete e2
-  ecomplete ⦇⦈       = ⊥
+  ecomplete ⦇⦈         = ⊥
   ecomplete ⦇⌜ e1 ⌟⦈   = ⊥
   ecomplete (e1 ∘ e2)  = ecomplete e1 × ecomplete e2
   ecomplete (inl e)    = ecomplete e
   ecomplete (inr e)    = ecomplete e
   ecomplete (case e x e1 y e2)  = ecomplete e × ecomplete e1 × ecomplete e2
-
+  ecomplete (⟨ e1 , e2 ⟩) = ecomplete e1 × ecomplete e2
+  
   -- zippered form of types
   data τ̂ : Set where
     ▹_◃  : τ̇ → τ̂
@@ -304,7 +349,9 @@ module core where
     _==>₂_ : τ̇ → τ̂ → τ̂
     _⊕₁_ : τ̂ → τ̇ → τ̂
     _⊕₂_ : τ̇ → τ̂ → τ̂
-
+    _⊠₁_ : τ̂ → τ̇ → τ̂
+    _⊠₂_ : τ̇ → τ̂ → τ̂
+  
   -- zippered form of expressions
   data ê : Set where
     ▹_◃   : ė → ê
@@ -321,7 +368,9 @@ module core where
     case₁ : ê → Nat → ė → Nat → ė → ê
     case₂ : ė → Nat → ê → Nat → ė → ê
     case₃ : ė → Nat → ė → Nat → ê → ê
-
+    ⟨_,_⟩₁ : ê → ė → ê
+    ⟨_,_⟩₂ : ė → ê → ê
+    
   -- erasure of cursor for types and expressions, judgementally. see
   -- jugemental-erase.agda for an argument that this defines an isomorphic
   -- object to the direct metafunction provided in the text of the paper
@@ -331,7 +380,9 @@ module core where
     ETArrR : ∀{t1 t2 t2'} → erase-t t2 t2' → erase-t (t1 ==>₂ t2) (t1 ==> t2')
     ETPlusL : ∀{t1 t1' t2} → erase-t t1 t1' → erase-t (t1 ⊕₁ t2) (t1' ⊕ t2)
     ETPlusR : ∀{t1 t2 t2'} → erase-t t2 t2' → erase-t (t1 ⊕₂ t2) (t1 ⊕ t2')
-
+    ETProdL : ∀{t1 t1' t2} → erase-t t1 t1' → erase-t (t1 ⊠₁ t2) (t1' ⊠ t2)
+    ETProdR : ∀{t1 t2 t2'} → erase-t t2 t2' → erase-t (t1 ⊠₂ t2) (t1 ⊠ t2')
+    
   data erase-e : ê → ė → Set where
     EETop   : ∀{x}         → erase-e (▹ x ◃) x
     EEAscL  : ∀{e e' t}    → erase-e e e'   → erase-e (e ·:₁ t) (e' ·: t)
@@ -350,7 +401,9 @@ module core where
                                   erase-e (case₂ e x e1 y e2) (case e x e1' y e2)
     EECase3 : ∀{e x e1 y e2 e2'} → erase-e e2 e2' →
                                   erase-e (case₃ e x e1 y e2) (case e x e1 y e2')
-
+    EEProdL : ∀{e1 e1' e2} → erase-e e1 e1' → erase-e ⟨ e1 , e2 ⟩₁ ⟨ e1' , e2 ⟩
+    EEProdR : ∀{e1 e2 e2'} → erase-e e2 e2' → erase-e ⟨ e1 , e2 ⟩₂ ⟨ e1 , e2' ⟩
+    
   -- the three grammars that define actions
   data direction : Set where
     child : Nat → direction
@@ -367,9 +420,11 @@ module core where
     plus  : shape
     nehole : shape
     tplus : shape
-    inl : shape
-    inr : shape
-    case : Nat → Nat → shape
+    inl   : shape
+    inr   : shape
+    case  : Nat → Nat → shape
+    tprod : shape
+    prod  : shape
 
   data action : Set where
     move : direction → action
@@ -395,12 +450,22 @@ module core where
                (▹ t1 ◃ ⊕₁ t2) + move parent +> ▹ t1 ⊕ t2 ◃
     TMPlusParent2 : {t1 t2 : τ̇} →
                (t1 ⊕₂ ▹ t2 ◃) + move parent +> ▹ t1 ⊕ t2 ◃
+    TMProdChild1 : {t1 t2 : τ̇} →
+               ▹ t1 ⊠ t2 ◃ + move (child 1) +> (▹ t1 ◃ ⊠₁ t2)
+    TMProdChild2 : {t1 t2 : τ̇} →
+               ▹ t1 ⊠ t2 ◃ + move (child 2) +> (t1 ⊠₂ ▹ t2 ◃)
+    TMProdParent1 : {t1 t2 : τ̇} →
+               (▹ t1 ◃ ⊠₁ t2) + move parent +> ▹ t1 ⊠ t2 ◃
+    TMProdParent2 : {t1 t2 : τ̇} →
+               (t1 ⊠₂ ▹ t2 ◃) + move parent +> ▹ t1 ⊠ t2 ◃
     TMDel     : {t : τ̇} →
                 (▹ t ◃) + del +> (▹ ⦇⦈ ◃)
     TMConArrow  : {t : τ̇} →
                 (▹ t ◃) + construct arrow +> (t ==>₂ ▹ ⦇⦈ ◃)
     TMConPlus  : {t : τ̇} →
                 (▹ t ◃) + construct tplus +> (t ⊕₂ ▹ ⦇⦈ ◃)
+    TMConProd  : {t : τ̇} →
+                (▹ t ◃) + construct tprod +> (t ⊠₂ ▹ ⦇⦈ ◃)
     TMConNum  : (▹ ⦇⦈ ◃) + construct num +> (▹ num ◃)
     TMArrZip1 : {t1 t1' : τ̂} {t2 : τ̇} {α : action} →
                 (t1 + α +> t1') →
@@ -414,6 +479,12 @@ module core where
     TMPlusZip2 : {t2 t2' : τ̂} {t1 : τ̇} {α : action} →
                 (t2 + α +> t2') →
                 ((t1 ⊕₂ t2) + α +> (t1 ⊕₂ t2'))
+    TMProdZip1 : {t1 t1' : τ̂} {t2 : τ̇} {α : action} →
+                (t1 + α +> t1') →
+                ((t1 ⊠₁ t2) + α +> (t1' ⊠₁ t2))
+    TMProdZip2 : {t2 t2' : τ̂} {t1 : τ̇} {α : action} →
+                (t2 + α +> t2') →
+                ((t1 ⊠₂ t2) + α +> (t1 ⊠₂ t2'))
 
   -- expression movement
   data _+_+>e_ : (e : ê) → (α : action) → (e' : ê) → Set where
@@ -440,7 +511,7 @@ module core where
                (▹ e1 ◃ ·+₁ e2) + move parent +>e (▹ e1 ·+ e2 ◃)
     EMPlusParent2 : {e1 e2 : ė} →
                (e1 ·+₂ ▹ e2 ◃) + move parent +>e (▹ e1 ·+ e2 ◃)
-
+    
     EMApChild1 : {e1 e2 : ė} →
                (▹ e1 ∘ e2 ◃) + move (child 1)+>e (▹ e1 ◃ ∘₁ e2)
     EMApChild2 : {e1 e2 : ė} →
@@ -450,6 +521,15 @@ module core where
     EMApParent2 : {e1 e2 : ė} →
                (e1 ∘₂ ▹ e2 ◃) + move parent +>e (▹ e1 ∘ e2 ◃)
 
+    EMProdChild1 : {e1 e2 : ė} →
+               (▹ ⟨ e1 , e2 ⟩ ◃) + move (child 1)+>e ⟨ ▹ e1 ◃ , e2 ⟩₁
+    EMProdChild2 : {e1 e2 : ė} →
+               (▹ ⟨ e1 , e2 ⟩ ◃) + move (child 2) +>e ⟨ e1 , ▹ e2 ◃ ⟩₂
+    EMProdParent1 : {e1 e2 : ė} →
+               ( ⟨ ▹ e1 ◃ , e2 ⟩₁ ) + move parent +>e (▹ ⟨ e1 , e2 ⟩ ◃)
+    EMProdParent2 : {e1 e2 : ė} →
+               ( ⟨ e1 , ▹ e2 ◃ ⟩₂ ) + move parent +>e (▹ ⟨ e1 , e2 ⟩ ◃)
+               
     -- rules for non-empty holes
     EMNEHoleChild1 : {e : ė} →
                (▹ ⦇⌜ e ⌟⦈ ◃) + move (child 1) +>e ⦇⌜ ▹ e ◃ ⌟⦈
@@ -563,6 +643,8 @@ module core where
                    y # Γ →
                    t ~̸ (⦇⦈ ⊕ ⦇⦈) →
                    Γ ⊢ ▹ e ◃ => t ~ construct (case x y) ~> (case₁ (⦇⌜ ▹ e ◃ ⌟⦈ ) x ⦇⦈ y ⦇⦈) ·:₁ ⦇⦈ => ⦇⦈
+      SAConProd : {Γ : ·ctx} {t : τ̇} →
+                  Γ ⊢ ▹ ⦇⦈ ◃ => t ~ construct prod ~> ⟨ ⦇⦈ , ⦇⦈ ⟩ ·:₂ (▹ ⦇⦈ ◃ ⊠₁ ⦇⦈) => (⦇⦈ ⊠ ⦇⦈)
 
     -- analytic action expressions
     data _⊢_~_~>_⇐_ : (Γ : ·ctx) → (e : ê) → (α : action) →
@@ -653,3 +735,17 @@ module core where
                  t+ ▸plus (t1 ⊕ t2) →
                  (Γ ,, (y , t2)) ⊢ e2 ~ α ~> e2' ⇐ t →
                  Γ ⊢ case₃ e x e1 y e2 ~ α ~> case₃ e x e1 y e2' ⇐ t
+      AAConProd1 : {Γ : ·ctx} {t× t1 t2 : τ̇} →
+                 t× ▸prod (t1 ⊠ t2) →
+                 Γ ⊢ ▹ ⦇⦈ ◃ ~ construct prod ~> ⟨ ▹ ⦇⦈ ◃ , ⦇⦈ ⟩₁ ⇐ t×
+      AAConProd2 : {Γ : ·ctx} {t t1 t2 : τ̇} →
+                 t ~̸ (⦇⦈ ⊠ ⦇⦈) →
+                 Γ ⊢ ▹ ⦇⦈ ◃ ~ construct prod ~> ⦇⌜ ⟨ ⦇⦈ , ⦇⦈ ⟩ ·:₂ ( ▹ ⦇⦈ ◃  ⊠₁ ⦇⦈) ⌟⦈ ⇐ t
+      AAZipProdL : {Γ : ·ctx} {e1 e1' : ê} {e2 : ė} {t t1 t2 : τ̇} {α : action} →
+                 t ▸prod (t1 ⊠ t2) →
+                 Γ ⊢ e1 ~ α ~> e1' ⇐ t1 →
+                 Γ ⊢ ⟨ e1 , e2 ⟩₁ ~ α ~> ⟨ e1' , e2 ⟩₁ ⇐ t
+      AAZipProdR : {Γ : ·ctx} {e2 e2' : ê} {e1 : ė} {t t1 t2 : τ̇} {α : action} →
+                 t ▸prod (t1 ⊠ t2) →
+                 Γ ⊢ e2 ~ α ~> e2' ⇐ t2 →
+                 Γ ⊢ ⟨ e1 , e2 ⟩₂ ~ α ~> ⟨ e1 , e2' ⟩₂ ⇐ t         

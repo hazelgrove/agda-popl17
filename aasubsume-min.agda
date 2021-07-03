@@ -32,6 +32,8 @@ module aasubsume-min where
     aasubmin-ana (AAZipCase1 a b c d e f g h) = aasubmin-synth e
     aasubmin-ana (AAZipCase2 a b c d e) = aasubmin-ana e
     aasubmin-ana (AAZipCase3 a b c d f) = aasubmin-ana f
+    aasubmin-ana (AAZipProdL a b) = aasubmin-ana b
+    aasubmin-ana (AAZipProdR a b) = aasubmin-ana b
     aasubmin-ana _ = ⊤
 
   -- the minimization predicate propagates through subsumption rules
@@ -64,7 +66,8 @@ module aasubsume-min where
   min-ana-lem SAConInr _ = <>
   min-ana-lem (SAConCase1 x₁ x₂ x₃) _ = <>
   min-ana-lem (SAConCase2 x₁ x₂ x₃) _ = <>
-
+  min-ana-lem SAConProd _ = <>
+  
   -- any derivation of an action can be minimized to avoid this cases that
   -- induce non-determinism.
   mutual
@@ -99,7 +102,8 @@ module aasubsume-min where
     min-synth SAConInr = _ , SAConInr , <>
     min-synth (SAConCase1 a b c) = _ , (SAConCase1 a b c) , <>
     min-synth (SAConCase2 a b c) = _ , SAConCase2 a b c , <>
-
+    min-synth SAConProd = _ , SAConProd , <>
+    
     min-ana : ∀{Γ e α e' t} → (d : Γ ⊢ e ~ α ~> e' ⇐ t) → Σ[ e'' ∈ ê ] Σ[ d' ∈  Γ ⊢ e ~ α ~> e'' ⇐ t ] aasubmin-ana d'
     min-ana (AASubsume {Γ = Γ} x x₁ (SAMove x₂) x₃) = _ , AAMove x₂ , <>
     min-ana (AASubsume x x₁ SADel x₃) = _ , AADel , <>
@@ -142,6 +146,10 @@ module aasubsume-min where
     min-ana (AASubsume EETop (SNEHole y₁) (SAConCase1 a b c) z) = _ ,
                                                                     AASubsume EETop (SNEHole y₁) (SAConCase1 a b c) z , <>
     min-ana (AASubsume x y (SAConCase2 a b c) z) = _ , AASubsume x y (SAConCase2 a b c) z , <>
+    min-ana (AASubsume EETop y SAConProd TCRefl) = _ , (AAConProd1 MPrProd) , <>
+    min-ana (AASubsume EETop y SAConProd TCHole2) = _ , AAConProd1 MPrHole , <>
+    min-ana (AASubsume EETop y SAConProd (TCProd z z₁)) = _ , AAConProd1 MPrProd , <>
+    
     min-ana (AAMove x) = _ , AAMove x , <>
     min-ana AADel = _ , AADel , <>
     min-ana AAConAsc = _ , AAConAsc , <>
@@ -163,6 +171,8 @@ module aasubsume-min where
     min-ana (AAConInr1 x) = _ , AAConInr1 x , <>
     min-ana (AAConInr2 x) = _ , AAConInr2 x , <>
     min-ana (AAConCase x₁ x₂) = _ , AAConCase x₁ x₂ , <>
+    min-ana (AAConProd1 x) = _ , AAConProd1 x , <>
+    min-ana (AAConProd2 x) = _ , AAConProd2 x , <>
     min-ana (AAZipInl x x₁) with min-ana x₁
     ... | a , b , c = _ , AAZipInl x b , c
     min-ana (AAZipInr x x₁) with min-ana x₁
@@ -173,7 +183,11 @@ module aasubsume-min where
     ... | a , b , c = _ , AAZipCase2 x₁ x₂ x₃ x₄ b , c
     min-ana (AAZipCase3 x₁ x₂ x₃ x₄ x₆) with min-ana x₆
     ... | a , b , c = _ , AAZipCase3 x₁ x₂ x₃ x₄ b , c
-
+    min-ana (AAZipProdL x x₁) with min-ana x₁
+    ... | a , b , c = _ , AAZipProdL x b , c
+    min-ana (AAZipProdR x x₁) with min-ana x₁
+    ... | a , b , c = _ , (AAZipProdR x b) , c
+    
   -- these theorems argue that if a derivation is already subsumption
   -- minimal than the minimzer does not change the resultant
   -- expression--that it's conservative in this sense. they do not argue

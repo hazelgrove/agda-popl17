@@ -32,7 +32,12 @@ module constructability where
                                     (DoType TMConPlus
                                        (runtype++ (ziplem-tmplus2 ih2)
                                          (DoType TMPlusParent2 DoRefl)))
-
+  construct-type (t1 ⊠ t2) with construct-type t1 | construct-type t2
+  ... | (l1 , ih1) | (l2 , ih2) = l1 ++ construct tprod :: l2 ++ [ move parent ] ,
+                                  runtype++ ih1
+                                    (DoType TMConProd
+                                      (runtype++ (ziplem-tmprod2 ih2)
+                                        (DoType TMProdParent2 DoRefl)))
   mutual
     -- construction of expressions in synthetic positions
     construct-synth : {Γ : ·ctx} {t : τ̇} {e : ė} → (Γ ⊢ e => t) →
@@ -132,3 +137,14 @@ module constructability where
                          (runana++ (ziplem-case3 x# y# wt0 wt1 m ih2)
                          (DoAna (AAMove EMCaseParent3)
                           DoRefl)))))))))))
+    construct-ana (AProd m wt1 wt2)
+      with construct-ana wt1 | construct-ana wt2
+    ... | (l1 , ih1) | (l2 , ih2)
+      = construct prod :: l1 ++ (move parent :: move (child 2) :: l2) ++ [ move parent ] ,
+        DoAna (AAConProd1 m)
+        (runana++ (ziplem-prodl m ih1)
+        (DoAna (AAMove EMProdParent1)
+        (DoAna (AAMove EMProdChild2)
+        (runana++ (ziplem-prodr m ih2)
+        (DoAna (AAMove EMProdParent2)
+        DoRefl)))))
