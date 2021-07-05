@@ -38,7 +38,20 @@ module determinism where
   actdet-type TMPlusParent2 (TMPlusZip2 ())
   actdet-type (TMPlusZip2 x) (TMPlusZip2 y) with actdet-type x y
   ... | refl = refl
-
+  actdet-type TMProdChild1 TMProdChild1 = refl
+  actdet-type TMProdChild2 TMProdChild2 = refl
+  actdet-type TMProdParent1 TMProdParent1 = refl
+  actdet-type TMProdParent1 (TMProdZip1 ())
+  actdet-type TMProdParent2 TMProdParent2 = refl
+  actdet-type TMProdParent2 (TMProdZip2 ())
+  actdet-type TMConProd TMConProd = refl
+  actdet-type (TMProdZip1 ()) TMProdParent1
+  actdet-type (TMProdZip1 x) (TMProdZip1 y) with actdet-type x y
+  ... | refl = refl
+  actdet-type (TMProdZip2 ()) TMProdParent2
+  actdet-type (TMProdZip2 x) (TMProdZip2 y) with actdet-type x y
+  ... | refl = refl
+  
   -- all expressions only move to one other expression
   movedet : {e e' e'' : ê} {δ : direction} →
             (e + move δ +>e e') →
@@ -70,7 +83,11 @@ module determinism where
   movedet EMCaseChild1 EMCaseChild1 = refl
   movedet EMCaseChild2 EMCaseChild2 = refl
   movedet EMCaseChild3 EMCaseChild3 = refl
-
+  movedet EMProdChild1 EMProdChild1 = refl
+  movedet EMProdChild2 EMProdChild2 = refl
+  movedet EMProdParent1 EMProdParent1 = refl
+  movedet EMProdParent2 EMProdParent2 = refl
+  
   -- non-movement lemmas; theses show up pervasively throughout and save a
   -- lot of pattern matching.
   lem-nomove-part : ∀ {t t'} → ▹ t ◃ + move parent +> t' → ⊥
@@ -110,7 +127,9 @@ module determinism where
   anamovedet (AAZipCase1 x₁ x₂ x₇ x₃ x₈ x₄ x₅ x₆) EMCaseParent1 = abort (lem-nomove-pars x₈)
   anamovedet (AAZipCase2 x₁ x₂ x₃ x₄ d) EMCaseParent2 = abort (lem-nomove-para d)
   anamovedet (AAZipCase3 x₁ x₂ x₃ x₄ d) EMCaseParent3 = abort (lem-nomove-para d)
-
+  anamovedet (AAZipProdL x d) EMProdParent1 = abort (lem-nomove-para d)
+  anamovedet (AAZipProdR x d) EMProdParent2 = abort (lem-nomove-para d)
+  
   lem-holematch : ∀ {t t1 t2} → t ~̸ (⦇⦈ ⊕ ⦇⦈) → t ~ ⦇⦈ → t ▸plus (t1 ⊕ t2) → ⊥
   lem-holematch a TCRefl MPHole = a TCHole2
   lem-holematch a TCHole1 MPHole = a TCHole2
@@ -302,7 +321,8 @@ module determinism where
     actdet-synth EETop wt (SAConCase2 x₁ x₂ x₃) (SAConCase1 x₄ x₅ MPHole) = abort (x₃ TCHole2)
     actdet-synth EETop wt (SAConCase2 x₁ x₂ x₃) (SAConCase1 x₄ x₅ MPPlus) = abort (x₃ (TCPlus TCHole1 TCHole1))
     actdet-synth er wt (SAConCase2 x₁ x₂ x₃) (SAConCase2 x₄ x₅ x₆) = refl , refl
-
+    actdet-synth = {!!}
+    
     -- an action on an expression in an analytic position produces one
     -- resultant expression and type.
     actdet-ana : {Γ : ·ctx} {e e' e'' : ê} {e◆ : ė} {t : τ̇} {α : action} →
@@ -492,3 +512,4 @@ module determinism where
     actdet-ana EETop (ASubsume SEHole x₁) (AAConInr1 x₂) (AAConInr2 x₃) = abort (lem-holematch x₃ x₁ x₂)
     actdet-ana EETop (ASubsume SEHole x₁) (AAConInr2 x₂) (AASubsume EETop x₄ SAConInr x₆) = abort (x₂ x₆)
     actdet-ana EETop (ASubsume SEHole x₁) (AAConInr2 x₂) (AAConInr1 x₃) = abort (lem-holematch x₂ x₁ x₃)
+    actdet-ana = {!!}

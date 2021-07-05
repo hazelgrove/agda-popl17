@@ -738,7 +738,7 @@ module core where
       AAConProd1 : {Γ : ·ctx} {t× t1 t2 : τ̇} →
                  t× ▸prod (t1 ⊠ t2) →
                  Γ ⊢ ▹ ⦇⦈ ◃ ~ construct prod ~> ⟨ ▹ ⦇⦈ ◃ , ⦇⦈ ⟩₁ ⇐ t×
-      AAConProd2 : {Γ : ·ctx} {t t1 t2 : τ̇} →
+      AAConProd2 : {Γ : ·ctx} {t : τ̇} →
                  t ~̸ (⦇⦈ ⊠ ⦇⦈) →
                  Γ ⊢ ▹ ⦇⦈ ◃ ~ construct prod ~> ⦇⌜ ⟨ ⦇⦈ , ⦇⦈ ⟩ ·:₂ ( ▹ ⦇⦈ ◃  ⊠₁ ⦇⦈) ⌟⦈ ⇐ t
       AAZipProdL : {Γ : ·ctx} {e1 e1' : ê} {e2 : ė} {t t1 t2 : τ̇} {α : action} →

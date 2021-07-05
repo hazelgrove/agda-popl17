@@ -53,7 +53,8 @@ module structural where
   fresh x (inl e) = fresh x e
   fresh x (inr e) = fresh x e
   fresh x (case e y e1 z e2) = natEQp x y × natEQp x z × fresh x e × fresh x e1 × fresh x e2
-
+  fresh x ⟨ e1 , e2 ⟩ = fresh x e1 × fresh x e2
+  
   ---- lemmas
 
   -- freshness interacts with erasure as you'd expect. the proofs below mix
@@ -163,7 +164,8 @@ module structural where
                                                                                                      (wt-weak-synth apt d f3)
                                                                                                      (wt-exchange-ana (flip x₄) (wt-weak-ana (lem-extend x₄ apt) e₁ f4))
                                                                                                      (wt-exchange-ana (flip x₃) (wt-weak-ana (lem-extend x₃ apt) g f5))
-
+    wt-weak-ana apt (AProd a b c) f = AProd a (wt-weak-ana apt b (π1 f)) (wt-weak-ana apt c (π2 f))
+    
   ---- structural properties for the action jugements
   mutual
     act-exchange-synth : ∀{ Γ x y t1 t2 t t' e e' α } →
@@ -235,7 +237,8 @@ module structural where
     act-weak-synth apt f f' (SAConCase2 x₄ x₅ x₆) | Inl refl | Inr x₃ = abort (π1 f')
     act-weak-synth apt f f' (SAConCase2 x₄ x₅ x₆) | Inr x₂ | Inl refl = abort (π1 (π2 f'))
     act-weak-synth apt f f' (SAConCase2 x₄ x₅ x₆) | Inr x₂ | Inr x₃ = SAConCase2 (lem-extend (flip x₂) x₄) (lem-extend (flip x₃) x₅) x₆
-
+    act-weak-synth apt f f' SAConProd = SAConProd
+    
     act-weak-ana : ∀{ Γ x t t' e e' α } →
                          x # Γ →
                          fresh x (e ◆e) →
@@ -299,3 +302,7 @@ module structural where
                                                                                     (wt-weak-synth apt x₆ (π1 (π2 (π2 f'))))
                                                                                     x₇
                                                                                     (act-exchange-ana (flip x₃) (act-weak-ana (lem-extend x₃ apt) (π2 (π2 (π2 (π2 f)))) (π2 (π2 (π2 (π2 f')))) d))
+    act-weak-ana apt f f' (AAConProd1 x₁) = AAConProd1 x₁
+    act-weak-ana apt f f' (AAConProd2 x₁) = AAConProd2 x₁
+    act-weak-ana apt f f' (AAZipProdL x₁ x₂) = AAZipProdL x₁ (act-weak-ana apt (π1 f) (π1 f') x₂)
+    act-weak-ana apt f f' (AAZipProdR x₁ x₂) = AAZipProdR x₁ (act-weak-ana apt (π2 f) (π2 f') x₂)
