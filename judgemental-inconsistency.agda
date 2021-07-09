@@ -164,55 +164,92 @@ module judgemental-inconsistency where
   rt1 ⦇⦈ (t1 ⊕ t2) x            = abort (x TCHole2)
   rt1 (t1 ==> t2) (t3 ⊕ t4) x   = funext (λ ())
   rt1 (t1 ⊕ t2) (t3 ⊕ t4) x     = funext (λ x₁ → abort (x x₁))
-
+  rt1 num (z ⊠ z₁) x            = funext (λ ())
+  rt1 ⦇⦈ (z ⊠ z₁) x             = funext (λ x₁ → abort (x x₁))
+  rt1 (y ==> y₁) (z ⊠ z₁) x     = funext (λ ())
+  rt1 (y ⊕ y₁) (z ⊠ z₁) x       = funext (λ ())
+  rt1 (y ⊠ y₁) num x            = funext (λ ())
+  rt1 (y ⊠ y₁) ⦇⦈ x             = funext (λ x₁ → abort (x x₁))
+  rt1 (y ⊠ y₁) (z ==> z₁) x     = funext (λ ())
+  rt1 (y ⊠ y₁) (z ⊕ z₁) x       = funext (λ ())
+  rt1 (y ⊠ y₁) (z ⊠ z₁) x       = funext (λ x₁ → abort (x x₁))
 
   -- if inconsistency at arrows and plusses is proof-irrelevant, then all
   -- of inconsistency is proof-irrelevant
-  incon-irrelev : (arr-incon-irrelev : {t1 t2 t3 t4 : τ̇} (x y : incon (t1 ==> t2) (t3 ==> t4)) → x == y) →
-                  (plus-incon-irrelev : {t1 t2 t3 t4 : τ̇} (x y : incon (t1 ⊕ t2) (t3 ⊕ t4)) → x == y) →
+  incon-irrelev :
+    (arr-incon-irrelev : {t1 t2 t3 t4 : τ̇} (x y : incon (t1 ==> t2) (t3 ==> t4)) → x == y) →
+    (plus-incon-irrelev : {t1 t2 t3 t4 : τ̇} (x y : incon (t1 ⊕ t2) (t3 ⊕ t4)) → x == y) →
+    (prod-incon-irrelev : {t1 t2 t3 t4 : τ̇} (x y : incon (t1 ⊠ t2) (t3 ⊠ t4)) → x == y) →
                 (t1 t2 : τ̇) (x y : incon t1 t2) → x == y
-  incon-irrelev arr-incon-irrelev plus-incon-irrelev .num _ ICNumArr ICNumArr = refl
-  incon-irrelev arr-incon-irrelev plus-incon-irrelev _ .num ICArrNum ICArrNum = refl
-  incon-irrelev arr-incon-irrelev plus-incon-irrelev _ _ (ICArr1 x) (ICArr1 y) = ap1 ICArr1 (incon-irrelev arr-incon-irrelev plus-incon-irrelev _ _ x y)
-  incon-irrelev arr-incon-irrelev plus-incon-irrelev _ _ (ICArr1 x) (ICArr2 y) = arr-incon-irrelev (ICArr1 x) (ICArr2 y)
-  incon-irrelev arr-incon-irrelev plus-incon-irrelev _ _ (ICArr2 x) (ICArr1 y) = arr-incon-irrelev (ICArr2 x) (ICArr1 y)
-  incon-irrelev arr-incon-irrelev plus-incon-irrelev _ _ (ICArr2 x) (ICArr2 y) = ap1 ICArr2 (incon-irrelev arr-incon-irrelev plus-incon-irrelev _ _ x y )
-  incon-irrelev arr-incon-irrelev plus-incon-irrelev .num _ ICNumPlus ICNumPlus = refl
-  incon-irrelev arr-incon-irrelev plus-incon-irrelev _ .num ICPlusNum ICPlusNum = refl
-  incon-irrelev arr-incon-irrelev plus-incon-irrelev _ _ (ICPlus1 x) (ICPlus1 y) = ap1 ICPlus1 (incon-irrelev arr-incon-irrelev plus-incon-irrelev  _ _ x y)
-  incon-irrelev arr-incon-irrelev plus-incon-irrelev _ _ (ICPlus1 x) (ICPlus2 y) = plus-incon-irrelev (ICPlus1 x) (ICPlus2 y)
-  incon-irrelev arr-incon-irrelev plus-incon-irrelev _ _ (ICPlus2 x) (ICPlus1 y) = plus-incon-irrelev (ICPlus2 x) (ICPlus1 y)
-  incon-irrelev arr-incon-irrelev plus-incon-irrelev _ _ (ICPlus2 x) (ICPlus2 y) = ap1 ICPlus2 (incon-irrelev arr-incon-irrelev plus-incon-irrelev  _ _ x y)
-  incon-irrelev arr-incon-irrelev plus-incon-irrelev _ _ ICPlusArr ICPlusArr = refl
-  incon-irrelev arr-incon-irrelev plus-incon-irrelev _ _ ICArrPlus ICArrPlus = refl
-
+  incon-irrelev _ _ _ .num _ ICNumArr ICNumArr = refl
+  incon-irrelev _ _ _ _ .num ICArrNum ICArrNum = refl
+  incon-irrelev ar pl pr _ _ (ICArr1 x) (ICArr1 y) = ap1 ICArr1 (incon-irrelev ar pl pr _ _ x y)
+  incon-irrelev ar _ _ _ _ (ICArr1 x) (ICArr2 y) = ar (ICArr1 x) (ICArr2 y)
+  incon-irrelev ar _ _ _ _ (ICArr2 x) (ICArr1 y) = ar (ICArr2 x) (ICArr1 y)
+  incon-irrelev ar pl pr _ _ (ICArr2 x) (ICArr2 y) = ap1 ICArr2 (incon-irrelev ar pl pr _ _ x y )
+  incon-irrelev _ _ _ .num _ ICNumPlus ICNumPlus = refl
+  incon-irrelev _ _ _ _ .num ICPlusNum ICPlusNum = refl
+  incon-irrelev ar pl pr _ _ (ICPlus1 x) (ICPlus1 y) = ap1 ICPlus1
+                                                           (incon-irrelev ar pl pr _ _ x y)
+  incon-irrelev _ pl _ _ _ (ICPlus1 x) (ICPlus2 y) = pl (ICPlus1 x) (ICPlus2 y)
+  incon-irrelev _ pl _ _ _ (ICPlus2 x) (ICPlus1 y) = pl (ICPlus2 x) (ICPlus1 y)
+  incon-irrelev ar pl pr _ _ (ICPlus2 x) (ICPlus2 y) = ap1 ICPlus2
+                                                           (incon-irrelev ar pl pr _ _ x y)
+  incon-irrelev _ _ _ _ _ ICPlusArr ICPlusArr = refl
+  incon-irrelev _ _ _ _ _ ICArrPlus ICArrPlus = refl
+  incon-irrelev ar pl pr _ _ (ICProd1 x) y = pr (ICProd1 x) y
+  incon-irrelev ar pl pr _ _ (ICProd2 x) y = pr (ICProd2 x) y
+  incon-irrelev ar pl pr .num _ ICNumProd ICNumProd = refl
+  incon-irrelev ar pl pr _ _ ICArrProd ICArrProd = refl
+  incon-irrelev ar pl pr _ _ ICPlusProd ICPlusProd = refl
+  incon-irrelev ar pl pr _ .num ICProdNum ICProdNum = refl
+  incon-irrelev ar pl pr _ _ ICProdArr ICProdArr = refl
+  incon-irrelev ar pl pr _ _ ICProdPlus ICProdPlus = refl
+  
   -- if inconsistency at arrows and plusses is proof-irrelevant, then the
   -- round trip is stable up to equality
   rt2 : (arr-incon-irrelev : {t1 t2 t3 t4 : τ̇} (x y : incon (t1 ==> t2) (t3 ==> t4)) → x == y) →
         (plus-incon-irrelev : {t1 t2 t3 t4 : τ̇} (x y : incon (t1 ⊕ t2) (t3 ⊕ t4)) → x == y) →
+        (prod-incon-irrelev : {t1 t2 t3 t4 : τ̇} (x y : incon (t1 ⊠ t2) (t3 ⊠ t4)) → x == y) →
         (t1 t2 : τ̇) → (x : incon t1 t2) → (from~̸ t1 t2 (to~̸ t1 t2 x)) == x
-  rt2 arr-incon-irrelev plus-incon-irrelev .num _ ICNumArr = refl
-  rt2 arr-incon-irrelev plus-incon-irrelev _ .num ICArrNum = refl
-  rt2 arr-incon-irrelev plus-incon-irrelev (t1 ==> t2) (t3 ==> t4) (ICArr1 x) with ~dec t1 t3
-  rt2 arr-incon-irrelev plus-incon-irrelev (t1 ==> t2) (t3 ==> t4) (ICArr1 x₁) | Inl x = abort (to~̸ t1 t3 x₁ x)
-  rt2 arr-incon-irrelev plus-incon-irrelev (t1 ==> t2) (t3 ==> t4) (ICArr1 x₁) | Inr x = ap1 ICArr1 (incon-irrelev arr-incon-irrelev plus-incon-irrelev t1 t3 (from~̸ t1 t3 x) x₁)
-  rt2 arr-incon-irrelev plus-incon-irrelev (t1 ==> t2) (t3 ==> t4) (ICArr2 x) with ~dec t1 t3
-  rt2 arr-incon-irrelev plus-incon-irrelev (t1 ==> t2) (t3 ==> t4) (ICArr2 x₁) | Inl x = ap1 ICArr2 (incon-irrelev arr-incon-irrelev plus-incon-irrelev t2 t4 (from~̸ t2 t4 (to~̸ t2 t4 x₁)) x₁)
-  rt2 arr-incon-irrelev plus-incon-irrelev (t1 ==> t2) (t3 ==> t4) (ICArr2 x₁) | Inr x = arr-incon-irrelev (ICArr1 (from~̸ t1 t3 x)) (ICArr2 x₁)
-  rt2 arr-incon-irrelev plus-incon-irrelev .num _ ICNumPlus = refl
-  rt2 arr-incon-irrelev plus-incon-irrelev _ .num ICPlusNum = refl
-  rt2 arr-incon-irrelev plus-incon-irrelev (t1 ⊕ t2) (t3 ⊕ t4) (ICPlus1 ic) with ~dec t1 t3
-  rt2 arr-incon-irrelev plus-incon-irrelev (t1 ⊕ t2) (t3 ⊕ t4) (ICPlus1 ic) | Inl x = abort (to~̸ _ _ ic x)
-  rt2 arr-incon-irrelev plus-incon-irrelev (t1 ⊕ t2) (t3 ⊕ t4) (ICPlus1 ic) | Inr x = ap1 ICPlus1 (incon-irrelev arr-incon-irrelev plus-incon-irrelev t1 t3 _ _ )
-  rt2 arr-incon-irrelev plus-incon-irrelev (t1 ⊕ t2) (t3 ⊕ t4) (ICPlus2 ic) with ~dec t1 t3
-  rt2 arr-incon-irrelev plus-incon-irrelev (t1 ⊕ t2) (t3 ⊕ t4) (ICPlus2 ic) | Inl x = ap1 ICPlus2 (incon-irrelev arr-incon-irrelev plus-incon-irrelev t2 t4 _ _ )
-  rt2 arr-incon-irrelev plus-incon-irrelev (t1 ⊕ t2) (t3 ⊕ t4) (ICPlus2 ic) | Inr x = plus-incon-irrelev (ICPlus1 (from~̸ t1 t3 x)) (ICPlus2 ic)
-  rt2 arr-incon-irrelev plus-incon-irrelev _ _ ICPlusArr = refl
-  rt2 arr-incon-irrelev plus-incon-irrelev _ _ ICArrPlus = refl
-
+  rt2 _ _ _ .num _ ICNumArr = refl
+  rt2 _ _ _ _ .num ICArrNum = refl
+  rt2 ar pl pr (t1 ==> t2) (t3 ==> t4) (ICArr1 ic) with ~dec t1 t3
+  ... | Inl x = abort (to~̸ t1 t3 ic x)
+  ... | Inr x = ap1 ICArr1
+                    (incon-irrelev ar pl pr t1 t3 (from~̸ t1 t3 x) ic)
+  rt2 ar pl pr (t1 ==> t2) (t3 ==> t4) (ICArr2 ic) with ~dec t1 t3
+  ... | Inl x = ap1 ICArr2
+                    (incon-irrelev ar pl pr t2 t4 (from~̸ t2 t4 (to~̸ t2 t4 ic)) ic)
+  ... | Inr x = ar (ICArr1 (from~̸ t1 t3 x)) (ICArr2 ic)
+  rt2 _ _ _ .num _ ICNumPlus = refl
+  rt2 _ _ _ _ .num ICPlusNum = refl
+  rt2 ar pl pr (t1 ⊕ t2) (t3 ⊕ t4) (ICPlus1 ic) with ~dec t1 t3
+  ... | Inl x = abort (to~̸ _ _ ic x)
+  ... | Inr x = ap1 ICPlus1 (incon-irrelev ar pl pr t1 t3 _ _ )
+  rt2 ar pl pr (t1 ⊕ t2) (t3 ⊕ t4) (ICPlus2 ic) with ~dec t1 t3
+  ... | Inl x = ap1 ICPlus2 (incon-irrelev ar pl pr t2 t4 _ _ )
+  ... | Inr x = pl (ICPlus1 (from~̸ t1 t3 x)) (ICPlus2 ic)
+  rt2 _ _ _ _ _ ICPlusArr = refl
+  rt2 _ _ _ _ _ ICArrPlus = refl
+  rt2 _ _ _ num (t1 ⊠ t2) ICNumProd = refl
+  rt2 _ _ _ (t1 ==> t2) (t3 ⊠ t4) ICArrProd = refl
+  rt2 _ _ _ (t1 ⊕ t2) (t3 ⊠ t4) ICPlusProd = refl
+  rt2 _ _ _ (t1 ⊠ t2) num ICProdNum = refl
+  rt2 _ _ _ (t1 ⊠ t2) (t3 ==> t4) ICProdArr = refl
+  rt2 _ _ _ (t1 ⊠ t2) (t3 ⊕ t4) ICProdPlus = refl
+  rt2 ar pl pr (t1 ⊠ t2) (t3 ⊠ t4) (ICProd1 ic) with ~dec t1 t3
+  ... | Inl x = abort (to~̸ _ _ ic x)
+  ... | Inr x = pr (ICProd1 (from~̸ t1 t3 x)) (ICProd1 ic)
+  rt2 ar pl pr (t1 ⊠ t2) (t3 ⊠ t4) (ICProd2 ic) with ~dec t1 t3
+  ... | Inl x = pr (ICProd2 (from~̸ t2 t4 (to~̸ t2 t4 ic))) (ICProd2 ic)
+  ... | Inr x = pr (ICProd1 (from~̸ t1 t3 x)) (ICProd2 ic)
+  
   -- if inconsistency at arrows and plusses is proof-irrelevant, then the
   -- two defintions of inconsistency are isomorphic
-  incon-iso : (arr-incon-irrelev : {t1 t2 t3 t4 : τ̇} (x y : incon (t1 ==> t2) (t3 ==> t4)) → x == y)
-              (plus-incon-irrelev : {t1 t2 t3 t4 : τ̇} (x y : incon (t1 ⊕ t2) (t3 ⊕ t4)) → x == y)
-                                   → (t1 t2 : τ̇) → (incon t1 t2) ≃ (t1 ~̸ t2)
-  incon-iso arr-incon-irrelev plus-incon-irrelev t1 t2 = (to~̸ t1 t2) , (from~̸ t1 t2) , (rt2 arr-incon-irrelev plus-incon-irrelev t1 t2) , (rt1 t1 t2)
+  incon-iso :
+    (arr-incon-irrelev : {t1 t2 t3 t4 : τ̇} (x y : incon (t1 ==> t2) (t3 ==> t4)) → x == y) →
+    (plus-incon-irrelev : {t1 t2 t3 t4 : τ̇} (x y : incon (t1 ⊕ t2) (t3 ⊕ t4)) → x == y) →
+    (prod-incon-irrelev : {t1 t2 t3 t4 : τ̇} (x y : incon (t1 ⊠ t2) (t3 ⊠ t4)) → x == y) →
+    (t1 t2 : τ̇) → (incon t1 t2) ≃ (t1 ~̸ t2)
+  incon-iso ar pl pr t1 t2 = (to~̸ t1 t2) , (from~̸ t1 t2) , (rt2 ar pl pr t1 t2) , (rt1 t1 t2)
