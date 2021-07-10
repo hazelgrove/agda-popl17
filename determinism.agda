@@ -130,11 +130,17 @@ module determinism where
   anamovedet (AAZipProdL x d) EMProdParent1 = abort (lem-nomove-para d)
   anamovedet (AAZipProdR x d) EMProdParent2 = abort (lem-nomove-para d)
   
-  lem-holematch : ∀ {t t1 t2} → t ~̸ (⦇⦈ ⊕ ⦇⦈) → t ~ ⦇⦈ → t ▸plus (t1 ⊕ t2) → ⊥
-  lem-holematch a TCRefl MPHole = a TCHole2
-  lem-holematch a TCHole1 MPHole = a TCHole2
-  lem-holematch a TCHole1 MPPlus = a (TCPlus TCHole1 TCHole1)
-  lem-holematch a TCHole2 MPHole = a TCHole2
+  lem-plusholematch : ∀ {t t1 t2} → t ~̸ (⦇⦈ ⊕ ⦇⦈) → t ~ ⦇⦈ → t ▸plus (t1 ⊕ t2) → ⊥
+  lem-plusholematch a TCRefl MPHole = a TCHole2
+  lem-plusholematch a TCHole1 MPHole = a TCHole2
+  lem-plusholematch a TCHole1 MPPlus = a (TCPlus TCHole1 TCHole1)
+  lem-plusholematch a TCHole2 MPHole = a TCHole2
+
+  lem-prodholematch : ∀ {t t1 t2} → t ~̸ (⦇⦈ ⊠ ⦇⦈) → t ~ ⦇⦈ → t ▸prod (t1 ⊠ t2) → ⊥
+  lem-prodholematch a TCRefl MPrHole = a TCHole2
+  lem-prodholematch a TCHole1 MPrHole = a TCHole2
+  lem-prodholematch a TCHole1 MPrProd = a (TCProd TCHole1 TCHole1)
+  lem-prodholematch a TCHole2 MPrHole = a TCHole2
 
   mutual
     -- an action on an expression in a synthetic position produces one
@@ -321,7 +327,11 @@ module determinism where
     actdet-synth EETop wt (SAConCase2 x₁ x₂ x₃) (SAConCase1 x₄ x₅ MPHole) = abort (x₃ TCHole2)
     actdet-synth EETop wt (SAConCase2 x₁ x₂ x₃) (SAConCase1 x₄ x₅ MPPlus) = abort (x₃ (TCPlus TCHole1 TCHole1))
     actdet-synth er wt (SAConCase2 x₁ x₂ x₃) (SAConCase2 x₄ x₅ x₆) = refl , refl
-    actdet-synth = {!!}
+    
+      -- new cases for products
+    actdet-synth er wt SAConProd SAConProd = refl , refl
+    actdet-synth (EEProdL er) () (SAMove x) (SAMove y)
+    actdet-synth (EEProdR er) () (SAMove x) (SAMove y) 
     
     -- an action on an expression in an analytic position produces one
     -- resultant expression and type.
@@ -506,10 +516,39 @@ module determinism where
     actdet-ana EETop (ASubsume SEHole x₁) (AAConInl1 x₂) (AASubsume EETop SEHole SAConInl x₆) {p2 = p2} = abort p2
     actdet-ana EETop (ASubsume SEHole x₁) (AAConInr1 x₂) (AASubsume EETop SEHole SAConInr c) {p2 = p2} = abort p2
 
-    actdet-ana EETop (ASubsume SEHole x₁) (AAConInl1 q) (AAConInl2 x₃) = abort (lem-holematch x₃ x₁ q)
+    actdet-ana EETop (ASubsume SEHole x₁) (AAConInl1 q) (AAConInl2 x₃) = abort (lem-plusholematch x₃ x₁ q)
     actdet-ana EETop (ASubsume SEHole x₁) (AAConInl2 x₂) (AASubsume EETop SEHole SAConInl x₆) = abort (x₂ x₆)
-    actdet-ana EETop (ASubsume SEHole x₁) (AAConInl2 x₂) (AAConInl1 q) = abort (lem-holematch x₂ x₁ q)
-    actdet-ana EETop (ASubsume SEHole x₁) (AAConInr1 x₂) (AAConInr2 x₃) = abort (lem-holematch x₃ x₁ x₂)
+    actdet-ana EETop (ASubsume SEHole x₁) (AAConInl2 x₂) (AAConInl1 q) = abort (lem-plusholematch x₂ x₁ q)
+    actdet-ana EETop (ASubsume SEHole x₁) (AAConInr1 x₂) (AAConInr2 x₃) = abort (lem-plusholematch x₃ x₁ x₂)
     actdet-ana EETop (ASubsume SEHole x₁) (AAConInr2 x₂) (AASubsume EETop x₄ SAConInr x₆) = abort (x₂ x₆)
-    actdet-ana EETop (ASubsume SEHole x₁) (AAConInr2 x₂) (AAConInr1 x₃) = abort (lem-holematch x₂ x₁ x₃)
-    actdet-ana = {!!}
+    actdet-ana EETop (ASubsume SEHole x₁) (AAConInr2 x₂) (AAConInr1 x₃) = abort (lem-plusholematch x₂ x₁ x₃)
+
+    -- new cases for products
+    actdet-ana (EEProdL _) (ASubsume () _) _ _
+    actdet-ana (EEProdR _) (ASubsume () _) _ _
+    actdet-ana EETop (AProd x wt1 wt2) (AASubsume EETop () _ x₄) _
+    actdet-ana EETop (AProd x wt1 wt2) _ (AASubsume EETop () _ x₄)
+    actdet-ana (EEProdL er) (AProd x wt1 wt2) (AASubsume (EEProdL x₁) () x₃ x₄) _
+    actdet-ana (EEProdL er) (AProd x wt1 wt2) _ (AASubsume (EEProdL x₁) () x₃ x₄)
+    actdet-ana (EEProdR er) (AProd x wt1 wt2) (AASubsume (EEProdR x₁) () x₃ x₄) _
+    actdet-ana (EEProdR er) (AProd x wt1 wt2) _ (AASubsume (EEProdR x₁) () x₃ x₄)
+    
+    actdet-ana EETop (ASubsume SEHole x₂) (AASubsume EETop SEHole SAConProd x₄) (AAConProd1 x₅) {p1 = p1} = abort p1 
+    actdet-ana EETop (ASubsume SEHole x₂) (AASubsume EETop SEHole SAConProd x₄) (AAConProd2 x₅) {p1 = p1} = abort p1
+    actdet-ana EETop (ASubsume SEHole x₂) (AAConProd1 x) (AASubsume EETop SEHole SAConProd x₅) {p2 = p2} = abort p2
+    actdet-ana EETop (ASubsume SEHole x₂) (AAConProd2 x) (AASubsume EETop SEHole SAConProd x₅) {p2 = p2} = abort p2
+    
+    actdet-ana EETop (ASubsume SEHole x₂) (AAConProd1 x) (AAConProd1 x₁) = refl
+    actdet-ana EETop (ASubsume SEHole x₂) (AAConProd2 x) (AAConProd2 x₁) = refl
+    actdet-ana EETop (AProd x wt1 wt2) AADel AADel = refl
+    actdet-ana EETop (AProd x wt1 wt2) AAConAsc AAConAsc = refl
+    actdet-ana EETop (ASubsume SEHole x₂) (AAConProd1 x) (AAConProd2 x₁) = abort (lem-prodholematch x₁ x₂ x)
+    actdet-ana EETop (ASubsume SEHole x₂) (AAConProd2 x) (AAConProd1 x₁) = abort (lem-prodholematch x x₂ x₁)
+    actdet-ana (EEProdL er) (AProd x x₁ x₂) (AAZipProdL x₃ y) (AAZipProdL x₄ z) {p1} {p2}
+      with matchprodunicity x x₃
+    ... | refl with matchprodunicity x₃ x₄
+    ... | refl = ap1 (λ e → ⟨ e , _ ⟩₁) (actdet-ana er x₁ y z {p1} {p2})
+    actdet-ana (EEProdR er) (AProd x x₁ x₂) (AAZipProdR x₃ y) (AAZipProdR x₄ z) {p1} {p2}
+      with matchprodunicity x x₃
+    ... | refl with matchprodunicity x₃ x₄
+    ... | refl = ap1 (λ e → ⟨ _ , e ⟩₂) (actdet-ana er x₂ y z {p1} {p2})
