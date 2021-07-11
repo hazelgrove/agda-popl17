@@ -47,7 +47,7 @@ module structural where
   fresh x (·λ y e) = natEQp x y × fresh x e
   fresh x (N n) = ⊤
   fresh x (e1 ·+ e2) = fresh x e1 × fresh x e2
-  fresh x ⦇⦈ = ⊤
+  fresh x ⦇-⦈ = ⊤
   fresh x ⦇⌜ e ⌟⦈ = fresh x e
   fresh x (e1 ∘ e2) = fresh x e1 × fresh x e2
 

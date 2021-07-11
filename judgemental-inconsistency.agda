@@ -43,11 +43,11 @@ module judgemental-inconsistency where
   ... | Inr qq = ICArr1 (from~̸ _ _ qq)
   -- the remaining consistent types all lead to absurdities
   from~̸ num num ncon = abort (ncon TCRefl)
-  from~̸ num ⦇⦈ ncon = abort (ncon TCHole1)
-  from~̸ ⦇⦈ num ncon = abort (ncon TCHole2)
-  from~̸ ⦇⦈ ⦇⦈ ncon = abort (ncon TCRefl)
-  from~̸ ⦇⦈ (t2 ==> t3) ncon = abort (ncon TCHole2)
-  from~̸ (t1 ==> t2) ⦇⦈ ncon = abort (ncon TCHole1)
+  from~̸ num ⦇-⦈ ncon = abort (ncon TCHole1)
+  from~̸ ⦇-⦈ num ncon = abort (ncon TCHole2)
+  from~̸ ⦇-⦈ ⦇-⦈ ncon = abort (ncon TCRefl)
+  from~̸ ⦇-⦈ (t2 ==> t3) ncon = abort (ncon TCHole2)
+  from~̸ (t1 ==> t2) ⦇-⦈ ncon = abort (ncon TCHole1)
 
   -- need to display that at least one of the round-trips above is stable
   -- for this to be structure preserving and really an iso.
@@ -56,11 +56,11 @@ module judgemental-inconsistency where
   rt1 (t1 ==> t2) num x         = funext (λ x₁ → abort (x x₁))
   rt1 (t1 ==> t2) (t3 ==> t4) x = funext (λ x₁ → abort (x x₁))
   rt1 num num x                 = abort (x TCRefl)
-  rt1 num ⦇⦈ x                  = abort (x TCHole1)
-  rt1 ⦇⦈ num x                  = abort (x TCHole2)
-  rt1 ⦇⦈ ⦇⦈ x                   = abort (x TCRefl)
-  rt1 ⦇⦈ (t2 ==> t3) x          = abort (x TCHole2)
-  rt1 (t1 ==> t2) ⦇⦈ x          = abort (x TCHole1)
+  rt1 num ⦇-⦈ x                  = abort (x TCHole1)
+  rt1 ⦇-⦈ num x                  = abort (x TCHole2)
+  rt1 ⦇-⦈ ⦇-⦈ x                   = abort (x TCRefl)
+  rt1 ⦇-⦈ (t2 ==> t3) x          = abort (x TCHole2)
+  rt1 (t1 ==> t2) ⦇-⦈ x          = abort (x TCHole1)
 
   -- if inconsistency at arrows is proof-irrelevant, then all of
   -- inconsistency is proof-irrelevant
