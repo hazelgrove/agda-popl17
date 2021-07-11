@@ -130,13 +130,13 @@ module determinism where
   anamovedet (AAZipProdL x d) EMProdParent1 = abort (lem-nomove-para d)
   anamovedet (AAZipProdR x d) EMProdParent2 = abort (lem-nomove-para d)
   
-  lem-plusholematch : ∀ {t t1 t2} → t ~̸ (⦇⦈ ⊕ ⦇⦈) → t ~ ⦇⦈ → t ▸plus (t1 ⊕ t2) → ⊥
+  lem-plusholematch : ∀ {t t1 t2} → t ~̸ (⦇-⦈ ⊕ ⦇-⦈) → t ~ ⦇-⦈ → t ▸plus (t1 ⊕ t2) → ⊥
   lem-plusholematch a TCRefl MPHole = a TCHole2
   lem-plusholematch a TCHole1 MPHole = a TCHole2
   lem-plusholematch a TCHole1 MPPlus = a (TCPlus TCHole1 TCHole1)
   lem-plusholematch a TCHole2 MPHole = a TCHole2
 
-  lem-prodholematch : ∀ {t t1 t2} → t ~̸ (⦇⦈ ⊠ ⦇⦈) → t ~ ⦇⦈ → t ▸prod (t1 ⊠ t2) → ⊥
+  lem-prodholematch : ∀ {t t1 t2} → t ~̸ (⦇-⦈ ⊠ ⦇-⦈) → t ~ ⦇-⦈ → t ▸prod (t1 ⊠ t2) → ⊥
   lem-prodholematch a TCRefl MPrHole = a TCHole2
   lem-prodholematch a TCHole1 MPrHole = a TCHole2
   lem-prodholematch a TCHole1 MPrProd = a (TCProd TCHole1 TCHole1)
