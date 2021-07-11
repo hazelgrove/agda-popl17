@@ -5,7 +5,7 @@ module core where
   -- types
   data τ̇ : Set where
     num  : τ̇
-    ⦇⦈ : τ̇
+    ⦇-⦈ : τ̇
     _==>_ : τ̇ → τ̇ → τ̇
 
   -- expressions, prefixed with a · to distinguish name clashes with agda
@@ -16,7 +16,7 @@ module core where
     ·λ    : Nat → ė → ė
     N     : Nat → ė
     _·+_  : ė → ė → ė
-    ⦇⦈  : ė
+    ⦇-⦈  : ė
     ⦇⌜_⌟⦈ : ė → ė
     _∘_   : ė → ė → ė
 
@@ -56,8 +56,8 @@ module core where
   -- the type consistency judgement
   data _~_ : (t1 : τ̇) → (t2 : τ̇) → Set where
     TCRefl : {t : τ̇} → t ~ t
-    TCHole1 : {t : τ̇} → t ~ ⦇⦈
-    TCHole2 : {t : τ̇} → ⦇⦈ ~ t
+    TCHole1 : {t : τ̇} → t ~ ⦇-⦈
+    TCHole2 : {t : τ̇} → ⦇-⦈ ~ t
     TCArr : {t1 t2 t1' t2' : τ̇} →
                t1 ~ t1' →
                t2 ~ t2' →
@@ -83,7 +83,7 @@ module core where
 
   --- matching for arrows
   data _▸arr_ : τ̇ → τ̇ → Set where
-    MAHole : ⦇⦈ ▸arr (⦇⦈ ==> ⦇⦈)
+    MAHole : ⦇-⦈ ▸arr (⦇-⦈ ==> ⦇-⦈)
     MAArr  : {t1 t2 : τ̇} → (t1 ==> t2) ▸arr (t1 ==> t2)
 
   -- matching produces unique answers
@@ -98,7 +98,7 @@ module core where
   -- function type
   matchconsist : ∀{t t'} →
                  t ▸arr t' →
-                 t ~ (⦇⦈ ==> ⦇⦈)
+                 t ~ (⦇-⦈ ==> ⦇-⦈)
   matchconsist MAHole = TCHole2
   matchconsist MAArr = TCArr TCHole1 TCHole1
 
@@ -126,10 +126,10 @@ module core where
                  Γ ⊢ e1 <= num →
                  Γ ⊢ e2 <= num →
                  Γ ⊢ (e1 ·+ e2) => num
-      SEHole  : {Γ : ·ctx} → Γ ⊢ ⦇⦈ => ⦇⦈
+      SEHole  : {Γ : ·ctx} → Γ ⊢ ⦇-⦈ => ⦇-⦈
       SNEHole : {Γ : ·ctx} {e : ė} {t : τ̇} →
                  Γ ⊢ e => t →
-                 Γ ⊢ ⦇⌜ e ⌟⦈ => ⦇⦈
+                 Γ ⊢ ⦇⌜ e ⌟⦈ => ⦇-⦈
 
     -- analysis
     data _⊢_<=_ : (Γ : ·ctx) → (e : ė) → (t : τ̇) → Set where
@@ -169,14 +169,14 @@ module core where
 
   -- type consistency isn't transitive
   not-trans : ((t1 t2 t3 : τ̇) → t1 ~ t2 → t2 ~ t3 → t1 ~ t3) → ⊥
-  not-trans t with t (num ==> num) ⦇⦈ num TCHole1 TCHole2
+  not-trans t with t (num ==> num) ⦇-⦈ num TCHole1 TCHole2
   ... | ()
 
   --  every pair of types is either consistent or not consistent
   ~dec : (t1 t2 : τ̇) → ((t1 ~ t2) + (t1 ~̸ t2))
     -- this takes care of all hole cases, so we don't consider them below
-  ~dec _ ⦇⦈ = Inl TCHole1
-  ~dec ⦇⦈ _ = Inl TCHole2
+  ~dec _ ⦇-⦈ = Inl TCHole1
+  ~dec ⦇-⦈ _ = Inl TCHole2
     -- num cases
   ~dec num num = Inl TCRefl
   ~dec num (t2 ==> t3) = Inr ICNumArr1
@@ -226,7 +226,7 @@ module core where
   -- those types without holes anywhere
   tcomplete : τ̇ → Set
   tcomplete num         = ⊤
-  tcomplete ⦇⦈        = ⊥
+  tcomplete ⦇-⦈        = ⊥
   tcomplete (t1 ==> t2) = (tcomplete t1) × (tcomplete t2)
 
   -- similarly to the complete types, the complete expressions
@@ -236,7 +236,7 @@ module core where
   ecomplete (·λ _ e1)  = ecomplete e1
   ecomplete (N x)      = ⊤
   ecomplete (e1 ·+ e2) = ecomplete e1 × ecomplete e2
-  ecomplete ⦇⦈       = ⊥
+  ecomplete ⦇-⦈       = ⊥
   ecomplete ⦇⌜ e1 ⌟⦈   = ⊥
   ecomplete (e1 ∘ e2)  = ecomplete e1 × ecomplete e2
 
@@ -310,10 +310,10 @@ module core where
     TMArrParent2 : {t1 t2 : τ̇} →
                (t1 ==>₂ ▹ t2 ◃) + move parent +> ▹ t1 ==> t2 ◃
     TMDel     : {t : τ̇} →
-                (▹ t ◃) + del +> (▹ ⦇⦈ ◃)
+                (▹ t ◃) + del +> (▹ ⦇-⦈ ◃)
     TMConArrow  : {t : τ̇} →
-                (▹ t ◃) + construct arrow +> (t ==>₂ ▹ ⦇⦈ ◃)
-    TMConNum  : (▹ ⦇⦈ ◃) + construct num +> (▹ num ◃)
+                (▹ t ◃) + construct arrow +> (t ==>₂ ▹ ⦇-⦈ ◃)
+    TMConNum  : (▹ ⦇-⦈ ◃) + construct num +> (▹ num ◃)
     TMArrZip1 : {t1 t1' : τ̂} {t2 : τ̇} {α : action} →
                 (t1 + α +> t1') →
                 ((t1 ==>₁ t2) + α +> (t1' ==>₁ t2))
@@ -370,35 +370,35 @@ module core where
                 (e + move δ +>e e') →
                 Γ ⊢ e => t ~ move δ ~> e' => t
       SADel : {Γ : ·ctx} {e : ė} {t : τ̇} →
-                Γ ⊢ ▹ e ◃ => t ~ del ~> ▹ ⦇⦈ ◃ => ⦇⦈
+                Γ ⊢ ▹ e ◃ => t ~ del ~> ▹ ⦇-⦈ ◃ => ⦇-⦈
       SAConAsc : {Γ : ·ctx} {e : ė} {t : τ̇} →
                 Γ ⊢ ▹ e ◃ => t ~ construct asc ~> (e ·:₂ ▹ t ◃ ) => t
       SAConVar : {Γ : ·ctx} {x : Nat} {t : τ̇} →
                 (p : (x , t) ∈ Γ) →
-                Γ ⊢ ▹ ⦇⦈ ◃ => ⦇⦈ ~ construct (var x) ~> ▹ X x ◃ => t
+                Γ ⊢ ▹ ⦇-⦈ ◃ => ⦇-⦈ ~ construct (var x) ~> ▹ X x ◃ => t
       SAConLam : {Γ : ·ctx} {x : Nat} →
                (x # Γ) →
-                Γ ⊢ ▹ ⦇⦈ ◃ => ⦇⦈ ~ construct (lam x) ~>
-                   ((·λ x ⦇⦈) ·:₂ (▹ ⦇⦈ ◃ ==>₁ ⦇⦈)) => (⦇⦈ ==> ⦇⦈)
+                Γ ⊢ ▹ ⦇-⦈ ◃ => ⦇-⦈ ~ construct (lam x) ~>
+                   ((·λ x ⦇-⦈) ·:₂ (▹ ⦇-⦈ ◃ ==>₁ ⦇-⦈)) => (⦇-⦈ ==> ⦇-⦈)
       SAConApArr : {Γ : ·ctx} {t t1 t2 : τ̇} {e : ė} →
                 t ▸arr (t1 ==> t2) →
-                Γ ⊢ ▹ e ◃ => t ~ construct ap ~>  e ∘₂ ▹ ⦇⦈ ◃ => t2
+                Γ ⊢ ▹ e ◃ => t ~ construct ap ~>  e ∘₂ ▹ ⦇-⦈ ◃ => t2
       SAConApOtw : {Γ : ·ctx} {t : τ̇} {e : ė} →
-                (t ~̸ (⦇⦈ ==> ⦇⦈)) →
-                Γ ⊢ ▹ e ◃ => t ~ construct ap ~> ⦇⌜ e ⌟⦈ ∘₂ ▹ ⦇⦈ ◃ => ⦇⦈
+                (t ~̸ (⦇-⦈ ==> ⦇-⦈)) →
+                Γ ⊢ ▹ e ◃ => t ~ construct ap ~> ⦇⌜ e ⌟⦈ ∘₂ ▹ ⦇-⦈ ◃ => ⦇-⦈
       SAConNumlit : {Γ : ·ctx} {n : Nat} →
-                Γ ⊢ ▹ ⦇⦈ ◃ => ⦇⦈ ~ construct (numlit n) ~> ▹ N n ◃ => num
+                Γ ⊢ ▹ ⦇-⦈ ◃ => ⦇-⦈ ~ construct (numlit n) ~> ▹ N n ◃ => num
       SAConPlus1 : {Γ : ·ctx} {e : ė} {t : τ̇} →
                 (t ~ num) →
-                Γ ⊢ ▹ e ◃ => t ~ construct plus ~> e ·+₂ ▹ ⦇⦈ ◃  => num
+                Γ ⊢ ▹ e ◃ => t ~ construct plus ~> e ·+₂ ▹ ⦇-⦈ ◃  => num
       SAConPlus2 : {Γ : ·ctx} {e : ė} {t : τ̇} →
                 (t ~̸ num) →
-                Γ ⊢ ▹ e ◃ => t ~ construct plus ~> ⦇⌜ e ⌟⦈ ·+₂ ▹ ⦇⦈ ◃  => num
+                Γ ⊢ ▹ e ◃ => t ~ construct plus ~> ⦇⌜ e ⌟⦈ ·+₂ ▹ ⦇-⦈ ◃  => num
       SAConNEHole : {Γ : ·ctx} {e : ė} {t : τ̇} →
-                  Γ ⊢ ▹ e ◃ => t ~ construct nehole ~> ⦇⌜ ▹ e ◃ ⌟⦈ => ⦇⦈
+                  Γ ⊢ ▹ e ◃ => t ~ construct nehole ~> ⦇⌜ ▹ e ◃ ⌟⦈ => ⦇-⦈
       SAFinish : {Γ : ·ctx} {e : ė} {t : τ̇} →
                  (Γ ⊢ e => t) →
-                 Γ ⊢ ▹ ⦇⌜ e ⌟⦈ ◃ => ⦇⦈ ~ finish ~> ▹ e ◃ => t
+                 Γ ⊢ ▹ ⦇⌜ e ⌟⦈ ◃ => ⦇-⦈ ~ finish ~> ▹ e ◃ => t
       SAZipAsc1 : {Γ : ·ctx} {e e' : ê} {α : action} {t : τ̇} →
                   (Γ ⊢ e ~ α ~> e' ⇐ t) →
                   Γ ⊢ (e ·:₁ t) => t ~ α ~> (e' ·:₁ t) => t
@@ -430,7 +430,7 @@ module core where
                    (erase-e e e◆) →
                    (Γ ⊢ e◆ => t) →
                    (Γ ⊢ e => t ~ α ~> e' => t') →
-                   Γ ⊢ ⦇⌜ e ⌟⦈ => ⦇⦈ ~ α ~>  ⦇⌜ e' ⌟⦈ => ⦇⦈
+                   Γ ⊢ ⦇⌜ e ⌟⦈ => ⦇-⦈ ~ α ~>  ⦇⌜ e' ⌟⦈ => ⦇-⦈
 
     -- analytic action expressions
     data _⊢_~_~>_⇐_ : (Γ : ·ctx) → (e : ê) → (α : action) →
@@ -445,26 +445,26 @@ module core where
                   (e + move δ +>e e') →
                   Γ ⊢ e ~ move δ ~> e' ⇐ t
       AADel : {e : ė} {Γ : ·ctx} {t : τ̇} →
-                 Γ ⊢ ▹ e ◃ ~ del ~> ▹ ⦇⦈ ◃ ⇐ t
+                 Γ ⊢ ▹ e ◃ ~ del ~> ▹ ⦇-⦈ ◃ ⇐ t
       AAConAsc : {Γ : ·ctx} {e : ė} {t : τ̇} →
                  Γ ⊢ ▹ e ◃ ~ construct asc ~> (e ·:₂ ▹ t ◃) ⇐ t
       AAConVar : {Γ : ·ctx} {t t' : τ̇} {x : Nat} →
                  (t ~̸ t') →
                  (p : (x , t') ∈ Γ) →
-                 Γ ⊢ ▹ ⦇⦈ ◃ ~ construct (var x) ~> ⦇⌜ ▹ X x ◃ ⌟⦈ ⇐ t
+                 Γ ⊢ ▹ ⦇-⦈ ◃ ~ construct (var x) ~> ⦇⌜ ▹ X x ◃ ⌟⦈ ⇐ t
       AAConLam1 : {Γ : ·ctx} {x : Nat} {t t1 t2 : τ̇} →
                   (x # Γ) →
                   (t ▸arr (t1 ==> t2)) →
-                  Γ ⊢ ▹ ⦇⦈ ◃ ~ construct (lam x) ~>
-                      ·λ x (▹ ⦇⦈ ◃) ⇐ t
+                  Γ ⊢ ▹ ⦇-⦈ ◃ ~ construct (lam x) ~>
+                      ·λ x (▹ ⦇-⦈ ◃) ⇐ t
       AAConLam2 : {Γ : ·ctx} {x : Nat} {t : τ̇} →
                   (x # Γ) →
-                  (t ~̸ (⦇⦈ ==> ⦇⦈)) →
-                  Γ ⊢ ▹ ⦇⦈ ◃ ~ construct (lam x) ~>
-                      ⦇⌜ ·λ x ⦇⦈ ·:₂ (▹ ⦇⦈ ◃ ==>₁ ⦇⦈) ⌟⦈ ⇐ t
+                  (t ~̸ (⦇-⦈ ==> ⦇-⦈)) →
+                  Γ ⊢ ▹ ⦇-⦈ ◃ ~ construct (lam x) ~>
+                      ⦇⌜ ·λ x ⦇-⦈ ·:₂ (▹ ⦇-⦈ ◃ ==>₁ ⦇-⦈) ⌟⦈ ⇐ t
       AAConNumlit : {Γ : ·ctx} {t : τ̇} {n : Nat} →
                     (t ~̸ num) →
-                    Γ ⊢ ▹ ⦇⦈ ◃ ~ construct (numlit n) ~> ⦇⌜ ▹ (N n) ◃ ⌟⦈ ⇐ t
+                    Γ ⊢ ▹ ⦇-⦈ ◃ ~ construct (numlit n) ~> ⦇⌜ ▹ (N n) ◃ ⌟⦈ ⇐ t
       AAFinish : {Γ : ·ctx} {e : ė} {t : τ̇} →
                  (Γ ⊢ e <= t) →
                  Γ ⊢ ▹ ⦇⌜ e ⌟⦈ ◃ ~ finish ~> ▹ e ◃ ⇐ t

@@ -39,7 +39,7 @@ module examples where
 
   -- applying three to four has type hole -- but there is no action that
   -- can fill the hole in the type so this term is forever incomplete.
-  ex4 : ∅ ⊢ ((N 3) ·: ⦇⦈) ∘ (N 4) => ⦇⦈
+  ex4 : ∅ ⊢ ((N 3) ·: ⦇-⦈) ∘ (N 4) => ⦇-⦈
   ex4 = SAp (SAsc (ASubsume SNum TCHole2)) MAHole (ASubsume SNum TCHole2)
 
   -- this module contains small examples that demonstrate the judgements
@@ -51,12 +51,12 @@ module examples where
   -- have to unzip down to the point of the structure where you want to
   -- apply an edit, do the local edit rule, and then put it back together
   -- around you
-  talk0 :  ∅ ⊢ (▹ ⦇⦈ ◃ ·+₁ ⦇⦈) => num ~ construct (numlit 7) ~>
-               (▹ N 7 ◃  ·+₁ ⦇⦈) => num
+  talk0 :  ∅ ⊢ (▹ ⦇-⦈ ◃ ·+₁ ⦇-⦈) => num ~ construct (numlit 7) ~>
+               (▹ N 7 ◃  ·+₁ ⦇-⦈) => num
   talk0 = SAZipPlus1 (AASubsume EETop SEHole SAConNumlit TCRefl)
 
-  talk1 : ∅ ⊢ (·λ 0 ⦇⦈ ·:₂ (▹ ⦇⦈ ◃ ==>₁ ⦇⦈)) => (⦇⦈ ==> ⦇⦈) ~ construct num ~>
-              (·λ 0 ⦇⦈ ·:₂ (▹ num ◃ ==>₁ ⦇⦈)) => (num ==> ⦇⦈)
+  talk1 : ∅ ⊢ (·λ 0 ⦇-⦈ ·:₂ (▹ ⦇-⦈ ◃ ==>₁ ⦇-⦈)) => (⦇-⦈ ==> ⦇-⦈) ~ construct num ~>
+              (·λ 0 ⦇-⦈ ·:₂ (▹ num ◃ ==>₁ ⦇-⦈)) => (num ==> ⦇-⦈)
   talk1 = SAZipAsc2 (TMArrZip1 TMConNum) (ETArrL ETTop) (ETArrL ETTop)
                     (ALam refl MAArr (ASubsume SEHole TCRefl))
 
@@ -78,7 +78,7 @@ module examples where
     :: []
 
 
-  figure1 : runsynth ∅ ▹ ⦇⦈ ◃ ⦇⦈ fig1-l (·λ 0 (X 0 ·+₂ ▹ N 1 ◃) ·:₁ (num ==> num)) (num ==> num)
+  figure1 : runsynth ∅ ▹ ⦇-⦈ ◃ ⦇-⦈ fig1-l (·λ 0 (X 0 ·+₂ ▹ N 1 ◃) ·:₁ (num ==> num)) (num ==> num)
   figure1 =
         DoSynth (SAConLam refl)
         (DoSynth (SAZipAsc2 (TMArrZip1 TMConNum) (ETArrL ETTop) (ETArrL ETTop) (ALam refl MAArr (ASubsume SEHole TCRefl)))
@@ -113,7 +113,7 @@ module examples where
            :: finish
            :: []
 
-  figure2 : runsynth (∅ ,, (incr , num ==> num)) ▹ ⦇⦈ ◃ ⦇⦈ fig2-l (X incr ∘₂ ▹ X incr ∘ (N 3) ◃)  num
+  figure2 : runsynth (∅ ,, (incr , num ==> num)) ▹ ⦇-⦈ ◃ ⦇-⦈ fig2-l (X incr ∘₂ ▹ X incr ∘ (N 3) ◃)  num
   figure2 =  DoSynth (SAConVar refl)
             (DoSynth (SAConApArr MAArr)
             (DoSynth (SAZipApAna MAArr (SVar refl) (AAConVar (ICNumArr1) refl))
@@ -141,7 +141,7 @@ module examples where
            :: move parent
            :: []
 
-  figure2alt : runsynth (∅ ,, (incr , num ==> num)) ▹ ⦇⦈ ◃ ⦇⦈ fig2alt-l (X incr ∘₂ ▹ X incr ∘ (N 3) ◃)  num
+  figure2alt : runsynth (∅ ,, (incr , num ==> num)) ▹ ⦇-⦈ ◃ ⦇-⦈ fig2alt-l (X incr ∘₂ ▹ X incr ∘ (N 3) ◃)  num
   figure2alt = DoSynth (SAConVar refl)
             (DoSynth (SAConApArr MAArr)
             (DoSynth (SAZipApAna MAArr (SVar refl) (AASubsume EETop SEHole (SAConApArr MAHole) TCHole1))
@@ -161,8 +161,8 @@ module examples where
   -- derivation aren't needed -- the ascription is redundant because the
   -- type is already pinned to num ==> num, so that's the only thing that
   -- could fill the holes produced.
-  notdet1 : ∅ ⊢ ▹ ⦇⦈ ◃ ~ construct (lam 0) ~> ·λ 0 ▹ ⦇⦈ ◃ ⇐ (num ==> num)
+  notdet1 : ∅ ⊢ ▹ ⦇-⦈ ◃ ~ construct (lam 0) ~> ·λ 0 ▹ ⦇-⦈ ◃ ⇐ (num ==> num)
   notdet1 = AAConLam1 refl MAArr
 
-  notdet2 : ∅ ⊢ ▹ ⦇⦈ ◃ ~ construct (lam 0) ~> ·λ 0 ⦇⦈ ·:₂ (▹ ⦇⦈ ◃ ==>₁ ⦇⦈) ⇐ (num ==> num)
+  notdet2 : ∅ ⊢ ▹ ⦇-⦈ ◃ ~ construct (lam 0) ~> ·λ 0 ⦇-⦈ ·:₂ (▹ ⦇-⦈ ◃ ==>₁ ⦇-⦈) ⇐ (num ==> num)
   notdet2 = AASubsume EETop SEHole (SAConLam refl) (TCArr TCHole1 TCHole1)

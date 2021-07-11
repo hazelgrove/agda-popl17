@@ -17,9 +17,9 @@ module constructability where
   -- in the list in the current formation context into the list monoid.
 
   -- construction of types
-  construct-type : (t : τ̇) → Σ[ L ∈ List action ] runtype (▹ ⦇⦈ ◃) L (▹ t ◃)
+  construct-type : (t : τ̇) → Σ[ L ∈ List action ] runtype (▹ ⦇-⦈ ◃) L (▹ t ◃)
   construct-type num  = [ construct num ] , DoType TMConNum DoRefl
-  construct-type ⦇⦈ = [ del ]           , DoType TMDel DoRefl
+  construct-type ⦇-⦈ = [ del ]           , DoType TMDel DoRefl
   construct-type (t1 ==> t2) with construct-type t1 | construct-type t2
   ... | (l1 , ih1) | (l2 , ih2) = l1 ++ construct arrow :: l2 ++ [ move parent ] ,
                                  runtype++ ih1
@@ -31,7 +31,7 @@ module constructability where
     -- construction of expressions in synthetic positions
     construct-synth : {Γ : ·ctx} {t : τ̇} {e : ė} → (Γ ⊢ e => t) →
                                   Σ[ L ∈ List action ]
-                                     runsynth Γ ▹ ⦇⦈ ◃ ⦇⦈ L ▹ e ◃ t
+                                     runsynth Γ ▹ ⦇-⦈ ◃ ⦇-⦈ L ▹ e ◃ t
       -- the three base cases
     construct-synth (SVar x) = [ construct (var _) ]    , DoSynth (SAConVar x) DoRefl
     construct-synth SNum =     [ construct (numlit _) ] , DoSynth SAConNumlit DoRefl
@@ -71,7 +71,7 @@ module constructability where
     -- construction of expressions in analytic positions
     construct-ana : {Γ : ·ctx} {t : τ̇} {e : ė} → (Γ ⊢ e <= t) →
                                 Σ[ L ∈ List action ]
-                                   runana Γ ▹ ⦇⦈ ◃ L ▹ e ◃ t
+                                   runana Γ ▹ ⦇-⦈ ◃ L ▹ e ◃ t
     construct-ana (ASubsume x c) with construct-synth x
     ... | (l , ih) = construct nehole :: l ++ (move parent :: finish :: []) ,
                      DoAna (AASubsume EETop SEHole SAConNEHole TCHole1)
