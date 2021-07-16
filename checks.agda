@@ -347,17 +347,58 @@ module checks where
                             (ziplem-case3 x# y# wt1 wt2 m ra)
 
   -- zip lemma for products
-  ziplem-prodl : ∀{ t t1 t2 Γ e L e' e1 } →
-               t ▸prod (t1 ⊠ t2) →
-               runana Γ e L e' t1 →
-               runana Γ ⟨ e , e1 ⟩₁ L ⟨ e' , e1 ⟩₁ t
-  ziplem-prodl m DoRefl = DoRefl
-  ziplem-prodl m (DoAna x ra) = DoAna (AAZipProdL m x) (ziplem-prodl m ra)
+  ziplem-pair1 : ∀ {t1 t1' t2 Γ e1 e1◆ l e1' e2} →
+                 erase-e e1 e1◆ →
+                 Γ ⊢ e1◆ => t1 →
+                 runsynth Γ e1 t1 l e1' t1' →
+                 Γ ⊢ e2 => t2 → 
+                 runsynth Γ ⟨ e1 , e2 ⟩₁ (t1 ⊠ t2) l ⟨ e1' , e2 ⟩₁ (t1' ⊠ t2)
+  ziplem-pair1 er wt1 DoRefl wt2 = DoRefl
+  ziplem-pair1 er wt1 (DoSynth x rs) wt2 =
+               DoSynth (SAZipPair1 er wt1 x wt2)
+                       (ziplem-pair1 (rel◆ _) (actsense-synth er (rel◆ _) x wt1) rs wt2)
   
-  ziplem-prodr : ∀{ t t1 t2 Γ e L e' e1 } →
-               t ▸prod (t1 ⊠ t2) →
-               runana Γ e L e' t2 →
-               runana Γ ⟨ e1 , e ⟩₂ L ⟨ e1 , e' ⟩₂ t
-  ziplem-prodr m DoRefl = DoRefl
-  ziplem-prodr m (DoAna x ra) = DoAna (AAZipProdR m x) (ziplem-prodr m ra)
-  
+  ziplem-pair2 : ∀ {t1 t2 t2' Γ e1 e2 e2◆ l e2'} →
+                 Γ ⊢ e1 => t1 →
+                 erase-e e2 e2◆ →
+                 Γ ⊢ e2◆ => t2 →
+                 runsynth Γ e2 t2 l e2' t2' →
+                 runsynth Γ ⟨ e1 , e2 ⟩₂ (t1 ⊠ t2) l ⟨ e1 , e2' ⟩₂ (t1 ⊠ t2')
+  ziplem-pair2 wt1 er wt2 DoRefl = DoRefl
+  ziplem-pair2 wt1 er wt2 (DoSynth x rs) =
+               DoSynth (SAZipPair2 wt1 er wt2 x)
+                       (ziplem-pair2 wt1 (rel◆ _) (actsense-synth er (rel◆ _) x wt2) rs)
+
+  ziplem-moves-fst : ∀ {t× t×' t1 t1' t2 t2' Γ e e◆ l e'} →
+                   t× ▸prod (t1 ⊠ t2) → 
+                   t×' ▸prod (t1' ⊠ t2') →
+                   erase-e e e◆ →
+                   Γ ⊢ e◆ => t× →
+                   movements l →
+                   runsynth Γ e t× l e' t×' →
+                   runsynth Γ (fst e) t1 l (fst e') t1'
+  ziplem-moves-fst pr pr' er wt m DoRefl with matchprodunicity pr pr'
+  ... | refl = DoRefl
+  ziplem-moves-fst pr pr' er wt (AM:: m) (DoSynth x rs)
+    with endpoints (actsense-synth er (rel◆ _) x wt) rs m
+  ... | refl with moveerase-synth er wt x
+  ... | q , refl with matchprodunicity pr pr'
+  ... | refl = DoSynth (SAZipFst pr pr' er wt x)
+                       (ziplem-moves-fst pr pr' (eq-er-trans q er) wt m rs)
+
+  ziplem-moves-snd : ∀ {t× t×' t1 t1' t2 t2' Γ e e◆ l e'} →
+                   t× ▸prod (t1 ⊠ t2) → 
+                   t×' ▸prod (t1' ⊠ t2') →
+                   erase-e e e◆ →
+                   Γ ⊢ e◆ => t× →
+                   movements l →
+                   runsynth Γ e t× l e' t×' →
+                   runsynth Γ (snd e) t2 l (snd e') t2'
+  ziplem-moves-snd pr pr' er wt m DoRefl with matchprodunicity pr pr'
+  ... | refl = DoRefl
+  ziplem-moves-snd pr pr' er wt (AM:: m) (DoSynth x rs)
+    with endpoints (actsense-synth er (rel◆ _) x wt) rs m
+  ... | refl with moveerase-synth er wt x
+  ... | q , refl with matchprodunicity pr pr'
+  ... | refl = DoSynth (SAZipSnd pr pr' er wt x)
+                       (ziplem-moves-snd pr pr' (eq-er-trans q er) wt m rs)

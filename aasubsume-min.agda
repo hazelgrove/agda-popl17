@@ -17,6 +17,10 @@ module aasubsume-min where
     aasubmin-synth (SAZipPlus1 x) = aasubmin-ana x
     aasubmin-synth (SAZipPlus2 x) = aasubmin-ana x
     aasubmin-synth (SAZipHole x x₁ d) = aasubmin-synth d
+    aasubmin-synth (SAZipPair1 x x₁ d x₂) = aasubmin-synth d
+    aasubmin-synth (SAZipPair2 x x₁ x₂ d) = aasubmin-synth d
+    aasubmin-synth (SAZipFst x x₁ x₂ x₃ d) = aasubmin-synth d
+    aasubmin-synth (SAZipSnd x x₁ x₂ x₃ d) = aasubmin-synth d
     aasubmin-synth _ = ⊤
 
     aasubmin-ana : ∀{Γ e α e' t} → (Γ ⊢ e ~ α ~> e' ⇐ t) → Set
@@ -25,7 +29,6 @@ module aasubsume-min where
     aasubmin-ana (AASubsume x x₁ SAConInr x₃) = ⊥
     aasubmin-ana (AASubsume x x₁ (SAConLam x₃) x₄) = ⊥
     aasubmin-ana (AASubsume EETop SEHole (SAConCase1 a b c) x₄) = ⊥
-    aasubmin-ana (AASubsume x x₁ SAConProd x₃) = ⊥
     aasubmin-ana (AASubsume x x₁ s x₃) = aasubmin-synth s
     aasubmin-ana (AAZipLam x₁ x₂ d) = aasubmin-ana d
     aasubmin-ana (AAZipInl x y) = aasubmin-ana y
@@ -33,8 +36,6 @@ module aasubsume-min where
     aasubmin-ana (AAZipCase1 a b c d e f g h) = aasubmin-synth e
     aasubmin-ana (AAZipCase2 a b c d e) = aasubmin-ana e
     aasubmin-ana (AAZipCase3 a b c d f) = aasubmin-ana f
-    aasubmin-ana (AAZipProdL a b) = aasubmin-ana b
-    aasubmin-ana (AAZipProdR a b) = aasubmin-ana b
     aasubmin-ana _ = ⊤
 
   -- the minimization predicate propagates through subsumption rules
@@ -67,7 +68,15 @@ module aasubsume-min where
   min-ana-lem SAConInr _ = <>
   min-ana-lem (SAConCase1 x₁ x₂ x₃) _ = <>
   min-ana-lem (SAConCase2 x₁ x₂ x₃) _ = <>
-  min-ana-lem SAConProd _ = <>
+  min-ana-lem SAConPair _ = <>
+  min-ana-lem (SAConFst1 pr) _ = <>
+  min-ana-lem (SAConFst2 inc) _ = <>
+  min-ana-lem (SAConSnd1 pr) _ = <>
+  min-ana-lem (SAConSnd2 inc) _ = <>
+  min-ana-lem (SAZipPair1 x x₁ x₂ x₃) min = min
+  min-ana-lem (SAZipPair2 x x₁ x₂ x₃) min = min
+  min-ana-lem (SAZipFst x x₁ x₂ x₃ x₄) min = min
+  min-ana-lem (SAZipSnd x x₁ x₂ x₃ x₄) min = min
   
   -- any derivation of an action can be minimized to avoid this cases that
   -- induce non-determinism.
@@ -103,7 +112,19 @@ module aasubsume-min where
     min-synth SAConInr = _ , SAConInr , <>
     min-synth (SAConCase1 a b c) = _ , (SAConCase1 a b c) , <>
     min-synth (SAConCase2 a b c) = _ , SAConCase2 a b c , <>
-    min-synth SAConProd = _ , SAConProd , <>
+    min-synth SAConPair = _ , SAConPair , <>
+    min-synth (SAConFst1 pr) = _ , SAConFst1 pr , <>
+    min-synth (SAConFst2 inc) = _ , SAConFst2 inc , <>
+    min-synth (SAConSnd1 pr) = _ , SAConSnd1 pr , <>
+    min-synth (SAConSnd2 inc) = _ , SAConSnd2 inc , <>
+    min-synth (SAZipPair1 x x₁ d x₃) with min-synth d
+    ... | _ , a , b = _ , (SAZipPair1 x x₁ a x₃) , b
+    min-synth (SAZipPair2 x x₁ x₂ d) with min-synth d
+    ... | _ , a , b = _ , (SAZipPair2 x x₁ x₂ a) , b
+    min-synth (SAZipFst x x₁ x₂ x₃ d) with min-synth d
+    ... | _ , a , b = _ , (SAZipFst x x₁ x₂ x₃ a) , b
+    min-synth (SAZipSnd x x₁ x₂ x₃ d) with min-synth d
+    ... | _ , a , b = _ , (SAZipSnd x x₁ x₂ x₃ a) , b
     
     min-ana : ∀{Γ e α e' t} → (d : Γ ⊢ e ~ α ~> e' ⇐ t) → Σ[ e'' ∈ ê ] Σ[ d' ∈  Γ ⊢ e ~ α ~> e'' ⇐ t ] aasubmin-ana d'
     min-ana (AASubsume {Γ = Γ} x x₁ (SAMove x₂) x₃) = _ , AAMove x₂ , <>
@@ -146,11 +167,10 @@ module aasubsume-min where
     min-ana (AASubsume EETop SEHole (SAConCase1 a b c) z) = _ , AAConCase a b , <>
     min-ana (AASubsume EETop (SNEHole y₁) (SAConCase1 a b c) z) = _ ,
                                                                     AASubsume EETop (SNEHole y₁) (SAConCase1 a b c) z , <>
+    min-ana (AASubsume EETop (SFst x x₁) (SAConCase1 x₂ x₃ x₄) x₅) = _ , AASubsume EETop (SFst x x₁) (SAConCase1 x₂ x₃ x₄) x₅ , <>
+    min-ana (AASubsume EETop (SSnd x x₁) (SAConCase1 x₂ x₃ x₄) x₅) = _ , AASubsume EETop (SSnd x x₁) (SAConCase1 x₂ x₃ x₄) x₅ , <>
     min-ana (AASubsume x y (SAConCase2 a b c) z) = _ , AASubsume x y (SAConCase2 a b c) z , <>
-    min-ana (AASubsume EETop y SAConProd TCRefl) = ⟨ ▹ ⦇-⦈ ◃ , ⦇-⦈ ⟩₁ , AAConProd1 MPrProd , <>
-    min-ana (AASubsume EETop y SAConProd TCHole2) = ⟨ ▹ ⦇-⦈ ◃ , ⦇-⦈ ⟩₁ , AAConProd1 MPrHole , <>
-    min-ana (AASubsume EETop y SAConProd (TCProd z z₁)) = ⟨ ▹ ⦇-⦈ ◃ , ⦇-⦈ ⟩₁ , AAConProd1 MPrProd , <>
-    
+      
     min-ana (AAMove x) = _ , AAMove x , <>
     min-ana AADel = _ , AADel , <>
     min-ana AAConAsc = _ , AAConAsc , <>
@@ -172,8 +192,6 @@ module aasubsume-min where
     min-ana (AAConInr1 x) = _ , AAConInr1 x , <>
     min-ana (AAConInr2 x) = _ , AAConInr2 x , <>
     min-ana (AAConCase x₁ x₂) = _ , AAConCase x₁ x₂ , <>
-    min-ana (AAConProd1 x) = _ , (AAConProd1 x) , <>
-    min-ana (AAConProd2 x) = _ , AAConProd2 x , <>
     min-ana (AAZipInl x x₁) with min-ana x₁
     ... | a , b , c = _ , AAZipInl x b , c
     min-ana (AAZipInr x x₁) with min-ana x₁
@@ -184,11 +202,21 @@ module aasubsume-min where
     ... | a , b , c = _ , AAZipCase2 x₁ x₂ x₃ x₄ b , c
     min-ana (AAZipCase3 x₁ x₂ x₃ x₄ x₆) with min-ana x₆
     ... | a , b , c = _ , AAZipCase3 x₁ x₂ x₃ x₄ b , c
-    min-ana (AAZipProdL x x₁) with min-ana x₁
-    ... | a , b , c = _ , AAZipProdL x b , c
-    min-ana (AAZipProdR x x₁) with min-ana x₁
-    ... | a , b , c = _ , (AAZipProdR x b) , c
-    
+
+    min-ana (AASubsume x x₁ SAConPair x₃) = _ , AASubsume x x₁ SAConPair x₃ , <>
+    min-ana (AASubsume x x₁ (SAConFst1 x₂) x₃) = _ , AASubsume x x₁ (SAConFst1 x₂) x₃ , <>
+    min-ana (AASubsume x x₁ (SAConFst2 x₂) x₃) = _ , AASubsume x x₁ (SAConFst2 x₂) x₃ , <>
+    min-ana (AASubsume x x₁ (SAConSnd1 x₂) x₃) = _ , AASubsume x x₁ (SAConSnd1 x₂) x₃ , <>
+    min-ana (AASubsume x x₁ (SAConSnd2 x₂) x₃) = _ , AASubsume x x₁ (SAConSnd2 x₂) x₃ , <>
+    min-ana (AASubsume x x₁ (SAZipPair1 x₂ x₃ x₄ x₅) x₆) with min-synth x₄
+    ... | a , b , c = _ , (AASubsume x x₁ (SAZipPair1 x₂ x₃ b x₅) x₆) , c
+    min-ana (AASubsume x x₁ (SAZipPair2 x₂ x₃ x₄ x₅) x₆) with min-synth x₅
+    ... | a , b , c = _ , AASubsume x x₁ (SAZipPair2 x₂ x₃ x₄ b) x₆ , c
+    min-ana (AASubsume x x₁ (SAZipFst x₂ x₃ x₄ x₅ x₆) x₇) with min-synth x₆
+    ... | a , b , c = _ , AASubsume x x₁ (SAZipFst x₂ x₃ x₄ x₅ b) x₇ , c
+    min-ana (AASubsume x x₁ (SAZipSnd x₂ x₃ x₄ x₅ x₆) x₇) with min-synth x₆
+    ... | a , b , c = _ , AASubsume x x₁ (SAZipSnd x₂ x₃ x₄ x₅ b) x₇ , c
+       
   -- these theorems argue that if a derivation is already subsumption
   -- minimal than the minimzer does not change the resultant
   -- expression--that it's conservative in this sense. they do not argue
@@ -234,7 +262,19 @@ module aasubsume-min where
     min-fixed-synth SAConInr min = refl
     min-fixed-synth (SAConCase1 x₁ x₂ x₃) min = refl
     min-fixed-synth (SAConCase2 x₁ x₂ x₃) min = refl
-    min-fixed-synth SAConProd min = refl
+    min-fixed-synth SAConPair min = refl
+    min-fixed-synth (SAConFst1 x₁) min = refl
+    min-fixed-synth (SAConFst2 x₁) min = refl
+    min-fixed-synth (SAConSnd1 x₁) min = refl
+    min-fixed-synth (SAConSnd2 x₁) min = refl
+    min-fixed-synth (SAZipPair1 x x₁ d x₃) min with min-fixed-synth d min
+    ... | qq = ap1 (λ q → ⟨ q , _ ⟩₁) qq
+    min-fixed-synth (SAZipPair2 x x₁ x₂ d) min  with min-fixed-synth d min
+    ... | qq = ap1 (λ q → ⟨ _ , q ⟩₂) qq
+    min-fixed-synth (SAZipFst x x₁ x₂ x₃ d) min with min-fixed-synth d min
+    ... | qq = ap1 (λ q → fst q) qq
+    min-fixed-synth (SAZipSnd x x₁ x₂ x₃ d) min with min-fixed-synth d min
+    ... | qq = ap1 (λ q → snd q) qq
     
     min-fixed-ana : ∀ {Γ e t α e' } →
                          (d : Γ ⊢ e ~ α ~> e' ⇐ t) →
@@ -291,6 +331,8 @@ module aasubsume-min where
     min-fixed-ana (AASubsume EETop (SPlus x₁ x₂) (SAConCase1 x₃ x₄ x₅) x₆) min = refl
     min-fixed-ana (AASubsume EETop SEHole (SAConCase1 x₃ x₄ x₅) x₆) min = abort min
     min-fixed-ana (AASubsume EETop (SNEHole x₂) (SAConCase1 x₃ x₄ x₅) x₆) min = refl
+    min-fixed-ana (AASubsume EETop (SFst x x₁) (SAConCase1 x₃ x₄ x₅) x₆) min = refl
+    min-fixed-ana (AASubsume EETop (SSnd x x₁) (SAConCase1 x₃ x₄ x₅) x₆) min = refl
     min-fixed-ana (AASubsume x₁ x₂ (SAConCase2 x₃ x₄ x₅) x₆) min = refl
     min-fixed-ana (AAConInl1 x) min = refl
     min-fixed-ana (AAConInl2 x) min = refl
@@ -312,13 +354,17 @@ module aasubsume-min where
     min-fixed-ana (AAZipCase3 x₁ x₂ x₃ x₄ d) min with min-fixed-ana d min
     ... | qq with min-ana d
     ... | (e'' , _ , _) = ap1 (λ q → case₃ _ _ _ _ q) qq
-    min-fixed-ana (AASubsume EETop SEHole SAConProd x₃) min = abort min
-    min-fixed-ana (AAConProd1 x) min = refl
-    min-fixed-ana (AAConProd2 x) min = refl
-    min-fixed-ana (AAZipProdL x x₁) min with min-fixed-ana x₁ min
-    ... | qq with min-ana x₁
-    ... | (e'' , _ , _) = ap1 (λ q → ⟨ q , _ ⟩₁) qq
-    min-fixed-ana (AAZipProdR x x₁) min with min-fixed-ana x₁ min
-    ... | qq with min-ana x₁
-    ... | (e'' , _ , _) = ap1 (λ q → ⟨ _ , q ⟩₂) qq
-  
+
+    min-fixed-ana (AASubsume x x₁ SAConPair x₃) min = refl
+    min-fixed-ana (AASubsume x x₁ (SAConFst1 x₂) x₃) min = refl
+    min-fixed-ana (AASubsume x x₁ (SAConFst2 x₂) x₃) min = refl
+    min-fixed-ana (AASubsume x x₁ (SAConSnd1 x₂) x₃) min = refl
+    min-fixed-ana (AASubsume x x₁ (SAConSnd2 x₂) x₃) min = refl
+    min-fixed-ana (AASubsume x x₁ (SAZipPair1 x₂ x₄ d x₆) x₃) min with min-fixed-synth d min
+    ... | qq = ap1 (λ q → ⟨ q , _ ⟩₁) qq
+    min-fixed-ana (AASubsume x x₁ (SAZipPair2 x₂ x₄ x₅ d) x₃) min with min-fixed-synth d min
+    ... | qq = ap1 (λ q → ⟨ _ , q ⟩₂) qq
+    min-fixed-ana (AASubsume x x₁ (SAZipFst x₂ x₄ x₅ x₆ d) x₃) min with min-fixed-synth d min
+    ... | qq = ap1 (λ q → fst q) qq
+    min-fixed-ana (AASubsume x x₁ (SAZipSnd x₂ x₄ x₅ x₆ d) x₃) min with min-fixed-synth d min
+    ... | qq = ap1 (λ q → snd q) qq

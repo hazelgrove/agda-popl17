@@ -33,7 +33,7 @@ module constructability where
                                        (runtype++ (ziplem-tmplus2 ih2)
                                          (DoType TMPlusParent2 DoRefl)))
   construct-type (t1 ⊠ t2) with construct-type t1 | construct-type t2
-  ... | (l1 , ih1) | (l2 , ih2) = l1 ++ construct tprod :: l2 ++ [ move parent ] ,
+  ... | (l1 , ih1) | (l2 , ih2) = l1 ++ construct prod :: l2 ++ [ move parent ] ,
                                   runtype++ ih1
                                     (DoType TMConProd
                                       (runtype++ (ziplem-tmprod2 ih2)
@@ -79,6 +79,23 @@ module constructability where
                      runsynth++ ih
                          (DoSynth SAConNEHole (DoSynth (SAMove EMNEHoleParent) DoRefl))
 
+    construct-synth (SPair e1 e2) with construct-synth e1 | construct-synth e2
+    ... | (l1 , ih1) | (l2 , ih2) = construct pair :: (l1 ++ move parent :: move (child 2) :: l2 ++ [ move parent ]) ,
+                                    DoSynth SAConPair
+                                     (runsynth++ (ziplem-pair1 EETop SEHole ih1 SEHole)
+                                      (DoSynth (SAMove EMPairParent1)
+                                       (DoSynth (SAMove EMPairChild2)
+                                        (runsynth++ (ziplem-pair2 e1 EETop SEHole ih2)
+                                         (DoSynth (SAMove EMPairParent2) DoRefl)))))
+                                          
+    construct-synth (SFst e pr) with construct-synth e
+    ... | (l , ih) = l ++ [ construct fst ] ,
+                     runsynth++ ih (DoSynth (SAConFst1 pr) DoRefl)
+    
+    construct-synth (SSnd e pr) with construct-synth e
+    ... | (l , ih) = l ++ [ construct snd ] ,
+                     runsynth++ ih (DoSynth (SAConSnd1 pr) DoRefl)
+    
     -- construction of expressions in analytic positions
     construct-ana : {Γ : ·ctx} {t : τ̇} {e : ė} → (Γ ⊢ e <= t) →
                                 Σ[ L ∈ List action ]
@@ -137,14 +154,4 @@ module constructability where
                          (runana++ (ziplem-case3 x# y# wt0 wt1 m ih2)
                          (DoAna (AAMove EMCaseParent3)
                           DoRefl)))))))))))
-    construct-ana (AProd m wt1 wt2)
-      with construct-ana wt1 | construct-ana wt2
-    ... | (l1 , ih1) | (l2 , ih2)
-      = construct prod :: l1 ++ (move parent :: move (child 2) :: l2) ++ [ move parent ] ,
-        DoAna (AAConProd1 m)
-        (runana++ (ziplem-prodl m ih1)
-        (DoAna (AAMove EMProdParent1)
-        (DoAna (AAMove EMProdChild2)
-        (runana++ (ziplem-prodr m ih2)
-        (DoAna (AAMove EMProdParent2)
-        DoRefl)))))
+    

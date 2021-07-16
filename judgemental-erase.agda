@@ -51,7 +51,8 @@ module judgemental-erase where
   (case₃ e x e1 y e2) ◆e = case e x e1 y (e2 ◆e)
   ⟨ e1 , e2 ⟩₁ ◆e = ⟨ e1 ◆e , e2 ⟩
   ⟨ e1 , e2 ⟩₂ ◆e = ⟨ e1 , e2 ◆e ⟩
-  
+  fst e ◆e = fst (e ◆e)
+  snd e ◆e = snd (e ◆e)
 
   -- this pair of theorems moves from the judgmental form to the function form
   erase-t◆ : {t : τ̂} {tr : τ̇} → (erase-t t tr) → (t ◆t == tr)
@@ -79,8 +80,10 @@ module judgemental-erase where
   erase-e◆ (EECase1 p)  = ap1 (λ x → case x _ _ _ _) (erase-e◆ p)
   erase-e◆ (EECase2 p)  = ap1 (λ x → case _ _ x _ _) (erase-e◆ p)
   erase-e◆ (EECase3 p)  = ap1 (λ x → case _ _ _ _ x) (erase-e◆ p)
-  erase-e◆ (EEProdL p)  = ap1 (λ x → ⟨ x , _ ⟩ )  (erase-e◆ p)
-  erase-e◆ (EEProdR p)  = ap1 (λ x → ⟨ _ , x ⟩ )  (erase-e◆ p)
+  erase-e◆ (EEPairL p)  = ap1 (λ x → ⟨ x , _ ⟩ )  (erase-e◆ p)
+  erase-e◆ (EEPairR p)  = ap1 (λ x → ⟨ _ , x ⟩ )  (erase-e◆ p)
+  erase-e◆ (EEFst p)    = ap1 fst (erase-e◆ p)
+  erase-e◆ (EESnd p)    = ap1 snd (erase-e◆ p)
   
   -- this pair of theorems moves back from judgmental form to the function form
   ◆erase-t : (t : τ̂) (tr : τ̇) → (t ◆t == tr) → (erase-t t tr)
@@ -110,8 +113,10 @@ module judgemental-erase where
   ◆erase-e (case₁ e _ _ _ _) ._ refl = EECase1 (◆erase-e e (e ◆e) refl)
   ◆erase-e (case₂ _ _ e _ _) ._ refl = EECase2 (◆erase-e e (e ◆e) refl)
   ◆erase-e (case₃ _ _ _ _ e) ._ refl = EECase3 (◆erase-e e (e ◆e) refl)
-  ◆erase-e ⟨ e , x ⟩₁ .(⟨ (e ◆e) , x ⟩) refl = EEProdL (◆erase-e e (e ◆e) refl)
-  ◆erase-e ⟨ x , e ⟩₂ .(⟨ x , (e ◆e) ⟩) refl = EEProdR (◆erase-e e (e ◆e) refl)
+  ◆erase-e ⟨ e , x ⟩₁ .(⟨ (e ◆e) , x ⟩) refl = EEPairL (◆erase-e e (e ◆e) refl)
+  ◆erase-e ⟨ x , e ⟩₂ .(⟨ x , (e ◆e) ⟩) refl = EEPairR (◆erase-e e (e ◆e) refl)
+  ◆erase-e (fst e) ._ refl = EEFst (◆erase-e e (e ◆e) refl)
+  ◆erase-e (snd e) ._ refl = EESnd (◆erase-e e (e ◆e) refl)
   
   -- jugemental erasure for both types and terms only has one proof for
   -- relating the a term to its non-judgemental erasure
@@ -139,8 +144,10 @@ module judgemental-erase where
   e-contr (case₁ x x₁ x₂ x₃ x₄) (EECase1 y) (EECase1 z) = ap1 EECase1 (e-contr x y z)
   e-contr (case₂ x₁ x₂ x x₃ x₄) (EECase2 y) (EECase2 z) = ap1 EECase2 (e-contr x y z)
   e-contr (case₃ x₁ x₂ x₃ x₄ x) (EECase3 y) (EECase3 z) = ap1 EECase3 (e-contr x y z)
-  e-contr ⟨ e , x ⟩₁ (EEProdL x₁) (EEProdL y) = ap1 EEProdL (e-contr e x₁ y)
-  e-contr ⟨ x , e ⟩₂ (EEProdR x₁) (EEProdR y) = ap1 EEProdR (e-contr e x₁ y)
+  e-contr ⟨ e , x ⟩₁ (EEPairL x₁) (EEPairL y) = ap1 EEPairL (e-contr e x₁ y)
+  e-contr ⟨ x , e ⟩₂ (EEPairR x₁) (EEPairR y) = ap1 EEPairR (e-contr e x₁ y)
+  e-contr (fst x) (EEFst y) (EEFst z) = ap1 EEFst (e-contr x y z)
+  e-contr (snd x) (EESnd y) (EESnd z) = ap1 EESnd (e-contr x y z)
   
   -- taken together, these four theorems demonstrate that both round-trips
   -- of the above functions are stable up to ==
@@ -193,6 +200,8 @@ module judgemental-erase where
   erase-ert1 (case₃ x x₁ x₂ x₃ x₄) .(case x x₁ x₂ x₃ (x₄ ◆e)) refl = ap1 (ap1 (λ a → case x x₁ x₂ x₃ a)) (erase-ert1 x₄ _ refl)
   erase-ert1 ⟨ e , x ⟩₁ .(⟨ (e ◆e) , x ⟩) refl = ap1 (λ a → ap1 (λ x₁ → ⟨ x₁ , x ⟩) a) (erase-ert1 e _ refl)
   erase-ert1 ⟨ x , e ⟩₂ .(⟨ x , (e ◆e) ⟩) refl = ap1 (λ a → ap1 (⟨_,_⟩ x) a) (erase-ert1 e _ refl)
+  erase-ert1 (fst x) .(fst (x ◆e)) refl = ap1 (λ a → ap1 fst a) (erase-ert1 x _ refl)
+  erase-ert1 (snd x) .(snd (x ◆e)) refl = ap1 (λ a → ap1 snd a) (erase-ert1 x _ refl)
   
   erase-ert2 : (e : ê) (er : ė) → (b : erase-e e er) → ◆erase-e e er (erase-e◆ b) == b
   erase-ert2 .(▹ er ◃) er EETop = refl
@@ -222,10 +231,14 @@ module judgemental-erase where
   erase-ert2 (case₂ e x₁ x₂ x₃ x₄) .(case e x₁ (x₂ ◆e) x₃ x₄) (EECase2 z) | refl = ap1 EECase2 (e-contr x₂ _ z)
   erase-ert2 (case₃ e x₁ x₂ x₃ x₄) _ (EECase3 z) with erase-e◆ z
   erase-ert2 (case₃ e x₁ x₂ x₃ x₄) .(case e x₁ x₂ x₃ (x₄ ◆e)) (EECase3 z) | refl = ap1 EECase3 (e-contr x₄ _ z)
-  erase-ert2 ⟨ e , x ⟩₁ _ (EEProdL b) with erase-e◆ b
-  erase-ert2 ⟨ e , x ⟩₁ .(⟨ (e ◆e) , x ⟩) (EEProdL b) | refl = ap1 EEProdL (e-contr e (◆erase-e e (e ◆e) refl) b)
-  erase-ert2 ⟨ e1 , e ⟩₂ _ (EEProdR b) with erase-e◆ b
-  erase-ert2 ⟨ e1 , e ⟩₂ .(⟨ e1 , (e ◆e) ⟩) (EEProdR b) | refl = ap1 EEProdR (e-contr e (◆erase-e e (e ◆e) refl) b)
+  erase-ert2 ⟨ e , x ⟩₁ _ (EEPairL b) with erase-e◆ b
+  erase-ert2 ⟨ e , x ⟩₁ .(⟨ (e ◆e) , x ⟩) (EEPairL b) | refl = ap1 EEPairL (e-contr e (◆erase-e e (e ◆e) refl) b)
+  erase-ert2 ⟨ e1 , e ⟩₂ _ (EEPairR b) with erase-e◆ b
+  erase-ert2 ⟨ e1 , e ⟩₂ .(⟨ e1 , (e ◆e) ⟩) (EEPairR b) | refl = ap1 EEPairR (e-contr e (◆erase-e e (e ◆e) refl) b)
+  erase-ert2 (fst x) _ (EEFst z) with erase-e◆ z
+  erase-ert2 (fst x) .(fst (x ◆e)) (EEFst z) | refl = ap1 EEFst (e-contr x _ z)
+  erase-ert2 (snd x) _ (EESnd z) with erase-e◆ z
+  erase-ert2 (snd x) .(snd (x ◆e)) (EESnd z) | refl = ap1 EESnd (e-contr x _ z)
   
   -- since both round trips are stable, these functions demonstrate
   -- isomorphisms between the jugemental and non-judgemental definitions of

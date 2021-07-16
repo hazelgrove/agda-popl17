@@ -59,11 +59,15 @@ module moveerase where
   moveerase EMCaseChild1 = refl
   moveerase EMCaseChild2 = refl
   moveerase EMCaseChild3 = refl
-  moveerase EMProdChild1 = refl
-  moveerase EMProdChild2 = refl
-  moveerase EMProdParent1 = refl
-  moveerase EMProdParent2 = refl
-
+  moveerase EMPairChild1 = refl
+  moveerase EMPairChild2 = refl
+  moveerase EMPairParent1 = refl
+  moveerase EMPairParent2 = refl
+  moveerase EMFstChild1 = refl
+  moveerase EMFstParent = refl
+  moveerase EMSndChild1 = refl
+  moveerase EMSndParent = refl
+  
   -- this form is essentially the same as above, but for judgemental
   -- erasure, which is sometimes more convenient.
   moveerasee' : {e e' : ê} {e◆ : ė} {δ : direction} →
@@ -106,7 +110,19 @@ module moveerase where
     moveerase-synth (EEPlusL er) (SPlus x x₁) (SAZipPlus1 x₂) = ap1 (λ q → q ·+ _) (moveerase-ana er x x₂)  , refl
     moveerase-synth (EEPlusR er) (SPlus x x₁) (SAZipPlus2 x₂) = ap1 (λ q → _ ·+ q) (moveerase-ana er x₁ x₂) , refl
     moveerase-synth er wt (SAZipHole x x₁ d) = ap1 ⦇⌜_⌟⦈ (π1 (moveerase-synth x x₁ d)) , refl
-
+    moveerase-synth er wt (SAZipPair1 x x₁ x₂ x₃) with moveerase-synth x x₁ x₂
+    ... | π1 , refl = (ap1 (λ q → ⟨ q , _ ⟩) π1) , refl
+    moveerase-synth er wt (SAZipPair2 x x₁ x₂ x₃) with moveerase-synth x₁ x₂ x₃
+    ... | π1 , refl = (ap1 (λ q → ⟨ _ , q ⟩) π1) , refl
+    moveerase-synth er wt (SAZipFst x x₁ x₂ x₃ x₄)
+      with moveerase-synth x₂ x₃ x₄
+    ... | π1 , refl with matchprodunicity x₁ x
+    ... | refl = (ap1 fst π1) , refl
+    moveerase-synth er wt (SAZipSnd x x₁ x₂ x₃ x₄)
+      with moveerase-synth x₂ x₃ x₄
+    ... | π1 , refl with matchprodunicity x₁ x
+    ... | refl = (ap1 snd π1) , refl
+    
     moveerase-ana : ∀{Γ e e' e◆ t δ } →
                       (er : erase-e e e◆) →
                       Γ ⊢ e◆ <= t →
@@ -134,10 +150,4 @@ module moveerase where
       with synthunicity x₄ x₇
     ... | refl with matchplusunicity x₃ x₈
     ... | refl = ap1 (λ q → case _ _ _ _ q) (moveerase-ana er wt₁ d)
-    moveerase-ana (EEProdL x) (ASubsume () x₂) (AAZipProdL x₃ z)
-    moveerase-ana (EEProdL x) (AProd x₁ y y₁) (AAZipProdL x₂ z) with matchprodunicity x₁ x₂
-    ... | refl = ap1 (λ q → ⟨ q , _ ⟩) (moveerase-ana x y z)
-    moveerase-ana (EEProdR x) (ASubsume () x₂) (AAZipProdR x₃ z)
-    moveerase-ana (EEProdR x) (AProd x₁ y y₁) (AAZipProdR x₂ z) with matchprodunicity x₁ x₂
-    ... | refl = ap1 (λ q → ⟨ _ , q ⟩) (moveerase-ana x y₁ z)
   

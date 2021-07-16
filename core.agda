@@ -18,13 +18,16 @@ module core where
     ·λ    : Nat → ė → ė
     N     : Nat → ė
     _·+_  : ė → ė → ė
-    ⦇-⦈  : ė
+    ⦇-⦈   : ė
     ⦇⌜_⌟⦈ : ė → ė
     _∘_   : ė → ė → ė
-    inl  : ė → ė
-    inr  : ė → ė
+    inl   : ė → ė
+    inr   : ė → ė
     case  : ė → Nat → ė → Nat → ė → ė
     ⟨_,_⟩ : ė → ė → ė
+    fst   : ė → ė
+    snd   : ė → ė
+    
   ---- contexts and some operations on them
 
   -- variables are named with naturals in ė. therefore we represent
@@ -116,7 +119,7 @@ module core where
   matchplusunicity MPHole MPHole = refl
   matchplusunicity MPPlus MPPlus = refl
 
-  -- matching sproductd produces unique answers
+  -- matching products produces unique answers
   matchprodunicity : ∀{ t t2 t3 } →
                  t ▸prod t2 →
                  t ▸prod t3 →
@@ -132,6 +135,12 @@ module core where
   matchconsist MAHole = TCHole2
   matchconsist MAArr = TCArr TCHole1 TCHole1
 
+  matchprodconsist : ∀{t t'} →
+                 t ▸prod t' →
+                 t ~ (⦇-⦈ ⊠ ⦇-⦈)
+  matchprodconsist MPrHole = TCHole2
+  matchprodconsist MPrProd = TCProd TCHole1 TCHole1
+  
   matchnotnum : ∀{t1 t2} → num ▸arr (t1 ==> t2) → ⊥
   matchnotnum ()
 
@@ -156,6 +165,18 @@ module core where
                  Γ ⊢ e1 <= num →
                  Γ ⊢ e2 <= num →
                  Γ ⊢ (e1 ·+ e2) => num
+      SPair : {Γ : ·ctx} {e1 e2 : ė} {t1 t2 : τ̇} →
+                 Γ ⊢ e1 => t1 →
+                 Γ ⊢ e2 => t2 →
+                 Γ ⊢ ⟨ e1 , e2 ⟩ => (t1 ⊠ t2)
+      SFst    : {Γ : ·ctx} {e : ė} {t× t1 t2 : τ̇} →
+                 Γ ⊢ e => t× →
+                 t× ▸prod (t1 ⊠ t2) →
+                 Γ ⊢ fst e => t1
+      SSnd    : {Γ : ·ctx} {e : ė} {t× t1 t2 : τ̇} →
+                 Γ ⊢ e => t× →
+                 t× ▸prod (t1 ⊠ t2) →
+                 Γ ⊢ snd e => t2
       SEHole  : {Γ : ·ctx} → Γ ⊢ ⦇-⦈ => ⦇-⦈
       SNEHole : {Γ : ·ctx} {e : ė} {t : τ̇} →
                  Γ ⊢ e => t →
@@ -188,11 +209,8 @@ module core where
                  (Γ ,, (x , t1)) ⊢ e1 <= t →
                  (Γ ,, (y , t2)) ⊢ e2 <= t →
                  Γ ⊢ case e x e1 y e2 <= t
-      AProd : {Γ : ·ctx} {e1 e2 : ė} {t t1 t2 : τ̇} →
-                 t ▸prod (t1 ⊠ t2) →
-                 Γ ⊢ e1 <= t1 →
-                 Γ ⊢ e2 <= t2 →
-                 Γ ⊢ ⟨ e1 , e2 ⟩ <= t
+      
+     
 
   ----- some theorems about the rules and judgement presented so far.
 
@@ -315,14 +333,22 @@ module core where
   synthunicity (SPlus _ _ ) (SPlus _ _ ) = refl
   synthunicity SEHole SEHole = refl
   synthunicity (SNEHole _) (SNEHole _) = refl
-
+  synthunicity (SFst x x₁) (SFst y x₂) with synthunicity x y
+  ... | refl with matchprodunicity x₁ x₂
+  ... | refl = refl
+  synthunicity (SSnd x x₁) (SSnd y x₂) with synthunicity x y
+  ... | refl with matchprodunicity x₁ x₂
+  ... | refl = refl
+  synthunicity (SPair x x₁) (SPair y y₁) with synthunicity x y
+  ... | refl with synthunicity x₁ y₁
+  ... | refl = refl
 
   ----- the zippered form of the forms above and the rules for actions on them
 
   -- those types without holes anywhere
   tcomplete : τ̇ → Set
-  tcomplete num         = ⊤
-  tcomplete ⦇-⦈        = ⊥
+  tcomplete num       = ⊤
+  tcomplete ⦇-⦈       = ⊥
   tcomplete (t1 ==> t2) = (tcomplete t1) × (tcomplete t2)
   tcomplete (t1 ⊕ t2) = (tcomplete t1) × (tcomplete t2)
   tcomplete (t1 ⊠ t2) = (tcomplete t1) × (tcomplete t2)
@@ -334,13 +360,15 @@ module core where
   ecomplete (·λ _ e1)  = ecomplete e1
   ecomplete (N x)      = ⊤
   ecomplete (e1 ·+ e2) = ecomplete e1 × ecomplete e2
-  ecomplete ⦇-⦈         = ⊥
+  ecomplete ⦇-⦈        = ⊥
   ecomplete ⦇⌜ e1 ⌟⦈   = ⊥
   ecomplete (e1 ∘ e2)  = ecomplete e1 × ecomplete e2
   ecomplete (inl e)    = ecomplete e
   ecomplete (inr e)    = ecomplete e
   ecomplete (case e x e1 y e2)  = ecomplete e × ecomplete e1 × ecomplete e2
   ecomplete (⟨ e1 , e2 ⟩) = ecomplete e1 × ecomplete e2
+  ecomplete (fst e)    = ecomplete e
+  ecomplete (snd e)    = ecomplete e
   
   -- zippered form of types
   data τ̂ : Set where
@@ -370,6 +398,8 @@ module core where
     case₃ : ė → Nat → ė → Nat → ê → ê
     ⟨_,_⟩₁ : ê → ė → ê
     ⟨_,_⟩₂ : ė → ê → ê
+    fst : ê → ê
+    snd : ê → ê
     
   -- erasure of cursor for types and expressions, judgementally. see
   -- jugemental-erase.agda for an argument that this defines an isomorphic
@@ -401,8 +431,10 @@ module core where
                                   erase-e (case₂ e x e1 y e2) (case e x e1' y e2)
     EECase3 : ∀{e x e1 y e2 e2'} → erase-e e2 e2' →
                                   erase-e (case₃ e x e1 y e2) (case e x e1 y e2')
-    EEProdL : ∀{e1 e1' e2} → erase-e e1 e1' → erase-e ⟨ e1 , e2 ⟩₁ ⟨ e1' , e2 ⟩
-    EEProdR : ∀{e1 e2 e2'} → erase-e e2 e2' → erase-e ⟨ e1 , e2 ⟩₂ ⟨ e1 , e2' ⟩
+    EEPairL : ∀{e1 e1' e2} → erase-e e1 e1' → erase-e ⟨ e1 , e2 ⟩₁ ⟨ e1' , e2 ⟩
+    EEPairR : ∀{e1 e2 e2'} → erase-e e2 e2' → erase-e ⟨ e1 , e2 ⟩₂ ⟨ e1 , e2' ⟩
+    EEFst   : ∀{e e'}      → erase-e e e'   → erase-e (fst e) (fst e')
+    EESnd   : ∀{e e'}      → erase-e e e'   → erase-e (snd e) (snd e')
     
   -- the three grammars that define actions
   data direction : Set where
@@ -423,9 +455,11 @@ module core where
     inl   : shape
     inr   : shape
     case  : Nat → Nat → shape
-    tprod : shape
-    prod  : shape
-
+    prod : shape
+    pair  : shape
+    fst   : shape
+    snd   : shape
+    
   data action : Set where
     move : direction → action
     construct : shape → action
@@ -465,7 +499,7 @@ module core where
     TMConPlus  : {t : τ̇} →
                 (▹ t ◃) + construct tplus +> (t ⊕₂ ▹ ⦇-⦈ ◃)
     TMConProd  : {t : τ̇} →
-                (▹ t ◃) + construct tprod +> (t ⊠₂ ▹ ⦇-⦈ ◃)
+                (▹ t ◃) + construct prod +> (t ⊠₂ ▹ ⦇-⦈ ◃)
     TMConNum  : (▹ ⦇-⦈ ◃) + construct num +> (▹ num ◃)
     TMArrZip1 : {t1 t1' : τ̂} {t2 : τ̇} {α : action} →
                 (t1 + α +> t1') →
@@ -521,15 +555,25 @@ module core where
     EMApParent2 : {e1 e2 : ė} →
                (e1 ∘₂ ▹ e2 ◃) + move parent +>e (▹ e1 ∘ e2 ◃)
 
-    EMProdChild1 : {e1 e2 : ė} →
+    EMPairChild1 : {e1 e2 : ė} →
                (▹ ⟨ e1 , e2 ⟩ ◃) + move (child 1)+>e ⟨ ▹ e1 ◃ , e2 ⟩₁
-    EMProdChild2 : {e1 e2 : ė} →
+    EMPairChild2 : {e1 e2 : ė} →
                (▹ ⟨ e1 , e2 ⟩ ◃) + move (child 2) +>e ⟨ e1 , ▹ e2 ◃ ⟩₂
-    EMProdParent1 : {e1 e2 : ė} →
+    EMPairParent1 : {e1 e2 : ė} →
                ( ⟨ ▹ e1 ◃ , e2 ⟩₁ ) + move parent +>e (▹ ⟨ e1 , e2 ⟩ ◃)
-    EMProdParent2 : {e1 e2 : ė} →
+    EMPairParent2 : {e1 e2 : ė} →
                ( ⟨ e1 , ▹ e2 ◃ ⟩₂ ) + move parent +>e (▹ ⟨ e1 , e2 ⟩ ◃)
-               
+
+    -- rules for projections
+    EMFstChild1 : {e : ė} →
+               ▹ fst e ◃ + move (child 1) +>e fst ▹ e ◃
+    EMFstParent : {e : ė} →
+                fst ▹ e ◃ + move parent +>e ▹ fst e  ◃
+    EMSndChild1 : {e : ė} →
+               ▹ snd e ◃ + move (child 1) +>e snd ▹ e ◃
+    EMSndParent : {e : ė} →
+                snd ▹ e ◃ + move parent +>e ▹ snd e  ◃
+                
     -- rules for non-empty holes
     EMNEHoleChild1 : {e : ė} →
                (▹ ⦇⌜ e ⌟⦈ ◃) + move (child 1) +>e ⦇⌜ ▹ e ◃ ⌟⦈
@@ -593,59 +637,97 @@ module core where
                 (t ~̸ num) →
                 Γ ⊢ ▹ e ◃ => t ~ construct plus ~> ⦇⌜ e ⌟⦈ ·+₂ ▹ ⦇-⦈ ◃  => num
       SAConNEHole : {Γ : ·ctx} {e : ė} {t : τ̇} →
-                  Γ ⊢ ▹ e ◃ => t ~ construct nehole ~> ⦇⌜ ▹ e ◃ ⌟⦈ => ⦇-⦈
+                Γ ⊢ ▹ e ◃ => t ~ construct nehole ~> ⦇⌜ ▹ e ◃ ⌟⦈ => ⦇-⦈
       SAFinish : {Γ : ·ctx} {e : ė} {t : τ̇} →
-                 (Γ ⊢ e => t) →
-                 Γ ⊢ ▹ ⦇⌜ e ⌟⦈ ◃ => ⦇-⦈ ~ finish ~> ▹ e ◃ => t
+                (Γ ⊢ e => t) →
+                Γ ⊢ ▹ ⦇⌜ e ⌟⦈ ◃ => ⦇-⦈ ~ finish ~> ▹ e ◃ => t
       SAZipAsc1 : {Γ : ·ctx} {e e' : ê} {α : action} {t : τ̇} →
-                  (Γ ⊢ e ~ α ~> e' ⇐ t) →
-                  Γ ⊢ (e ·:₁ t) => t ~ α ~> (e' ·:₁ t) => t
+                (Γ ⊢ e ~ α ~> e' ⇐ t) →
+                Γ ⊢ (e ·:₁ t) => t ~ α ~> (e' ·:₁ t) => t
       SAZipAsc2 : {Γ : ·ctx} {e : ė} {α : action} {t t' : τ̂} {t◆ t'◆ : τ̇} →
-                  (t + α +> t') →
-                  (erase-t t' t'◆) →
-                  (erase-t t t◆) →
-                  (Γ ⊢ e <= t'◆) →
-                  Γ ⊢ (e ·:₂ t) => t◆ ~ α ~> (e ·:₂ t') => t'◆
+                (t + α +> t') →
+                (erase-t t' t'◆) →
+                (erase-t t t◆) →
+                (Γ ⊢ e <= t'◆) →
+                Γ ⊢ (e ·:₂ t) => t◆ ~ α ~> (e ·:₂ t') => t'◆
       SAZipApArr : {Γ : ·ctx} {t t1 t2 t3 t4 : τ̇} {α : action} {eh eh' : ê} {e eh◆ : ė} →
-                 (t ▸arr (t3 ==> t4)) →
-                 (erase-e eh eh◆) →
-                 (Γ ⊢ (eh◆) => t2) →
-                 (Γ ⊢ eh => t2 ~ α ~> eh' => t) →
-                 (Γ ⊢ e <= t3) →
-                 Γ ⊢ (eh ∘₁ e) => t1 ~ α ~> (eh' ∘₁ e) => t4
+                (t ▸arr (t3 ==> t4)) →
+                (erase-e eh eh◆) →
+                (Γ ⊢ (eh◆) => t2) →
+                (Γ ⊢ eh => t2 ~ α ~> eh' => t) →
+                (Γ ⊢ e <= t3) →
+                Γ ⊢ (eh ∘₁ e) => t1 ~ α ~> (eh' ∘₁ e) => t4
       SAZipApAna : {Γ : ·ctx} {t' t2 t : τ̇} {e : ė} {eh eh' : ê} {α : action} →
-                 (t' ▸arr (t2 ==> t)) →
-                 (Γ ⊢ e => t') →
-                 (Γ ⊢ eh ~ α ~> eh' ⇐ t2) →
-                 Γ ⊢ (e ∘₂ eh) => t ~ α ~> (e ∘₂ eh') => t
+                (t' ▸arr (t2 ==> t)) →
+                (Γ ⊢ e => t') →
+                (Γ ⊢ eh ~ α ~> eh' ⇐ t2) →
+                Γ ⊢ (e ∘₂ eh) => t ~ α ~> (e ∘₂ eh') => t
       SAZipPlus1 : {Γ : ·ctx} {e : ė} {eh eh' : ê} {α : action} →
-                   (Γ ⊢ eh ~ α ~> eh' ⇐ num) →
-                   Γ ⊢ (eh ·+₁ e) => num ~ α ~> (eh' ·+₁ e) => num
+                (Γ ⊢ eh ~ α ~> eh' ⇐ num) →
+                Γ ⊢ (eh ·+₁ e) => num ~ α ~> (eh' ·+₁ e) => num
       SAZipPlus2 : {Γ : ·ctx} {e : ė} {eh eh' : ê} {α : action} →
-                   (Γ ⊢ eh ~ α ~> eh' ⇐ num) →
-                   Γ ⊢ (e ·+₂ eh) => num ~ α ~> (e ·+₂ eh') => num
+                (Γ ⊢ eh ~ α ~> eh' ⇐ num) →
+                Γ ⊢ (e ·+₂ eh) => num ~ α ~> (e ·+₂ eh') => num
       SAZipHole : {Γ : ·ctx} {e e' : ê} {t t' : τ̇} {α : action} {e◆ : ė} →
-                   (erase-e e e◆) →
-                   (Γ ⊢ e◆ => t) →
-                   (Γ ⊢ e => t ~ α ~> e' => t') →
-                   Γ ⊢ ⦇⌜ e ⌟⦈ => ⦇-⦈ ~ α ~>  ⦇⌜ e' ⌟⦈ => ⦇-⦈
+                (erase-e e e◆) →
+                (Γ ⊢ e◆ => t) →
+                (Γ ⊢ e => t ~ α ~> e' => t') →
+                Γ ⊢ ⦇⌜ e ⌟⦈ => ⦇-⦈ ~ α ~>  ⦇⌜ e' ⌟⦈ => ⦇-⦈
       SAConInl : {Γ : ·ctx} {t : τ̇} →
-                  Γ ⊢ ▹ ⦇-⦈ ◃ => t ~ construct inl ~> inl ⦇-⦈ ·:₂ (▹ ⦇-⦈ ◃ ⊕₁ ⦇-⦈) => (⦇-⦈ ⊕ ⦇-⦈)
+                Γ ⊢ ▹ ⦇-⦈ ◃ => t ~ construct inl ~> inl ⦇-⦈ ·:₂ (▹ ⦇-⦈ ◃ ⊕₁ ⦇-⦈) => (⦇-⦈ ⊕ ⦇-⦈)
       SAConInr : {Γ : ·ctx} {t : τ̇} →
-                  Γ ⊢ ▹ ⦇-⦈ ◃ => t ~ construct inr ~> inr ⦇-⦈ ·:₂ (⦇-⦈ ⊕₂ ▹ ⦇-⦈ ◃) => (⦇-⦈ ⊕ ⦇-⦈)
+                Γ ⊢ ▹ ⦇-⦈ ◃ => t ~ construct inr ~> inr ⦇-⦈ ·:₂ (⦇-⦈ ⊕₂ ▹ ⦇-⦈ ◃) => (⦇-⦈ ⊕ ⦇-⦈)
       SAConCase1 : {Γ : ·ctx} {x y : Nat} {t t1 t2 : τ̇} {e : ė} →
-                   x # Γ →
-                   y # Γ →
-                   t ▸plus (t1 ⊕ t2) →
-                   Γ ⊢ ▹ e ◃ => t ~ construct (case x y) ~> (case₂ e x (▹ ⦇-⦈ ◃) y ⦇-⦈) ·:₁ ⦇-⦈ => ⦇-⦈
+                x # Γ →
+                y # Γ →
+                t ▸plus (t1 ⊕ t2) →
+                Γ ⊢ ▹ e ◃ => t ~ construct (case x y) ~> (case₂ e x (▹ ⦇-⦈ ◃) y ⦇-⦈) ·:₁ ⦇-⦈ => ⦇-⦈
       SAConCase2 : {Γ : ·ctx} {x y : Nat} {t : τ̇} {e : ė} →
-                   x # Γ →
-                   y # Γ →
-                   t ~̸ (⦇-⦈ ⊕ ⦇-⦈) →
-                   Γ ⊢ ▹ e ◃ => t ~ construct (case x y) ~> (case₁ (⦇⌜ ▹ e ◃ ⌟⦈ ) x ⦇-⦈ y ⦇-⦈) ·:₁ ⦇-⦈ => ⦇-⦈
-      SAConProd : {Γ : ·ctx} {t : τ̇} →
-                  Γ ⊢ ▹ ⦇-⦈ ◃ => t ~ construct prod ~> ⟨ ⦇-⦈ , ⦇-⦈ ⟩ ·:₂ (▹ ⦇-⦈ ◃ ⊠₁ ⦇-⦈) => (⦇-⦈ ⊠ ⦇-⦈)
-
+                x # Γ →
+                y # Γ →
+                t ~̸ (⦇-⦈ ⊕ ⦇-⦈) →
+                Γ ⊢ ▹ e ◃ => t ~ construct (case x y) ~> (case₁ (⦇⌜ ▹ e ◃ ⌟⦈ ) x ⦇-⦈ y ⦇-⦈) ·:₁ ⦇-⦈ => ⦇-⦈
+      SAConPair : {Γ : ·ctx} {t : τ̇} →
+                Γ ⊢ ▹ ⦇-⦈ ◃ => t ~ construct pair ~> ⟨ ▹ ⦇-⦈ ◃ , ⦇-⦈ ⟩₁ => (⦇-⦈ ⊠ ⦇-⦈)
+      SAConFst1 : {Γ : ·ctx} {t t1 t2 : τ̇} {e : ė} →
+                t ▸prod (t1 ⊠ t2) →
+                Γ ⊢ ▹ e ◃ => t ~ construct fst ~> ▹ fst e ◃ => t1
+      SAConFst2 : {Γ : ·ctx} {t : τ̇} {e : ė} →
+                t ~̸ (⦇-⦈ ⊠ ⦇-⦈) →
+                Γ ⊢ ▹ e ◃ => t ~ construct fst ~> fst ⦇⌜ ▹ e ◃ ⌟⦈  => ⦇-⦈      
+      SAConSnd1 : {Γ : ·ctx} {t t1 t2 : τ̇} {e : ė} →
+                t ▸prod (t1 ⊠ t2) →
+                Γ ⊢ ▹ e ◃ => t ~ construct snd ~> ▹ snd e ◃ => t2
+      SAConSnd2 : {Γ : ·ctx} {t : τ̇} {e : ė} →
+                t ~̸ (⦇-⦈ ⊠ ⦇-⦈) →
+                Γ ⊢ ▹ e ◃ => t ~ construct snd ~> snd ⦇⌜ ▹ e ◃ ⌟⦈  => ⦇-⦈
+      SAZipPair1 : {Γ : ·ctx} {t1 t1' t2 : τ̇} {α : action} {eh eh' : ê} {e eh◆ : ė} →
+                (erase-e eh eh◆) →
+                (Γ ⊢ (eh◆) => t1) →
+                (Γ ⊢ eh => t1 ~ α ~> eh' => t1') →
+                (Γ ⊢ e => t2) →
+                Γ ⊢ ⟨ eh , e ⟩₁ => (t1 ⊠ t2) ~ α ~> ⟨ eh' , e ⟩₁ => (t1' ⊠ t2)
+      SAZipPair2 : {Γ : ·ctx} {t1 t2 t2' : τ̇} {α : action} {eh eh' : ê} {e eh◆ : ė} →
+                (Γ ⊢ e => t1) →
+                (erase-e eh eh◆) →
+                (Γ ⊢ (eh◆) => t2) →
+                (Γ ⊢ eh => t2 ~ α ~> eh' => t2') →
+                Γ ⊢ ⟨ e , eh ⟩₂ => (t1 ⊠ t2) ~ α ~> ⟨ e , eh' ⟩₂ => (t1 ⊠ t2')
+      SAZipFst : {Γ : ·ctx} {t× t×' t1 t1' t2 t2' : τ̇} {α : action} {eh eh' : ê} {eh◆ : ė} →
+                t× ▸prod (t1 ⊠ t2) →
+                t×' ▸prod (t1' ⊠ t2') →
+                (erase-e eh eh◆) →
+                (Γ ⊢ (eh◆) => t×) →
+                (Γ ⊢ eh => t× ~ α ~> eh' => t×') →
+                Γ ⊢ fst eh => t1 ~ α ~> fst eh' => t1'
+      SAZipSnd : {Γ : ·ctx} {t× t×' t1 t1' t2 t2' : τ̇} {α : action} {eh eh' : ê} {eh◆ : ė} →
+                t× ▸prod (t1 ⊠ t2) →
+                t×' ▸prod (t1' ⊠ t2') →
+                (erase-e eh eh◆) →
+                (Γ ⊢ (eh◆) => t×) →
+                (Γ ⊢ eh => t× ~ α ~> eh' => t×') →
+                Γ ⊢ snd eh => t2 ~ α ~> snd eh' => t2'
+                
     -- analytic action expressions
     data _⊢_~_~>_⇐_ : (Γ : ·ctx) → (e : ê) → (α : action) →
                       (e' : ê) → (t : τ̇) → Set where
@@ -735,17 +817,4 @@ module core where
                  t+ ▸plus (t1 ⊕ t2) →
                  (Γ ,, (y , t2)) ⊢ e2 ~ α ~> e2' ⇐ t →
                  Γ ⊢ case₃ e x e1 y e2 ~ α ~> case₃ e x e1 y e2' ⇐ t
-      AAConProd1 : {Γ : ·ctx} {t× t1 t2 : τ̇} →
-                 t× ▸prod (t1 ⊠ t2) →
-                 Γ ⊢ ▹ ⦇-⦈ ◃ ~ construct prod ~> ⟨ ▹ ⦇-⦈ ◃ , ⦇-⦈ ⟩₁ ⇐ t×
-      AAConProd2 : {Γ : ·ctx} {t : τ̇} →
-                 t ~̸ (⦇-⦈ ⊠ ⦇-⦈) →
-                 Γ ⊢ ▹ ⦇-⦈ ◃ ~ construct prod ~> ⦇⌜ ⟨ ⦇-⦈ , ⦇-⦈ ⟩ ·:₂ ( ▹ ⦇-⦈ ◃  ⊠₁ ⦇-⦈) ⌟⦈ ⇐ t
-      AAZipProdL : {Γ : ·ctx} {e1 e1' : ê} {e2 : ė} {t t1 t2 : τ̇} {α : action} →
-                 t ▸prod (t1 ⊠ t2) →
-                 Γ ⊢ e1 ~ α ~> e1' ⇐ t1 →
-                 Γ ⊢ ⟨ e1 , e2 ⟩₁ ~ α ~> ⟨ e1' , e2 ⟩₁ ⇐ t
-      AAZipProdR : {Γ : ·ctx} {e2 e2' : ê} {e1 : ė} {t t1 t2 : τ̇} {α : action} →
-                 t ▸prod (t1 ⊠ t2) →
-                 Γ ⊢ e2 ~ α ~> e2' ⇐ t2 →
-                 Γ ⊢ ⟨ e1 , e2 ⟩₂ ~ α ~> ⟨ e1 , e2' ⟩₂ ⇐ t         
+      

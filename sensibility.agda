@@ -37,8 +37,15 @@ module sensibility where
     actsense-synth EETop (EEAscR (ETPlusR ETTop)) SAConInr SEHole = SAsc (AInr MPPlus (ASubsume SEHole TCRefl))
     actsense-synth EETop (EEAscL (EECase2 EETop)) (SAConCase1 c d e₁) f = SAsc (ACase c d e₁ f (ASubsume SEHole TCRefl) (ASubsume SEHole TCRefl))
     actsense-synth EETop (EEAscL (EECase1 (EENEHole EETop))) (SAConCase2 c d e₁) f = SAsc (ACase c d MPHole (SNEHole f) (ASubsume SEHole TCRefl) (ASubsume SEHole TCRefl))
-    actsense-synth EETop (EEAscR (ETProdL ETTop)) SAConProd SEHole = SAsc (AProd MPrProd (ASubsume SEHole TCRefl) (ASubsume SEHole TCRefl))
-    
+    actsense-synth EETop (EEPairL EETop) SAConPair SEHole = SPair SEHole SEHole
+   
+    actsense-synth EETop EETop (SAConFst1 pr) wt = SFst wt pr
+    actsense-synth EETop (EEFst er) (SAConFst2 inc) wt with erase-e◆ er
+    ... | refl = SFst (SNEHole wt) MPrHole
+    actsense-synth EETop EETop (SAConSnd1 pr) wt = SSnd wt pr
+    actsense-synth EETop (EESnd er) (SAConSnd2 inc) wt with erase-e◆ er
+    ... | refl = SSnd (SNEHole wt) MPrHole
+        
     --- zipper cases. in each, we recur on the smaller action derivation
     --- following the zipper structure, then reassemble the result
     actsense-synth (EEAscL er) (EEAscL er') (SAZipAsc1 x) (SAsc x₁)
@@ -68,7 +75,20 @@ module sensibility where
       with actsense-synth x er' act x₁
     ... | ih = SNEHole ih
 
+    actsense-synth (EEPairL er) (EEPairL er') (SAZipPair1 x₁ x₂ y x₃) (SPair z₁ z₂)
+      with actsense-synth er er' y z₁
+    ... | ih = SPair ih z₂
+    actsense-synth (EEPairR er) (EEPairR er') (SAZipPair2 x₁ x₂ x₃ y) (SPair z₁ z₂)
+      with actsense-synth er er' y z₂
+    ... | ih = SPair z₁ ih
+    actsense-synth (EEFst er) (EEFst er') (SAZipFst x₁ x₂ x₃ x₄ y) (SFst z₁ z₂)
+      with actsense-synth x₃ er' y x₄
+    ... | ih = SFst ih x₂
+    actsense-synth (EESnd er) (EESnd er') (SAZipSnd x₁ x₂ x₃ x₄ y) (SSnd z₁ z₂)
+      with actsense-synth x₃ er' y x₄
+    ... | ih = SSnd ih x₂
     
+
     -- if an action transforms an ê in an analytic posistion to another ê,
     -- they have the same type up erasure of the cursor.
     actsense-ana  : {Γ : ·ctx} {e e' : ê} {e◆ e'◆ : ė} {t : τ̇} {α : action} →
@@ -148,20 +168,3 @@ module sensibility where
     ... | refl with actsense-ana er1 er2 x₆ wt₁
     ... | ih = ACase x₇ x₈ x₉ s2 wt ih
 
-    -- again, ASubsume cases aren't possible
-    actsense-ana (EEProdL _) (EEProdL _) (AAZipProdL _ _) (ASubsume () _)
-    actsense-ana (EEProdR _) (EEProdR _) (AAZipProdR _ _) (ASubsume () _)
-
-    -- constructing product
-    actsense-ana EETop (EEProdL EETop) (AAConProd1 x) _ = AProd x (ASubsume SEHole TCHole1) (ASubsume SEHole TCHole1)
-    actsense-ana EETop (EENEHole (EEAscR (ETProdL ETTop))) (AAConProd2 x) _ = ASubsume (SNEHole (SAsc (AProd MPrProd (ASubsume SEHole TCRefl) (ASubsume SEHole TCRefl)))) TCHole1
-    
-    -- zipper cases for product types
-    actsense-ana (EEProdL er1) (EEProdL er2) (AAZipProdL x₁ x₂) (AProd x w w₁)
-      with matchprodunicity x x₁
-    ...| refl with actsense-ana er1 er2 x₂ w
-    ...| w' = AProd x w' w₁
-    actsense-ana (EEProdR er1) (EEProdR er2) (AAZipProdR x₁ x₂) (AProd x w w₁)
-      with matchprodunicity x x₁
-    ...| refl with actsense-ana er1 er2 x₂ w₁
-    ...| w' = AProd x w w'

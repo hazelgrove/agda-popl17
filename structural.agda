@@ -54,6 +54,8 @@ module structural where
   fresh x (inr e) = fresh x e
   fresh x (case e y e1 z e2) = natEQp x y × natEQp x z × fresh x e × fresh x e1 × fresh x e2
   fresh x ⟨ e1 , e2 ⟩ = fresh x e1 × fresh x e2
+  fresh x (fst e) = fresh x e
+  fresh x (snd e) = fresh x e
   
   ---- lemmas
 
@@ -142,7 +144,10 @@ module structural where
     wt-weak-synth apt (SPlus x₁ x₂) (f1 , f2) = SPlus (wt-weak-ana apt x₁ f1) (wt-weak-ana apt x₂ f2)
     wt-weak-synth apt SEHole f = SEHole
     wt-weak-synth apt (SNEHole wt) f = SNEHole (wt-weak-synth apt wt f)
-
+    wt-weak-synth apt (SFst x x₁) f = SFst (wt-weak-synth apt x f) x₁
+    wt-weak-synth apt (SSnd x x₁) f = SSnd (wt-weak-synth apt x f) x₁
+    wt-weak-synth apt (SPair x x₁) f = SPair (wt-weak-synth apt x (π1 f)) (wt-weak-synth apt x₁ (π2 f))
+    
     wt-weak-ana : {Γ : ·ctx} {x : Nat} {t t' : τ̇} {e : ė} →
                     x # Γ →
                     Γ ⊢ e <= t →
@@ -164,7 +169,7 @@ module structural where
                                                                                                      (wt-weak-synth apt d f3)
                                                                                                      (wt-exchange-ana (flip x₄) (wt-weak-ana (lem-extend x₄ apt) e₁ f4))
                                                                                                      (wt-exchange-ana (flip x₃) (wt-weak-ana (lem-extend x₃ apt) g f5))
-    wt-weak-ana apt (AProd a b c) f = AProd a (wt-weak-ana apt b (π1 f)) (wt-weak-ana apt c (π2 f))
+    
     
   ---- structural properties for the action jugements
   mutual
@@ -237,7 +242,16 @@ module structural where
     act-weak-synth apt f f' (SAConCase2 x₄ x₅ x₆) | Inl refl | Inr x₃ = abort (π1 f')
     act-weak-synth apt f f' (SAConCase2 x₄ x₅ x₆) | Inr x₂ | Inl refl = abort (π1 (π2 f'))
     act-weak-synth apt f f' (SAConCase2 x₄ x₅ x₆) | Inr x₂ | Inr x₃ = SAConCase2 (lem-extend (flip x₂) x₄) (lem-extend (flip x₃) x₅) x₆
-    act-weak-synth apt f f' SAConProd = SAConProd
+    
+    act-weak-synth apt f f' SAConPair = SAConPair
+    act-weak-synth apt f f' (SAConFst1 pr) = SAConFst1 pr
+    act-weak-synth apt f f' (SAConFst2 inc) = SAConFst2 inc
+    act-weak-synth apt f f' (SAConSnd1 pr) = SAConSnd1 pr
+    act-weak-synth apt f f' (SAConSnd2 inc) = SAConSnd2 inc
+    act-weak-synth apt f f' (SAZipPair1 x x₁ x₂ x₃) = SAZipPair1 x (wt-weak-synth apt x₁ (fresh-er-lem x (π1 f))) (act-weak-synth apt (π1 f) (π1 f') x₂) (wt-weak-synth apt x₃ (π2 f'))
+    act-weak-synth apt f f' (SAZipPair2 x x₁ x₂ x₃) = SAZipPair2 (wt-weak-synth apt x (π1 f')) x₁ (wt-weak-synth apt x₂ (fresh-er-lem x₁ (π2 f))) (act-weak-synth apt (π2 f) (π2 f') x₃)
+    act-weak-synth apt f f' (SAZipFst x x₁ x₂ x₃ x₄) = SAZipFst x x₁ x₂ (wt-weak-synth apt x₃ (fresh-er-lem x₂ f)) (act-weak-synth apt f f' x₄)
+    act-weak-synth apt f f' (SAZipSnd x x₁ x₂ x₃ x₄) = SAZipSnd x x₁ x₂ (wt-weak-synth apt x₃ (fresh-er-lem x₂ f)) (act-weak-synth apt f f' x₄)
     
     act-weak-ana : ∀{ Γ x t t' e e' α } →
                          x # Γ →
@@ -302,7 +316,4 @@ module structural where
                                                                                     (wt-weak-synth apt x₆ (π1 (π2 (π2 f'))))
                                                                                     x₇
                                                                                     (act-exchange-ana (flip x₃) (act-weak-ana (lem-extend x₃ apt) (π2 (π2 (π2 (π2 f)))) (π2 (π2 (π2 (π2 f')))) d))
-    act-weak-ana apt f f' (AAConProd1 x₁) = AAConProd1 x₁
-    act-weak-ana apt f f' (AAConProd2 x₁) = AAConProd2 x₁
-    act-weak-ana apt f f' (AAZipProdL x₁ x₂) = AAZipProdL x₁ (act-weak-ana apt (π1 f) (π1 f') x₂)
-    act-weak-ana apt f f' (AAZipProdR x₁ x₂) = AAZipProdR x₁ (act-weak-ana apt (π2 f) (π2 f') x₂)
+    

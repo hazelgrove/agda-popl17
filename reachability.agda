@@ -62,8 +62,6 @@ module reachability where
     reachup-synth (EECase1 er) ()
     reachup-synth (EECase2 er) ()
     reachup-synth (EECase3 er) ()
-    reachup-synth (EEProdL er) ()
-    reachup-synth (EEProdR er) ()
     
     reachup-synth EETop _ = [] , DoRefl , AM[]
     reachup-synth (EEAscL er) (SAsc x) with reachup-ana er x
@@ -94,7 +92,23 @@ module reachability where
     ... | l , ih , m = l ++ [ move parent ] ,
                        runsynth++ (ziplem-nehole-a (lem-erase-synth er wt) ih) (DoSynth (SAMove EMNEHoleParent) DoRefl) ,
                        movements++ m (AM:: AM[])
-
+    reachup-synth (EEFst er) (SFst wt pr) with reachup-synth er wt
+    ... | l , ih , m = (l ++ [ move parent ]) ,
+                       runsynth++ (ziplem-moves-fst pr pr er wt m ih) (DoSynth (SAMove EMFstParent) DoRefl) ,
+                       movements++ m (AM:: AM[])
+    reachup-synth (EESnd er) (SSnd wt pr) with reachup-synth er wt
+    ... | l , ih , m = (l ++ [ move parent ]) ,
+                       runsynth++ (ziplem-moves-snd pr pr er wt m ih) (DoSynth (SAMove EMSndParent) DoRefl) ,
+                       movements++ m (AM:: AM[])
+    reachup-synth (EEPairL er) (SPair wt wt₁) with reachup-synth er wt
+    ... | l , ih , m = l ++ [ move parent ] ,
+                       runsynth++ (ziplem-pair1 er wt ih wt₁) (DoSynth (SAMove EMPairParent1) DoRefl) ,
+                       movements++ m (AM:: AM[])
+    reachup-synth (EEPairR er) (SPair wt wt₁) with reachup-synth er wt₁
+    ... | l , ih , m = l ++ [ move parent ] ,
+                       runsynth++ (ziplem-pair2 wt er wt₁ ih) (DoSynth (SAMove EMPairParent2) DoRefl) ,
+                       movements++ m (AM:: AM[])
+    
     reachup-ana : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
                       erase-e e e' →
                       Γ ⊢ e' <= t →
@@ -129,15 +143,7 @@ module reachability where
                        runana++ (ziplem-case3 x₁ x₂ x₄ wt x₃ ih) (DoAna (AAMove EMCaseParent3) DoRefl) ,
                        movements++ m (AM:: AM[])
 
-    reachup-ana (EEProdL er) (AProd x wt₁ wt₂) with reachup-ana er wt₁
-    ... | l , ih , m = l ++ [ move parent ] ,
-                       runana++ (ziplem-prodl x ih) (DoAna (AAMove EMProdParent1) DoRefl) ,
-                       movements++ m (AM:: AM[])
-
-    reachup-ana (EEProdR er) (AProd x wt₁ wt₂) with reachup-ana er wt₂
-    ... | l , ih , m = l ++ [ move parent ] ,
-                       runana++ (ziplem-prodr x ih) (DoAna (AAMove EMProdParent2) DoRefl) ,
-                       movements++ m (AM:: AM[])
+    
                        
   --------------------------
 
@@ -180,8 +186,7 @@ module reachability where
     reachdown-synth (EECase1 er) ()
     reachdown-synth (EECase2 er) ()
     reachdown-synth (EECase3 er) ()
-    reachdown-synth (EEProdL er) () 
-    reachdown-synth (EEProdR er) ()
+   
     
     reachdown-synth EETop _ = [] , DoRefl , AM[]
     reachdown-synth (EEAscL er) (SAsc x) with reachdown-ana er x
@@ -212,7 +217,26 @@ module reachability where
     ... | l , ih , m = move (child 1) :: l ,
                        DoSynth (SAMove EMNEHoleChild1) (ziplem-nehole-a wt ih) ,
                        AM:: m
-
+    reachdown-synth (EEPairL er) (SPair wt wt₁) with reachdown-synth er wt
+    ... | l , ih , m = move (child 1) :: l ,
+                       DoSynth (SAMove EMPairChild1) (ziplem-pair1 EETop wt ih wt₁) ,
+                       AM:: m
+    reachdown-synth (EEPairR er) (SPair wt wt₁)
+      with reachdown-synth er wt₁
+    ... | l , ih , m = move (child 2) :: l ,
+                       DoSynth (SAMove EMPairChild2) (ziplem-pair2 wt EETop wt₁ ih) ,
+                       AM:: m
+    reachdown-synth (EEFst er) (SFst wt pr) with reachdown-synth er wt
+    ... | l , ih , m = move (child 1) :: l ,
+                       DoSynth (SAMove EMFstChild1)
+                               (ziplem-moves-fst pr pr EETop wt m ih) ,
+                       AM:: m
+    reachdown-synth (EESnd er) (SSnd wt pr) with reachdown-synth er wt
+    ... | l , ih , m = move (child 1) :: l ,
+                       DoSynth (SAMove EMSndChild1)
+                               (ziplem-moves-snd pr pr EETop wt m ih) ,
+                       AM:: m
+    
     reachdown-ana : {Γ : ·ctx} {e : ê} {t : τ̇} {e' : ė} →
                       (p : erase-e e e') →
                       (wt : Γ ⊢ e' <= t) →
@@ -246,15 +270,7 @@ module reachability where
     ... | l , ih , m = move (child 3)  :: l ,
                        DoAna (AAMove EMCaseChild3) (ziplem-case3 x₁ x₂ x₄ wt x₃ ih) ,
                        AM:: m
-    reachdown-ana (EEProdL er) (AProd x x₁ x₂) with reachdown-ana er x₁
-    ...| l , ih , m = move (child 1) :: l ,
-                      DoAna (AAMove EMProdChild1) (ziplem-prodl x ih) ,
-                      AM:: m
-    reachdown-ana (EEProdR er) (AProd x x₁ x₂) with reachdown-ana er x₂
-    ...| l , ih , m = move (child 2) :: l ,
-                      DoAna (AAMove EMProdChild2) (ziplem-prodr x ih) ,
-                      AM:: m
-
+   
   --------------------------
 
 
